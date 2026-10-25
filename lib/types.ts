@@ -115,6 +115,7 @@ export type PanelBusiness = {
   role: BusinessRole;
   /** Visible en /reservar/[slug] (businesses.is_active). */
   published: boolean;
+  logoUrl?: string | null;
   /** Solo para owner/admin. */
   billing?: BillingSummary;
 };
@@ -140,6 +141,10 @@ export type OnboardingBusiness = {
   brandColor: string;
   logoUrl: string | null;
   published: boolean;
+  /** Reglas de reserva (minutos / días). */
+  minNoticeMin: number;
+  maxDaysAhead: number;
+  cancelNoticeMin: number;
 };
 
 export type OnboardingStaff = { id: string; name: string; roleTitle: string; linkedToMe: boolean };

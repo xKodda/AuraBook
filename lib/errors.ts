@@ -11,6 +11,7 @@ const MESSAGES: Record<string, string> = {
   INVALID_CATEGORY: "Elige el rubro de tu negocio.",
   INVALID_TIMEZONE: "Zona horaria no válida.",
   INVALID_LOGO: "El logo no es válido. Sube una imagen PNG, JPG o WebP.",
+  INVALID_RULES: "Revisa las reglas de reserva.",
   INVALID_COLOR: "Elige un color de la paleta.",
   INVALID_PROFILE: "Algún dato del negocio es demasiado largo.",
   BUSINESS_LIMIT_REACHED: "Alcanzaste el máximo de 3 negocios por cuenta. Escríbenos si necesitas más.",

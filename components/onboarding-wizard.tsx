@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, useTransition, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, ArrowRight, CalendarDays, Check, CheckCircle2, Circle, Copy, ExternalLink, LogOut,
@@ -12,13 +12,16 @@ import {
   updateBusinessAction, uploadLogoAction, type OnboardingResult,
 } from "@/app/onboarding/actions";
 import { BrandMark } from "@/components/brand";
+import {
+  ChoiceField, DURATIONS, WeekRows, formatDuration, rowsInvalid, rowsToDays, toRows, type DayRow,
+} from "@/components/business-editors";
 import { LogoPicker } from "@/components/logo-picker";
 import { formatPrice } from "@/lib/dates";
 import { BRAND_COLORS, ROLE_TITLES, SERVICE_PRESETS, TAGLINES } from "@/lib/presets";
 import { isValidSlug, slugify } from "@/lib/slug";
 import { CATEGORY_COPY, CATEGORY_LABEL } from "@/lib/theme";
 import type {
-  BusinessCategory, OnboardingService, OnboardingStaff, OnboardingState, ScheduleDay,
+  BusinessCategory, OnboardingService, OnboardingStaff, OnboardingState,
 } from "@/lib/types";
 
 type Props = { initial: OnboardingState; userEmail: string; siteUrl: string };
@@ -32,9 +35,6 @@ const STEPS = [
 ] as const;
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as BusinessCategory[];
-const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
-const DAY_NAME = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-const DURATIONS = Array.from({ length: 32 }, (_, i) => (i + 1) * 15);
 
 const hasSchedule = (state: OnboardingState, staffId: string) => (state.schedules[staffId]?.length ?? 0) > 0;
 
@@ -45,21 +45,6 @@ function firstIncompleteStep(state: OnboardingState): number {
   if (!state.staff.some((s) => hasSchedule(state, s.id))) return 2;
   if (state.services.length === 0) return 3;
   return 4;
-}
-
-function formatDuration(min: number): string {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  if (!h) return `${m} min`;
-  return m ? `${h} h ${m} min` : `${h} h`;
-}
-
-function timeOptions(current: string[]): string[] {
-  const base: string[] = [];
-  for (let m = 6 * 60; m <= 23 * 60 + 30; m += 30) {
-    base.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
-  }
-  return [...new Set([...base, ...current.filter(Boolean)])].sort();
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -183,47 +168,6 @@ function StepFooter({ onBack, children }: { onBack?: () => void; children: React
 
 function ErrorBox({ error }: { error: string | null }) {
   return error ? <div className="form-error" role="alert">{error}</div> : null;
-}
-
-/**
- * Elegir entre opciones sugeridas o escribir otra. `value` vacío = nada elegido.
- * Si el valor guardado no está entre las opciones, se muestra como «Otro».
- */
-function ChoiceField({ label, options, value, onChange, optional, placeholder, maxLength, onPick }: {
-  label: string; options: string[]; value: string; onChange: (v: string) => void;
-  optional?: boolean; placeholder: string; maxLength: number; onPick?: (v: string) => void;
-}) {
-  const [custom, setCustom] = useState(() => value !== "" && !options.includes(value));
-  const isCustom = custom || (value !== "" && !options.includes(value));
-  return (
-    <fieldset className="onb-field">
-      <legend className="field-label">
-        {label} {optional && <em className="onb-optional">opcional</em>}
-      </legend>
-      <div className="onb-chips">
-        {options.map((o) => (
-          <button key={o} type="button" className={`onb-chip${!isCustom && value === o ? " selected" : ""}`}
-            aria-pressed={!isCustom && value === o}
-            onClick={() => {
-              setCustom(false);
-              const next = optional && value === o ? "" : o;
-              onChange(next);
-              if (next) onPick?.(next);
-            }}>
-            {o}
-          </button>
-        ))}
-        <button type="button" className={`onb-chip${isCustom ? " selected" : ""}`} aria-pressed={isCustom}
-          onClick={() => { setCustom(true); if (options.includes(value)) onChange(""); }}>
-          Otro…
-        </button>
-      </div>
-      {isCustom && (
-        <input className="text-input" value={value} onChange={(e) => onChange(e.target.value)} autoFocus
-          maxLength={maxLength} placeholder={placeholder} aria-label={label} />
-      )}
-    </fieldset>
-  );
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -504,45 +448,6 @@ function TeamStep({ state, run, pending, error, goTo }: StepProps) {
 // ─────────────────────────────────────────────────────────────
 // 3. Horarios
 // ─────────────────────────────────────────────────────────────
-type DayRow = {
-  weekday: number; enabled: boolean; opens: string; closes: string;
-  hasBreak: boolean; breakStart: string; breakEnd: string;
-};
-
-function defaultRow(weekday: number): DayRow {
-  const weekdayRow = weekday >= 1 && weekday <= 5;
-  return {
-    weekday,
-    enabled: weekday !== 0,
-    opens: "10:00",
-    closes: weekday === 6 ? "14:00" : "19:00",
-    hasBreak: weekdayRow,
-    breakStart: "14:00",
-    breakEnd: "15:00",
-  };
-}
-
-function toRows(days: ScheduleDay[] | undefined): DayRow[] {
-  return WEEK_ORDER.map((weekday) => {
-    if (!days) return defaultRow(weekday);
-    const d = days.find((x) => x.weekday === weekday);
-    if (!d) return { ...defaultRow(weekday), enabled: false };
-    return {
-      weekday, enabled: true, opens: d.opens, closes: d.closes,
-      hasBreak: Boolean(d.breakStart), breakStart: d.breakStart ?? "14:00", breakEnd: d.breakEnd ?? "15:00",
-    };
-  });
-}
-
-function rowError(r: DayRow): string | null {
-  if (!r.enabled) return null;
-  if (r.opens >= r.closes) return "La apertura debe ser antes del cierre.";
-  if (r.hasBreak && (r.breakStart >= r.breakEnd || r.breakStart < r.opens || r.breakEnd > r.closes)) {
-    return "El descanso debe quedar dentro de la jornada.";
-  }
-  return null;
-}
-
 function ScheduleStep({ state, run, pending, error, goTo }: StepProps) {
   const business = state.business!;
   const [target, setTarget] = useState<"all" | string>("all");
@@ -559,45 +464,16 @@ function ScheduleStep({ state, run, pending, error, goTo }: StepProps) {
     setRows(toRows(source ? state.schedules[source] : undefined));
   }
 
-  function patch(weekday: number, change: Partial<DayRow>) {
-    setSaved(false);
-    setRows((current) => current.map((r) => (r.weekday === weekday ? { ...r, ...change } : r)));
-  }
-
-  function copyMondayToAll() {
-    const monday = rows.find((r) => r.weekday === 1)!;
-    setSaved(false);
-    setRows((current) => current.map((r) => (r.enabled && r.weekday !== 1
-      ? { ...r, opens: monday.opens, closes: monday.closes, hasBreak: monday.hasBreak,
-          breakStart: monday.breakStart, breakEnd: monday.breakEnd }
-      : r)));
-  }
-
-  const errors = rows.map(rowError);
-  const invalid = errors.some(Boolean) || !rows.some((r) => r.enabled);
-  const options = useMemo(
-    () => timeOptions(rows.flatMap((r) => [r.opens, r.closes, r.breakStart, r.breakEnd])),
-    [rows],
-  );
+  const invalid = rowsInvalid(rows);
 
   function submit(e: FormEvent) {
     e.preventDefault();
     const staffIds = target === "all" ? state.staff.map((s) => s.id) : [target];
-    const days = rows.filter((r) => r.enabled).map((r) => ({
-      weekday: r.weekday, opens: r.opens, closes: r.closes,
-      breakStart: r.hasBreak ? r.breakStart : null, breakEnd: r.hasBreak ? r.breakEnd : null,
-    }));
-    run(() => saveScheduleAction(business.id, { staffIds, days }), () => {
+    run(() => saveScheduleAction(business.id, { staffIds, days: rowsToDays(rows) }), () => {
       setSaved(true);
       if (target === "all") goTo(3);
     });
   }
-
-  const select = (value: string, onChange: (v: string) => void, label: string) => (
-    <select className="onb-time" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
-      {options.map((t) => <option key={t} value={t}>{t}</option>)}
-    </select>
-  );
 
   return (
     <form onSubmit={submit}>
@@ -628,42 +504,7 @@ function ScheduleStep({ state, run, pending, error, goTo }: StepProps) {
         </div>
       )}
 
-      <div className="onb-days">
-        {rows.map((r, i) => (
-          <div key={r.weekday} className={`onb-day${r.enabled ? "" : " off"}`}>
-            <label className="onb-day-toggle">
-              <input type="checkbox" checked={r.enabled} onChange={(e) => patch(r.weekday, { enabled: e.target.checked })} />
-              <span>{DAY_NAME[r.weekday]}</span>
-            </label>
-            {r.enabled ? (
-              <div className="onb-day-times">
-                <span className="onb-range">
-                  {select(r.opens, (v) => patch(r.weekday, { opens: v }), `Apertura ${DAY_NAME[r.weekday]}`)}
-                  <span>a</span>
-                  {select(r.closes, (v) => patch(r.weekday, { closes: v }), `Cierre ${DAY_NAME[r.weekday]}`)}
-                </span>
-                <label className="onb-check small">
-                  <input type="checkbox" checked={r.hasBreak} onChange={(e) => patch(r.weekday, { hasBreak: e.target.checked })} />
-                  <span>Descanso</span>
-                </label>
-                {r.hasBreak && (
-                  <span className="onb-range">
-                    {select(r.breakStart, (v) => patch(r.weekday, { breakStart: v }), `Inicio descanso ${DAY_NAME[r.weekday]}`)}
-                    <span>a</span>
-                    {select(r.breakEnd, (v) => patch(r.weekday, { breakEnd: v }), `Fin descanso ${DAY_NAME[r.weekday]}`)}
-                  </span>
-                )}
-                {errors[i] && <small className="onb-bad onb-day-error">{errors[i]}</small>}
-              </div>
-            ) : (
-              <span className="onb-day-closed">Cerrado</span>
-            )}
-          </div>
-        ))}
-      </div>
-      <button type="button" className="onb-link-btn" onClick={copyMondayToAll}>
-        Copiar el horario del lunes a los demás días abiertos
-      </button>
+      <WeekRows rows={rows} onChange={(next) => { setSaved(false); setRows(next); }} />
 
       {saved && target !== "all" && <p className="onb-ok onb-saved">✓ Horario guardado.</p>}
       <ErrorBox error={error} />

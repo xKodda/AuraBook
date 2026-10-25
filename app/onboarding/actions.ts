@@ -234,3 +234,19 @@ export async function setBrandColorAction(businessId: string, color: string): Pr
   if (!id.safeParse(businessId).success || !/^#[0-9a-f]{6}$/i.test(color)) return INVALID;
   return mutate(businessId, (db) => db.rpc("set_business_brand_color", { p_business_id: businessId, p_brand_color: color }));
 }
+
+const rulesSchema = z.object({
+  minNoticeMin: z.number().int().min(0).max(2880),
+  maxDaysAhead: z.number().int().min(1).max(180),
+  cancelNoticeMin: z.number().int().min(0).max(2880),
+});
+
+export async function updateBookingRulesAction(businessId: string, input: unknown): Promise<OnboardingResult> {
+  const parsed = rulesSchema.safeParse(input);
+  if (!id.safeParse(businessId).success || !parsed.success) return INVALID;
+  const r = parsed.data;
+  return mutate(businessId, (db) => db.rpc("update_booking_rules", {
+    p_business_id: businessId, p_min_notice_min: r.minNoticeMin, p_max_days_ahead: r.maxDaysAhead,
+    p_cancel_notice_min: r.cancelNoticeMin,
+  }));
+}

@@ -1,4 +1,5 @@
 import "server-only";
+import { DEMO_MODE, demoOnboardingState } from "./demo";
 import { sessionDb } from "./supabase";
 import type { BusinessCategory, OnboardingState, ScheduleDay } from "./types";
 
@@ -41,11 +42,12 @@ const hhmm = (t: string | null) => (t ? t.slice(0, 5) : null);
  * RLS garantiza que solo se obtiene si el usuario es miembro; si no, devuelve `business: null`.
  */
 export async function getOnboardingState(businessId: string, userId: string): Promise<OnboardingState> {
+  if (DEMO_MODE) return demoOnboardingState(businessId);
   const empty: OnboardingState = { business: null, staff: [], services: [], schedules: {} };
   const db = await sessionDb();
   const { data: b, error } = await db
     .from("businesses")
-    .select("id,slug,name,category,tagline,description,address,phone,brand_color,logo_url,is_active")
+    .select("id,slug,name,category,tagline,description,address,phone,brand_color,logo_url,is_active,min_notice_min,max_days_ahead,cancel_notice_min")
     .eq("id", businessId)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -88,6 +90,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
     id: string; slug: string; name: string; category: BusinessCategory; tagline: string | null;
     description: string | null; address: string | null; phone: string | null; is_active: boolean;
     brand_color: string; logo_url: string | null;
+    min_notice_min: number; max_days_ahead: number; cancel_notice_min: number;
   };
   return {
     business: {
@@ -102,6 +105,9 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
       brandColor: row.brand_color,
       logoUrl: row.logo_url,
       published: row.is_active,
+      minNoticeMin: row.min_notice_min,
+      maxDaysAhead: row.max_days_ahead,
+      cancelNoticeMin: row.cancel_notice_min,
     },
     staff: ((staffRes.data ?? []) as { id: string; name: string; role_title: string | null }[]).map((s) => ({
       id: s.id, name: s.name, roleTitle: s.role_title ?? "", linkedToMe: s.id === myStaffId,

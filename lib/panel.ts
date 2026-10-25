@@ -6,6 +6,7 @@ import { sessionDb } from "./supabase";
 import type { BookingStatus, BusinessCategory, BusinessRole, PanelBooking, PanelBusiness } from "./types";
 
 export type PanelSession = {
+  userId: string;
   email: string | null;
   businesses: PanelBusiness[];
   demo: boolean;
@@ -15,7 +16,7 @@ type DbMembership = {
   role: BusinessRole;
   businesses: {
     id: string; slug: string; name: string; category: BusinessCategory; brand_color: string; timezone: string;
-    is_active: boolean;
+    is_active: boolean; logo_url: string | null;
   } | null;
 };
 
@@ -27,14 +28,14 @@ export async function getPanelSession(): Promise<PanelSession | null> {
     const businesses = demoPanelBusinesses().map((b, i) => (
       i === 0 ? { ...b, billing: { status: "active" as const, endsAt: new Date(Date.now() + 4 * 86_400_000).toISOString() } } : b
     ));
-    return { email: null, businesses, demo: true };
+    return { userId: "demo", email: null, businesses, demo: true };
   }
   const db = await sessionDb();
   const { data: { user } } = await db.auth.getUser();
   if (!user) return null;
   const { data, error } = await db
     .from("business_members")
-    .select("role, businesses(id,slug,name,category,brand_color,timezone,is_active)")
+    .select("role, businesses(id,slug,name,category,brand_color,timezone,is_active,logo_url)")
     .eq("user_id", user.id);
   if (error) throw new Error(`No se pudieron cargar los negocios: ${error.message}`);
   const billing = await mySubscriptions();
@@ -49,10 +50,11 @@ export async function getPanelSession(): Promise<PanelSession | null> {
       timezone: m.businesses!.timezone,
       role: m.role,
       published: m.businesses!.is_active,
+      logoUrl: m.businesses!.logo_url,
       billing: billing.get(m.businesses!.id),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
-  return { email: user.email ?? null, businesses, demo: false };
+  return { userId: user.id, email: user.email ?? null, businesses, demo: false };
 }
 
 export async function listPanelStaff(businessId: string): Promise<{ id: string; name: string }[]> {

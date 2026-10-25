@@ -1,7 +1,7 @@
 import "server-only";
 import type {
   AvailableSlot, BookingPayload, BookingStatus, BookingSuccess, Business, CancelResult,
-  ManagedBooking, PanelBooking, PanelBusiness,
+  ManagedBooking, OnboardingState, PanelBooking, PanelBusiness, ScheduleDay,
 } from "./types";
 import {
   addCalendarDays, dateInTimeZone, dateWithinBookingWindow, formatMinutes, minutes,
@@ -342,4 +342,32 @@ export function demoSetStatus(businessId: string, bookingId: string, status: Boo
   }
   b.status = status;
   return "OK";
+}
+
+/** Estado de gestión de un negocio demo (para ver las secciones del panel sin Supabase). */
+export function demoOnboardingState(businessId: string): OnboardingState {
+  const b = DEMO_BUSINESSES.find((x) => x.id === businessId) ?? DEMO_BUSINESSES[0];
+  const schedules: Record<string, ScheduleDay[]> = {};
+  for (const m of b.staff) {
+    const s = SCHEDULES[m.id];
+    if (!s) continue;
+    schedules[m.id] = s.days.map((weekday) => ({
+      weekday, opens: s.open, closes: s.close,
+      breakStart: s.breaks[0]?.[0] ?? null, breakEnd: s.breaks[0]?.[1] ?? null,
+    }));
+  }
+  return {
+    business: {
+      id: b.id, slug: b.slug, name: b.name, category: b.category, tagline: b.tagline,
+      description: b.description ?? "", address: b.address, phone: b.phone, brandColor: b.brandColor,
+      logoUrl: b.logoUrl, published: true, minNoticeMin: MIN_NOTICE_MIN, maxDaysAhead: b.maxDaysAhead,
+      cancelNoticeMin: b.cancelNoticeMin,
+    },
+    staff: b.staff.map((m, i) => ({ id: m.id, name: m.name, roleTitle: m.roleTitle ?? "", linkedToMe: i === 0 })),
+    services: b.services.map((s) => ({
+      id: s.id, name: s.name, description: s.description, priceClp: s.priceClp, durationMin: s.durationMin,
+      staffIds: b.staff.filter((m) => m.serviceIds.includes(s.id)).map((m) => m.id),
+    })),
+    schedules,
+  };
 }

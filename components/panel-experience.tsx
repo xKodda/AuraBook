@@ -3,60 +3,20 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  CalendarDays, Check, CheckCircle2, ChevronLeft, ChevronRight, Clock, CreditCard,
-  DollarSign, ExternalLink, Filter, LogOut, MessageSquare, Phone,
-  RefreshCw, Scissors, Sparkles, User, UserX, Users, XCircle,
+  CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, MessageSquare, RefreshCw, UserX, XCircle,
 } from "lucide-react";
-import { billingAlert } from "@/lib/billing";
 import { addCalendarDays, dateInTimeZone, formatDate, formatPrice } from "@/lib/dates";
-import { brandStyle } from "@/lib/theme";
 import type { BookingStatus, PanelBooking, PanelBusiness } from "@/lib/types";
 
 type Props = {
-  initialBusinesses: PanelBusiness[];
+  business: PanelBusiness;
   initialStaff: { id: string; name: string }[];
   initialBookings: PanelBooking[];
   initialDate: string;
-  userEmail: string | null;
-  demo: boolean;
-  /** El usuario es dueño de un negocio que aún no termina el onboarding. */
-  pendingOnboarding?: boolean;
-  /** Muestra el acceso al panel de plataforma (/admin). */
-  platformAdmin?: boolean;
 };
 
-const ROLE_LABEL: Record<PanelBusiness["role"], string> = {
-  owner: "Propietario",
-  admin: "Administrador",
-  staff: "Profesional",
-};
-
-export function PanelExperience({
-  initialBusinesses,
-  initialStaff,
-  initialBookings,
-  initialDate,
-  userEmail,
-  demo,
-  pendingOnboarding = false,
-  platformAdmin = false,
-}: Props) {
-  const [businesses] = useState(initialBusinesses);
-  const [selectedBusinessId, setSelectedBusinessId] = useState(
-    initialBusinesses[0]?.id ?? "",
-  );
-  const currentBusiness = useMemo(
-    () => businesses.find((b) => b.id === selectedBusinessId) ?? businesses[0],
-    [businesses, selectedBusinessId],
-  );
-
-  const billingNotice = billingAlert(currentBusiness?.billing);
-
-  const brandVars = useMemo(
-    () => (currentBusiness ? brandStyle(currentBusiness.brandColor) : {}),
-    [currentBusiness],
-  );
-
+/** Agenda del día. La estructura (menú, selector de negocio, avisos) la pone el layout del panel. */
+export function PanelExperience({ business: currentBusiness, initialStaff, initialBookings, initialDate }: Props) {
   const [date, setDate] = useState(initialDate);
   const [staffList, setStaffList] = useState(initialStaff);
   const [selectedStaffId, setSelectedStaffId] = useState<string>("all");
@@ -164,114 +124,8 @@ export function PanelExperience({
     return { total, confirmed, completed, noShow, cancelled, revenueExpected };
   }, [bookings]);
 
-  if (!currentBusiness) {
-    return (
-      <div className="panel-shell">
-        <div style={{ padding: 40, textAlign: "center" }}>
-          <h2>No tienes acceso a ningún local activo.</h2>
-          <p>Contacta al administrador para que agregue tu usuario a una sucursal.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="panel-shell" style={brandVars}>
-      {demo && (
-        <div className="demo-ribbon" role="status">
-          <span className="demo-dot" />
-          <span>MODO DEMO DEL PANEL · Puedes probar cambios de estado sin base de datos real</span>
-        </div>
-      )}
-
-      {/* Cabecera del Panel */}
-      <header className="panel-header">
-        <div className="panel-nav-left">
-          <Link href="/dashboard" className="site-brand">
-            <span className="brand-symbol">
-              {currentBusiness.category === "barberia" || currentBusiness.category === "peluqueria" ? (
-                <Scissors size={18} strokeWidth={2.3} />
-              ) : (
-                <Sparkles size={18} strokeWidth={2.3} />
-              )}
-            </span>
-            <span>
-              AURA<span className="brand-accent">BOOK</span>
-              <span className="brand-divider">/</span>
-              PANEL
-            </span>
-          </Link>
-
-          {/* Selector de local si tiene más de uno */}
-          {businesses.length > 1 ? (
-            <div className="panel-business-selector">
-              <select
-                value={selectedBusinessId}
-                onChange={(e) => setSelectedBusinessId(e.target.value)}
-              >
-                {businesses.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name} ({ROLE_LABEL[b.role]})
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-secondary)" }}>
-              {currentBusiness.name}
-            </span>
-          )}
-        </div>
-
-        <div className="panel-user-menu">
-          {platformAdmin && (
-            <Link href="/admin" className="header-action-btn">Plataforma</Link>
-          )}
-          {currentBusiness.role !== "staff" && (
-            <Link href={`/dashboard/plan?negocio=${currentBusiness.id}`} className="header-action-btn">
-              <CreditCard size={14} /> Mi plan
-            </Link>
-          )}
-          <Link
-            href={`/reservar/${currentBusiness.slug}`}
-            target="_blank"
-            className="header-action-btn"
-            title="Abrir página pública"
-          >
-            <ExternalLink size={14} /> Ver página pública
-          </Link>
-
-          {userEmail && (
-            <span className="panel-user-email" style={{ fontSize: 12 }}>
-              {userEmail}
-            </span>
-          )}
-
-          {!demo && (
-            <form action="/auth/logout" method="POST">
-              <button type="submit" className="panel-logout-btn" title="Cerrar sesión">
-                <LogOut size={14} />
-              </button>
-            </form>
-          )}
-        </div>
-      </header>
-
-      {/* Contenido Principal */}
-      <main className="panel-main">
-        {billingNotice && (
-          <div className={`panel-notice${billingNotice.tone === "warning" ? " warning" : ""}`} role="status">
-            <span>{billingNotice.message}</span>
-            <Link href={`/dashboard/plan?negocio=${currentBusiness.id}`} className="header-action-btn">Ver mi plan</Link>
-          </div>
-        )}
-        {pendingOnboarding && (
-          <div className="panel-notice">
-            <span>Tienes un negocio con la configuración pendiente.</span>
-            <Link href="/onboarding" className="header-action-btn">Continuar configuración</Link>
-          </div>
-        )}
-
+    <div className="panel-agenda">
         {/* Barra de herramientas: Navegación de fecha y filtros */}
         <div className="panel-toolbar">
           <div className="panel-date-nav">
@@ -489,7 +343,6 @@ export function PanelExperience({
             })}
           </div>
         )}
-      </main>
     </div>
   );
 }

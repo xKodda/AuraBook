@@ -79,3 +79,27 @@ describe("color de marca", () => {
     );
   });
 });
+
+describe("reglas de reserva", () => {
+  test("owner y admin las cambian; se validan los rangos", async () => {
+    const admin = await createUser(db);
+    await addMember(db, IDS.barber, admin, "admin");
+    for (const user of [owner, admin]) {
+      await as(db, "authenticated", user, async (tx) => {
+        await tx.query("select public.update_booking_rules($1, 60, 45, 240)", [IDS.barber]);
+        const { rows } = await tx.query("select min_notice_min, max_days_ahead, cancel_notice_min from public.businesses where id = $1", [IDS.barber]);
+        assert.deepEqual(rows[0], { min_notice_min: 60, max_days_ahead: 45, cancel_notice_min: 240 });
+      });
+    }
+    await assert.rejects(
+      as(db, "authenticated", owner, (tx) => tx.query("select public.update_booking_rules($1, 60, 500, 240)", [IDS.barber])),
+      /INVALID_RULES/,
+    );
+    for (const user of [staffUser, outsider]) {
+      await assert.rejects(
+        as(db, "authenticated", user, (tx) => tx.query("select public.update_booking_rules($1, 60, 30, 120)", [IDS.barber])),
+        /FORBIDDEN/,
+      );
+    }
+  });
+});

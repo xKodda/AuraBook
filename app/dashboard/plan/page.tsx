@@ -1,32 +1,19 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Check, Mail, MessageSquare } from "lucide-react";
-import { BrandMark } from "@/components/brand";
+import { notFound } from "next/navigation";
+import { Check, Mail, MessageSquare } from "lucide-react";
 import { METHOD_LABEL, STATUS_LABEL, daysUntil, formatShortDate } from "@/lib/billing";
 import { getBusinessSubscription } from "@/lib/billing-server";
 import { formatPrice } from "@/lib/dates";
 import { BILLING_CONTACT_EMAIL, BILLING_CONTACT_WHATSAPP } from "@/lib/env";
-import { getPanelSession } from "@/lib/panel";
-import { brandStyle } from "@/lib/theme";
-
-export const dynamic = "force-dynamic";
+import { requireManager } from "@/lib/dashboard";
 
 export const metadata: Metadata = {
   title: "Mi plan | AuraBook",
   robots: { index: false, follow: false },
 };
 
-type Props = { searchParams: Promise<{ negocio?: string }> };
-
-export default async function MyPlanPage({ searchParams }: Props) {
-  const session = await getPanelSession();
-  if (!session) redirect("/login?next=/dashboard/plan");
-  const { negocio } = await searchParams;
-
-  const manageable = session.businesses.filter((b) => b.role === "owner" || b.role === "admin");
-  if (manageable.length === 0) notFound();
-  const business = manageable.find((b) => b.id === negocio) ?? manageable[0];
+export default async function MyPlanPage() {
+  const { business } = await requireManager();
   const sub = await getBusinessSubscription(business.id);
   if (!sub) notFound();
 
@@ -42,31 +29,7 @@ export default async function MyPlanPage({ searchParams }: Props) {
     : "Suscripción cancelada";
 
   return (
-    <div className="panel-shell" style={brandStyle(business.brandColor)}>
-      {session.demo && (
-        <div className="demo-ribbon" role="status">
-          <span className="demo-dot" />
-          <span>MODO DEMO · Plan y pagos de ejemplo</span>
-        </div>
-      )}
-      <header className="panel-header">
-        <div className="panel-nav-left"><BrandMark href="/dashboard" suffix="MI PLAN" /></div>
-        <Link href="/dashboard" className="header-action-btn"><ArrowLeft size={14} /> Volver al panel</Link>
-      </header>
-
-      <main className="panel-main plan-main">
-        {manageable.length > 1 && (
-          <nav className="onb-chips plan-switch" aria-label="Negocio">
-            {manageable.map((b) => (
-              <Link key={b.id} href={`/dashboard/plan?negocio=${b.id}`}
-                className={`onb-chip${b.id === business.id ? " selected" : ""}`}
-                aria-current={b.id === business.id ? "page" : undefined}>
-                {b.name}
-              </Link>
-            ))}
-          </nav>
-        )}
-
+    <main className="plan-main dash-page">
         <section className="adm-card plan-hero">
           <span className={`sub-badge sub-${sub.status}`}>{STATUS_LABEL[sub.status]}</span>
           <h1>{headline}</h1>
@@ -160,7 +123,6 @@ export default async function MyPlanPage({ searchParams }: Props) {
             </div>
           )}
         </section>
-      </main>
-    </div>
+    </main>
   );
 }
