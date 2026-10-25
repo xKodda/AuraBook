@@ -1480,3 +1480,6 @@ a { color: inherit; text-decoration: none; }
   .rev-chart { gap: 6px; }
   .plan-contact > * { flex: 1; }
 }
+
+/* Captcha de Cloudflare Turnstile en el formulario de reserva */
+.turnstile-box { display: flex; justify-content: center; min-height: 65px; margin-bottom: 14px; }

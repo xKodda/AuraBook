@@ -1,16 +1,23 @@
 import "server-only";
-import { DEMO_MODE, IS_PRODUCTION, TURNSTILE_SECRET_KEY } from "./env";
+import { TURNSTILE_SECRET_KEY } from "./env";
 
-export type CaptchaResult = "ok" | "failed" | "not_configured";
+export type CaptchaResult = "ok" | "failed";
+
+let warned = false;
 
 /**
  * Verificación server-side de Cloudflare Turnstile.
- * - Con TURNSTILE_SECRET_KEY: siempre se verifica.
- * - Sin clave: se omite en demo/desarrollo; en producción real se rechaza (fail-closed).
+ * - Con TURNSTILE_SECRET_KEY: el token es obligatorio y se verifica con Cloudflare.
+ * - Sin clave: se omite. Las reservas siguen protegidas por el límite por IP (8 / 10 min)
+ *   y el máximo de reservas activas por teléfono. Recomendado activarlo al abrir a público masivo.
  */
 export async function verifyCaptcha(token: string | undefined, ip: string): Promise<CaptchaResult> {
   if (!TURNSTILE_SECRET_KEY) {
-    return DEMO_MODE || !IS_PRODUCTION ? "ok" : "not_configured";
+    if (!warned && process.env.NODE_ENV === "production") {
+      warned = true;
+      console.warn("Turnstile no configurado: reservas protegidas solo por límites de intentos.");
+    }
+    return "ok";
   }
   if (!token) return "failed";
   try {

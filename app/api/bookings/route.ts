@@ -37,10 +37,6 @@ export async function POST(request: Request) {
 
   // 2) CAPTCHA verificado en servidor.
   const captcha = await verifyCaptcha(captchaToken, ip);
-  if (captcha === "not_configured") {
-    console.error("TURNSTILE_SECRET_KEY no configurada en producción: reservas bloqueadas.");
-    return errorJson("Las reservas online no están disponibles en este momento.", 503);
-  }
   if (captcha === "failed") {
     return errorJson("No pudimos verificar que eres una persona. Intenta nuevamente.", 400, "CAPTCHA_FAILED");
   }

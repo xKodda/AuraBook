@@ -19,4 +19,3 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/,
 export const BILLING_CONTACT_EMAIL = process.env.NEXT_PUBLIC_BILLING_CONTACT_EMAIL ?? "";
 export const BILLING_CONTACT_WHATSAPP = (process.env.NEXT_PUBLIC_BILLING_CONTACT_WHATSAPP ?? "").replace(/\D/g, "");
 
-export const IS_PRODUCTION = process.env.NODE_ENV === "production";

@@ -13,6 +13,10 @@ import {
 } from "@/lib/dates";
 import { CATEGORY_COPY, brandStyle } from "@/lib/theme";
 import type { AvailableSlot, BookingSuccess, Business, StaffMember } from "@/lib/types";
+import { Turnstile } from "./turnstile";
+
+// Se incrusta en el build (NEXT_PUBLIC_*). Sin clave, no se muestra el captcha.
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
 type Props = { business: Business; demo: boolean };
 type AvailabilityState = "idle" | "loading" | "success" | "error";
@@ -44,6 +48,8 @@ export function BookingExperience({ business, demo }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState<BookingSuccess | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
 
   const today = dateInTimeZone(new Date(), business.timezone);
   const maxDate = addCalendarDays(today, business.maxDaysAhead);
@@ -140,10 +146,13 @@ export function BookingExperience({ business, demo }: Props) {
           time: slot,
           name: customerName.trim(),
           phone: customerPhone.trim(),
+          ...(captchaToken ? { captchaToken } : {}),
         }),
       });
       const body: unknown = await response.json();
       if (!response.ok) {
+        // El token de Turnstile ya se consumió: pedir uno nuevo para el siguiente intento.
+        if (TURNSTILE_SITE_KEY) setCaptchaReset((n) => n + 1);
         if (response.status === 409) {
           setSlot("");
           setRetry((n) => n + 1);
@@ -621,10 +630,17 @@ export function BookingExperience({ business, demo }: Props) {
                   </div>
                 )}
 
+                {TURNSTILE_SITE_KEY && (
+                  <Turnstile siteKey={TURNSTILE_SITE_KEY} resetKey={captchaReset} onToken={setCaptchaToken} />
+                )}
+
                 <button
                   className="submit-button"
                   type="submit"
-                  disabled={!slot || !service || submitting || availabilityState !== "success"}
+                  disabled={
+                    !slot || !service || submitting || availabilityState !== "success"
+                    || (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)
+                  }
                 >
                   {submitting ? "Confirmando reserva..." : "Confirmar mi hora"} <ArrowRight size={18} />
                 </button>
