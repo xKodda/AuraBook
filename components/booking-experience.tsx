@@ -3,9 +3,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, ArrowRight, CalendarDays, Check, CheckCircle2, Clock3,
-  ExternalLink, MapPin, Phone, Scissors, ShieldCheck, Sparkles, Sun, Sunset, Moon,
-  UserRound, Users, WifiOff,
+  ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, ExternalLink, MapPin, Phone, ShieldCheck, Users, WifiOff,
 } from "lucide-react";
 import {
   addCalendarDays, dateInTimeZone, dayChipParts, formatDate, formatPrice,
@@ -13,6 +11,7 @@ import {
 } from "@/lib/dates";
 import { CATEGORY_COPY, brandStyle } from "@/lib/theme";
 import type { AvailableSlot, BookingSuccess, Business, StaffMember } from "@/lib/types";
+import { BusinessLogo } from "./business-logo";
 import { Turnstile } from "./turnstile";
 
 // Se incrusta en el build (NEXT_PUBLIC_*). Sin clave, no se muestra el captcha.
@@ -26,10 +25,6 @@ function getMessage(response: unknown, fallback: string): string {
     return response.error;
   }
   return fallback;
-}
-
-function CircleNumber({ children }: { children: React.ReactNode }) {
-  return <span className="step-number">{children}</span>;
 }
 
 export function BookingExperience({ business, demo }: Props) {
@@ -177,141 +172,66 @@ export function BookingExperience({ business, demo }: Props) {
     setRetry((n) => n + 1);
   }
 
+  const slotButtons = (times: string[]) => (
+    <div className="bk-times">
+      {times.map((time) => (
+        <button key={time} type="button" className={`bk-time${slot === time ? " selected" : ""}`}
+          aria-pressed={slot === time} onClick={() => { setSlot(time); setFormError(null); }}>
+          {time}
+        </button>
+      ))}
+    </div>
+  );
+
+  const BusinessCard = (
+    <div className="bk-business">
+      <BusinessLogo name={business.name} url={business.logoUrl} brandColor={business.brandColor} size={56} />
+      <div className="bk-business-text">
+        <span className="bk-kicker">{copy.kicker}</span>
+        <h1>{business.name}</h1>
+        {business.tagline && <p className="bk-tagline">{business.tagline}</p>}
+      </div>
+      <ul className="bk-business-meta">
+        {business.address && <li><MapPin size={14} /> {business.address}</li>}
+        {business.phone && <li><Phone size={14} /> {business.phone}</li>}
+      </ul>
+      {business.description && <p className="bk-description">{business.description}</p>}
+    </div>
+  );
+
   return (
-    <div className="page-shell" style={brandVars}>
+    <div className="bk-shell" style={brandVars}>
       {demo && (
         <div className="demo-ribbon" role="status">
           <span className="demo-dot" />
-          <span>MODO DEMO · Reservas simuladas para demostración del flujo</span>
-          <Link href="/panel" style={{ textDecoration: "underline", marginLeft: 8, fontWeight: 700 }}>
-            Ir al panel de gestión →
+          <span>MODO DEMO · Reservas simuladas</span>
+          <Link href="/dashboard" style={{ textDecoration: "underline", marginLeft: 8, fontWeight: 700 }}>
+            Ir al panel →
           </Link>
         </div>
       )}
 
-      <header className="site-header">
-        <Link href={`/reservar/${business.slug}`} className="site-brand" aria-label="Inicio">
-          <span className="brand-symbol">
-            {business.category === "barberia" || business.category === "peluqueria" ? (
-              <Scissors size={18} strokeWidth={2.3} />
-            ) : (
-              <Sparkles size={18} strokeWidth={2.3} />
-            )}
-          </span>
-          <span>
-            AURA<span className="brand-accent">BOOK</span>
-            <span className="brand-divider">/</span>
-            {business.name.toUpperCase()}
-          </span>
-        </Link>
-        <div className="header-links">
-          <span className="header-note">
-            <ShieldCheck size={16} /> Reserva segura
-          </span>
-          <Link href="/panel" className="header-action-btn">
-            Panel del local
-          </Link>
-        </div>
-      </header>
+      <main className="bk-layout">
+        <aside className="bk-aside">{BusinessCard}</aside>
 
-      <main className="main-layout">
-        {/* Panel lateral con identidad del negocio */}
-        <aside className="business-panel">
-          <div className="business-content">
-            <div className="eyebrow">
-              <span className="eyebrow-line" /> TU PRÓXIMA VISITA
-            </div>
-            <div className="business-monogram" aria-hidden="true">
-              {business.category === "barberia" || business.category === "peluqueria" ? (
-                <Scissors size={40} strokeWidth={1.5} />
-              ) : (
-                <Sparkles size={40} strokeWidth={1.5} />
-              )}
-            </div>
-            <p className="business-kicker">{copy.kicker}</p>
-            <h1>{business.name}</h1>
-            <p className="business-tagline">{business.tagline}</p>
-            <div className="business-details">
-              <div>
-                <MapPin size={18} />
-                <span>{business.address || "Atención en local"}</span>
-              </div>
-              {business.phone && (
-                <div>
-                  <Phone size={18} />
-                  <span>{business.phone}</span>
-                </div>
-              )}
-              <div>
-                <CalendarDays size={18} />
-                <span>Agenda abierta hasta {business.maxDaysAhead} días</span>
-              </div>
-            </div>
-          </div>
-          <div className="business-footer">
-            <span>{copy.footer}</span>
-            <span>AURABOOK</span>
-          </div>
-        </aside>
-
-        {/* Columna interactiva */}
-        <section className="booking-column">
+        <section className="bk-main">
           {confirmed ? (
-            <div className="confirmation-view" aria-live="polite">
-              <span className="success-icon">
-                <CheckCircle2 size={34} />
-              </span>
-              <div className="label-overline">RESERVA {demo ? "SIMULADA" : "CONFIRMADA"}</div>
+            <div className="bk-card bk-confirm" aria-live="polite">
+              <span className="success-icon"><CheckCircle2 size={30} /></span>
               <h2>{demo ? "¡Prueba completada!" : "¡Tu hora está reservada!"}</h2>
-              <p>
-                {demo
-                  ? "El flujo de reserva funcionó con éxito en modo demo. Puedes gestionar la reserva con el enlace generado."
-                  : "Tu reserva quedó registrada en el local. Guarda este ticket o abre el enlace privado para gestionar tu visita."}
+              <p className="bk-muted">
+                Guarda el enlace de tu reserva: desde ahí puedes verla, agregarla a tu calendario o cancelarla.
               </p>
-
-              <div className="ticket">
-                <div className="ticket-header">
-                  <h4>{business.name}</h4>
-                  <span>CÓDIGO: {confirmed.bookingId.slice(0, 8).toUpperCase()}</span>
-                </div>
-                <div className="ticket-body">
-                  <div className="ticket-row">
-                    <span>Servicio</span>
-                    <strong>{service?.name}</strong>
-                  </div>
-                  <div className="ticket-row">
-                    <span>Profesional</span>
-                    <strong>{confirmed.assignedStaffName}</strong>
-                  </div>
-                  <div className="ticket-row">
-                    <span>Fecha</span>
-                    <strong>{formatDate(date)}</strong>
-                  </div>
-                  <div className="ticket-row">
-                    <span>Hora</span>
-                    <strong>{confirmed.time} h</strong>
-                  </div>
-                  <div className="ticket-row">
-                    <span>Duración</span>
-                    <strong>{service?.durationMin} minutos</strong>
-                  </div>
-                  <div className="ticket-row">
-                    <span>Total a pagar en local</span>
-                    <strong>{service && formatPrice(service.priceClp)}</strong>
-                  </div>
-                </div>
-                <div className="ticket-footer">
-                  <span>PAGO DIRECTO EN LOCAL</span>
-                  <span>SIN COBRO ADELANTADO</span>
-                </div>
-              </div>
-
-              <div className="ticket-actions-full">
-                <Link
-                  href={`/reserva/${confirmed.manageToken}`}
-                  className="btn-primary"
-                >
-                  <ExternalLink size={16} /> Ver y gestionar mi reserva
+              <dl className="bk-ticket">
+                <div><dt>Servicio</dt><dd>{service?.name}</dd></div>
+                <div><dt>Profesional</dt><dd>{confirmed.assignedStaffName}</dd></div>
+                <div><dt>Fecha</dt><dd>{formatDate(date)}</dd></div>
+                <div><dt>Hora</dt><dd>{confirmed.time} h · {service?.durationMin} min</dd></div>
+                <div><dt>Total en el local</dt><dd>{service && formatPrice(service.priceClp)}</dd></div>
+              </dl>
+              <div className="bk-confirm-actions">
+                <Link href={`/reserva/${confirmed.manageToken}`} className="btn-primary">
+                  <ExternalLink size={16} /> Ver mi reserva
                 </Link>
                 <button type="button" className="btn-secondary" onClick={reset}>
                   <ArrowLeft size={16} /> Agendar otra hora
@@ -319,344 +239,166 @@ export function BookingExperience({ business, demo }: Props) {
               </div>
             </div>
           ) : (
-            <>
-              <div className="form-heading">
-                <div className="label-overline">RESERVAS ONLINE / {business.name.toUpperCase()}</div>
-                <h2>
-                  {copy.headline[0]}
-                  <br />
-                  <em>{copy.headline[1]}</em>
-                </h2>
-                <p>Elige tu servicio, fecha y hora en menos de un minuto. Sin cuentas ni registro.</p>
+            <form onSubmit={submitBooking} className="bk-form">
+              {/* 1 · Servicio */}
+              <div className="bk-card">
+                <div className="bk-card-head">
+                  <span className="bk-num">1</span>
+                  <h2>{copy.serviceQuestion}</h2>
+                </div>
+                <div className="bk-services" role="radiogroup" aria-label="Servicio">
+                  {business.services.map((item) => (
+                    <button key={item.id} type="button" role="radio" aria-checked={serviceId === item.id}
+                      className={`bk-service${serviceId === item.id ? " selected" : ""}`}
+                      onClick={() => changeService(item.id)}>
+                      <span className="bk-radio" />
+                      <span className="bk-service-body">
+                        <strong>{item.name}</strong>
+                        <small>{item.durationMin} min{item.description ? ` · ${item.description}` : ""}</small>
+                      </span>
+                      <span className="bk-price">{formatPrice(item.priceClp)}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <form onSubmit={submitBooking} className="booking-form">
-                {/* Paso 1: Servicios */}
-                <div className="form-section">
-                  <div className="section-title">
-                    <CircleNumber>01</CircleNumber>
-                    <div>
-                      <h3>{copy.serviceQuestion}</h3>
-                      <p>Selecciona lo que deseas agendar.</p>
-                    </div>
-                  </div>
-                  <div className="service-list">
-                    {business.services.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => changeService(item.id)}
-                        className={`service-card ${serviceId === item.id ? "selected" : ""}`}
-                        aria-pressed={serviceId === item.id}
-                      >
-                        <span className={`selection-mark ${serviceId === item.id ? "active" : ""}`}>
-                          {serviceId === item.id && <Check size={14} />}
-                        </span>
-                        <span className="service-body">
-                          <strong>{item.name}</strong>
-                          {item.description && <span>{item.description}</span>}
-                          <small>
-                            <Clock3 size={13} /> {item.durationMin} min
-                          </small>
-                        </span>
-                        <span className="service-price">{formatPrice(item.priceClp)}</span>
-                      </button>
-                    ))}
-                  </div>
+              {/* 2 · Profesional */}
+              <div className="bk-card">
+                <div className="bk-card-head">
+                  <span className="bk-num">2</span>
+                  <h2>{copy.staffQuestion}</h2>
                 </div>
-
-                {/* Paso 2: Profesional */}
-                <div className="form-section">
-                  <div className="section-title">
-                    <CircleNumber>02</CircleNumber>
-                    <div>
-                      <h3>{copy.staffQuestion}</h3>
-                      <p>¿Prefieres atenderte con alguien en particular?</p>
-                    </div>
-                  </div>
-                  <div className="staff-grid">
-                    <button
-                      className={`staff-card ${staffId === "any" ? "selected" : ""}`}
-                      type="button"
-                      onClick={() => {
-                        setStaffId("any");
-                        setFormError(null);
-                      }}
-                      aria-pressed={staffId === "any"}
-                    >
-                      <span className="staff-avatar">
-                        <Users size={20} />
+                <div className="bk-pills" role="radiogroup" aria-label="Profesional">
+                  <button type="button" role="radio" aria-checked={staffId === "any"}
+                    className={`bk-pill${staffId === "any" ? " selected" : ""}`}
+                    onClick={() => { setStaffId("any"); setFormError(null); }}>
+                    <span className="bk-avatar"><Users size={13} /></span> Cualquiera
+                  </button>
+                  {eligibleStaff.map((member) => (
+                    <button key={member.id} type="button" role="radio" aria-checked={staffId === member.id}
+                      className={`bk-pill${staffId === member.id ? " selected" : ""}`}
+                      onClick={() => { setStaffId(member.id); setFormError(null); }}>
+                      <span className="bk-avatar">{member.name.charAt(0).toUpperCase()}</span>
+                      <span className="bk-pill-text">
+                        {member.name}
+                        {member.roleTitle && <small>{member.roleTitle}</small>}
                       </span>
-                      <strong>Sin preferencia</strong>
-                      <small>Primer disponible</small>
                     </button>
-                    {eligibleStaff.map((member) => (
-                      <button
-                        key={member.id}
-                        className={`staff-card ${staffId === member.id ? "selected" : ""}`}
-                        type="button"
-                        onClick={() => {
-                          setStaffId(member.id);
-                          setFormError(null);
-                        }}
-                        aria-pressed={staffId === member.id}
-                      >
-                        <span className="staff-avatar">
-                          <UserRound size={20} />
-                        </span>
-                        <strong>{member.name}</strong>
-                        <small>{member.roleTitle || copy.staffSingular}</small>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3 · Día y hora */}
+              <div className="bk-card">
+                <div className="bk-card-head">
+                  <span className="bk-num">3</span>
+                  <h2>Día y hora</h2>
+                  <label className="bk-date-more" title="Elegir otra fecha">
+                    <CalendarDays size={15} />
+                    <span>Otra fecha</span>
+                    <input type="date" value={date} min={today} max={maxDate}
+                      onChange={(e) => { if (e.target.value) { setDate(e.target.value); setFormError(null); } }} />
+                  </label>
+                </div>
+                <div className="bk-days" role="radiogroup" aria-label="Fecha">
+                  {[...new Set([...dayChips, date])].sort().map((d) => {
+                    const { weekday, day, month } = dayChipParts(d);
+                    return (
+                      <button key={d} type="button" role="radio" aria-checked={date === d}
+                        className={`bk-day${date === d ? " selected" : ""}`}
+                        onClick={() => { setDate(d); setFormError(null); }}>
+                        <span>{d === today ? "hoy" : weekday}</span>
+                        <strong>{day}</strong>
+                        <span>{month}</span>
                       </button>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
 
-                {/* Paso 3: Día y Horario */}
-                <div className="form-section">
-                  <div className="section-title">
-                    <CircleNumber>03</CircleNumber>
-                    <div>
-                      <h3>Selecciona día y hora</h3>
-                      <p>Disponibilidad en tiempo real ({business.timezone}).</p>
-                    </div>
-                  </div>
-
-                  {/* Selector horizontal de días tipo chips */}
-                  <label className="field-label">Elige la fecha</label>
-                  <div className="day-chips-container" role="radiogroup" aria-label="Fecha">
-                    {dayChips.map((d) => {
-                      const { weekday, day, month } = dayChipParts(d);
-                      const isSelected = date === d;
-                      return (
-                        <button
-                          key={d}
-                          type="button"
-                          className={`day-chip ${isSelected ? "selected" : ""}`}
-                          onClick={() => {
-                            setDate(d);
-                            setFormError(null);
-                          }}
-                          role="radio"
-                          aria-checked={isSelected}
-                        >
-                          <span className="day-chip-weekday">{weekday}</span>
-                          <span className="day-chip-day">{day}</span>
-                          <span className="day-chip-month">{month}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Acceso a selector nativo si desea una fecha más lejana */}
-                  <div className="date-fallback-wrap">
-                    <span>O elige otra fecha:</span>
-                    <input
-                      className="date-picker-inline"
-                      type="date"
-                      value={date}
-                      min={today}
-                      max={maxDate}
-                      onChange={(e) => {
-                        setDate(e.target.value);
-                        setFormError(null);
-                      }}
-                    />
-                  </div>
-
-                  <div className="time-heading">
-                    <span>Horarios disponibles ({formatDate(date)})</span>
-                    <span>
-                      {availabilityState === "success"
-                        ? `${uniqueSlots.length} opciones`
-                        : ""}
-                    </span>
-                  </div>
-
+                <div className="bk-slots" aria-live="polite">
                   {availabilityState === "loading" && (
-                    <div className="loading-slots">
-                      <span /><span /><span /><span /><span /><span />
-                    </div>
+                    <div className="loading-slots"><span /><span /><span /><span /><span /><span /></div>
                   )}
-
                   {availabilityState === "error" && (
-                    <div className="empty-state">
-                      <WifiOff size={22} />
-                      <p>No pudimos cargar los horarios disponibles.</p>
-                      <button type="button" onClick={() => setRetry((n) => n + 1)}>
-                        Volver a intentar
-                      </button>
+                    <div className="bk-empty">
+                      <WifiOff size={18} />
+                      <span>No pudimos cargar los horarios.</span>
+                      <button type="button" className="onb-link-btn" onClick={() => setRetry((n) => n + 1)}>Reintentar</button>
                     </div>
                   )}
-
                   {availabilityState === "success" && uniqueSlots.length === 0 && (
-                    <div className="empty-state">
-                      <CalendarDays size={22} />
-                      <p>Sin horarios disponibles para este día.</p>
-                      <span>Prueba seleccionando otro profesional o una fecha diferente.</span>
+                    <div className="bk-empty">
+                      <CalendarDays size={18} />
+                      <span>No quedan horas el {formatDate(date).split(",")[0]}.</span>
+                      {date < maxDate && (
+                        <button type="button" className="onb-link-btn" onClick={() => setDate(addCalendarDays(date, 1))}>
+                          Ver el día siguiente
+                        </button>
+                      )}
                     </div>
                   )}
-
                   {availabilityState === "success" && uniqueSlots.length > 0 && (
                     <>
-                      {slotGroups.morning.length > 0 && (
-                        <div className="time-group">
-                          <div className="time-group-label">
-                            <Sun size={13} /> Mañana
-                          </div>
-                          <div className="time-grid">
-                            {slotGroups.morning.map((time) => (
-                              <button
-                                key={time}
-                                type="button"
-                                className={`time-button ${slot === time ? "selected" : ""}`}
-                                onClick={() => {
-                                  setSlot(time);
-                                  setFormError(null);
-                                }}
-                                aria-pressed={slot === time}
-                              >
-                                {time}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {slotGroups.afternoon.length > 0 && (
-                        <div className="time-group">
-                          <div className="time-group-label">
-                            <Sunset size={13} /> Tarde
-                          </div>
-                          <div className="time-grid">
-                            {slotGroups.afternoon.map((time) => (
-                              <button
-                                key={time}
-                                type="button"
-                                className={`time-button ${slot === time ? "selected" : ""}`}
-                                onClick={() => {
-                                  setSlot(time);
-                                  setFormError(null);
-                                }}
-                                aria-pressed={slot === time}
-                              >
-                                {time}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {slotGroups.evening.length > 0 && (
-                        <div className="time-group">
-                          <div className="time-group-label">
-                            <Moon size={13} /> Noche
-                          </div>
-                          <div className="time-grid">
-                            {slotGroups.evening.map((time) => (
-                              <button
-                                key={time}
-                                type="button"
-                                className={`time-button ${slot === time ? "selected" : ""}`}
-                                onClick={() => {
-                                  setSlot(time);
-                                  setFormError(null);
-                                }}
-                                aria-pressed={slot === time}
-                              >
-                                {time}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                      {slotGroups.morning.length > 0 && <><span className="bk-slot-label">Mañana</span>{slotButtons(slotGroups.morning)}</>}
+                      {slotGroups.afternoon.length > 0 && <><span className="bk-slot-label">Tarde</span>{slotButtons(slotGroups.afternoon)}</>}
+                      {slotGroups.evening.length > 0 && <><span className="bk-slot-label">Noche</span>{slotButtons(slotGroups.evening)}</>}
                     </>
                   )}
                 </div>
+              </div>
 
-                {/* Paso 4: Datos del cliente */}
-                <div className="form-section">
-                  <div className="section-title">
-                    <CircleNumber>04</CircleNumber>
-                    <div>
-                      <h3>Tus datos de contacto</h3>
-                      <p>Para confirmar tu hora y enviarte los detalles.</p>
-                    </div>
-                  </div>
-                  <div className="input-grid">
-                    <label>
-                      <span className="field-label">Nombre y apellido</span>
-                      <input
-                        value={customerName}
-                        onChange={(e) => setCustomerName(e.target.value)}
-                        autoComplete="name"
-                        placeholder="Ej. Camila Morales"
-                        required
-                        minLength={2}
-                        maxLength={80}
-                      />
-                    </label>
-                    <label>
-                      <span className="field-label">Teléfono WhatsApp</span>
-                      <input
-                        value={customerPhone}
-                        onChange={(e) => setCustomerPhone(e.target.value)}
-                        autoComplete="tel"
-                        type="tel"
-                        placeholder="Ej. +56 9 1234 5678"
-                        required
-                        minLength={8}
-                        maxLength={20}
-                      />
-                    </label>
-                  </div>
+              {/* 4 · Datos */}
+              <div className="bk-card">
+                <div className="bk-card-head">
+                  <span className="bk-num">4</span>
+                  <h2>Tus datos</h2>
                 </div>
+                <div className="bk-inputs">
+                  <label>
+                    <span className="field-label">Nombre y apellido</span>
+                    <input className="text-input" value={customerName} onChange={(e) => setCustomerName(e.target.value)}
+                      autoComplete="name" placeholder="Camila Morales" required minLength={2} maxLength={80} />
+                  </label>
+                  <label>
+                    <span className="field-label">WhatsApp</span>
+                    <input className="text-input" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)}
+                      autoComplete="tel" type="tel" inputMode="tel" placeholder="+56 9 1234 5678" required minLength={8} maxLength={20} />
+                  </label>
+                </div>
+              </div>
 
-                {/* Resumen */}
-                <div className="summary-box">
-                  <div>
-                    <span>Tu cita</span>
-                    <strong>{service?.name ?? "Selecciona un servicio"}</strong>
+              {/* Resumen y confirmación */}
+              <div className="bk-card bk-summary">
+                <div className="bk-summary-row">
+                  <div className="bk-summary-text">
+                    <strong>{service?.name ?? "Elige un servicio"}</strong>
                     <small>
-                      {chosenStaff?.name ?? "Primer profesional disponible"}
-                      {slot ? ` · ${slot} h (${formatDate(date)})` : " · Sin horario seleccionado"}
+                      {chosenStaff?.name ?? "Cualquier profesional"} · {slot ? `${formatDate(date).split(",")[0]} ${dayChipParts(date).day}, ${slot} h` : "elige una hora"}
                     </small>
                   </div>
-                  <strong>{service ? formatPrice(service.priceClp) : "—"}</strong>
+                  <strong className="bk-summary-price">{service ? formatPrice(service.priceClp) : "—"}</strong>
                 </div>
 
-                {formError && (
-                  <div role="alert" className="form-error">
-                    {formError}
-                  </div>
-                )}
+                {formError && <div role="alert" className="form-error">{formError}</div>}
 
                 {TURNSTILE_SITE_KEY && (
                   <Turnstile siteKey={TURNSTILE_SITE_KEY} resetKey={captchaReset} onToken={setCaptchaToken} />
                 )}
 
-                <button
-                  className="submit-button"
-                  type="submit"
-                  disabled={
-                    !slot || !service || submitting || availabilityState !== "success"
-                    || (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)
-                  }
-                >
-                  {submitting ? "Confirmando reserva..." : "Confirmar mi hora"} <ArrowRight size={18} />
+                <button className="submit-button" type="submit"
+                  disabled={!slot || !service || submitting || availabilityState !== "success"
+                    || (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)}>
+                  {submitting ? "Confirmando…" : slot ? `Confirmar ${slot} h` : "Confirmar mi hora"} <ArrowRight size={18} />
                 </button>
-
-                <p className="privacy-note">
-                  <ShieldCheck size={14} /> Sin cobros online. Pagas directamente al terminar tu servicio en el local.
-                </p>
-              </form>
-            </>
+                <p className="privacy-note"><ShieldCheck size={13} /> Sin cuenta ni pagos online. Pagas en el local.</p>
+              </div>
+            </form>
           )}
         </section>
       </main>
 
-      <footer className="site-footer">
-        <span>© {new Date().getFullYear()} AuraBook · Plataforma de gestión de reservas.</span>
-        <span>Agenda rápida para negocios de estética y belleza.</span>
+      <footer className="bk-footer">
+        Reservas con <Link href="/">AURA<b>BOOK</b></Link>
       </footer>
     </div>
   );

@@ -8,7 +8,7 @@ import { currentUser } from "@/lib/auth";
 import { DEMO_MODE } from "@/lib/env";
 import { rpcErrorMessage } from "@/lib/errors";
 import { getOnboardingState } from "@/lib/onboarding";
-import { sessionDb } from "@/lib/supabase";
+import { privilegedDb, sessionDb } from "@/lib/supabase";
 import type { OnboardingState } from "@/lib/types";
 
 export type OnboardingResult = { ok: true; state: OnboardingState } | { ok: false; error: string };
@@ -156,4 +156,81 @@ export async function checkSlugAction(slug: string): Promise<boolean | null> {
   const db = await sessionDb();
   const { data, error } = await db.rpc("slug_available", { p_slug: slug });
   return error ? null : data === true;
+}
+
+// ─── Marca: logo y color ───
+
+const LOGO_BUCKET = "business-logos";
+const MAX_LOGO_BYTES = 512 * 1024;
+
+/** Tipo real según la firma del archivo (no se confía en el nombre ni en el tipo declarado). */
+function sniffImage(bytes: Uint8Array): { ext: "png" | "jpg" | "webp"; mime: string } | null {
+  const at = (i: number, ...sig: number[]) => sig.every((b, k) => bytes[i + k] === b);
+  if (at(0, 0x89, 0x50, 0x4e, 0x47)) return { ext: "png", mime: "image/png" };
+  if (at(0, 0xff, 0xd8, 0xff)) return { ext: "jpg", mime: "image/jpeg" };
+  if (at(0, 0x52, 0x49, 0x46, 0x46) && at(8, 0x57, 0x45, 0x42, 0x50)) return { ext: "webp", mime: "image/webp" };
+  return null;
+}
+
+/** Ruta interna del bucket a partir de la URL pública guardada (para borrar el logo anterior). */
+function logoPath(url: string | null | undefined, businessId: string): string | null {
+  const marker = `/storage/v1/object/public/${LOGO_BUCKET}/`;
+  const i = url?.indexOf(marker) ?? -1;
+  if (!url || i < 0) return null;
+  const path = url.slice(i + marker.length);
+  return path.startsWith(`${businessId}/`) ? path : null;
+}
+
+export async function uploadLogoAction(businessId: string, formData: FormData): Promise<OnboardingResult> {
+  if (DEMO_MODE) return DEMO;
+  if (!id.safeParse(businessId).success) return INVALID;
+  const file = formData.get("logo");
+  if (!(file instanceof File) || file.size === 0) return INVALID;
+  if (file.size > MAX_LOGO_BYTES) return { ok: false, error: "El logo debe pesar menos de 512 KB." };
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const kind = sniffImage(bytes);
+  if (!kind) return { ok: false, error: "Sube una imagen PNG, JPG o WebP." };
+
+  const user = await currentUser();
+  if (!user) return SESSION_EXPIRED;
+  const db = await sessionDb();
+  // Verifica el rol antes de usar la clave secreta para subir el archivo.
+  const { data: allowed, error: roleError } = await db.rpc("has_business_role", {
+    p_business_id: businessId, p_roles: ["owner", "admin"],
+  });
+  if (roleError || allowed !== true) return { ok: false, error: rpcErrorMessage("FORBIDDEN") };
+
+  const { data: current } = await db.from("businesses").select("logo_url").eq("id", businessId).maybeSingle();
+  const storage = privilegedDb().storage.from(LOGO_BUCKET);
+  const path = `${businessId}/logo-${Date.now()}.${kind.ext}`;
+  const { error: uploadError } = await storage.upload(path, bytes, { contentType: kind.mime, upsert: false });
+  if (uploadError) {
+    console.error("logo upload:", uploadError.message);
+    return { ok: false, error: "No pudimos subir el logo. Intenta nuevamente." };
+  }
+  const publicUrl = storage.getPublicUrl(path).data.publicUrl;
+  const result = await mutate(businessId, (s) => s.rpc("set_business_logo", { p_business_id: businessId, p_logo_url: publicUrl }));
+  if (!result.ok) {
+    await storage.remove([path]);
+    return result;
+  }
+  const previous = logoPath((current as { logo_url: string | null } | null)?.logo_url, businessId);
+  if (previous && previous !== path) await storage.remove([previous]);
+  return result;
+}
+
+export async function removeLogoAction(businessId: string): Promise<OnboardingResult> {
+  if (DEMO_MODE) return DEMO;
+  if (!id.safeParse(businessId).success) return INVALID;
+  const db = await sessionDb();
+  const { data: current } = await db.from("businesses").select("logo_url").eq("id", businessId).maybeSingle();
+  const result = await mutate(businessId, (s) => s.rpc("set_business_logo", { p_business_id: businessId, p_logo_url: null }));
+  const previous = logoPath((current as { logo_url: string | null } | null)?.logo_url, businessId);
+  if (result.ok && previous) await privilegedDb().storage.from(LOGO_BUCKET).remove([previous]);
+  return result;
+}
+
+export async function setBrandColorAction(businessId: string, color: string): Promise<OnboardingResult> {
+  if (!id.safeParse(businessId).success || !/^#[0-9a-f]{6}$/i.test(color)) return INVALID;
+  return mutate(businessId, (db) => db.rpc("set_business_brand_color", { p_business_id: businessId, p_brand_color: color }));
 }

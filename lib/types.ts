@@ -28,6 +28,8 @@ export type Business = {
   timezone: string;
   brandColor: string;
   logoUrl: string | null;
+  /** Descripción pública del negocio (opcional en datos demo). */
+  description?: string;
   maxDaysAhead: number;
   cancelNoticeMin: number;
   services: Service[];
@@ -135,6 +137,8 @@ export type OnboardingBusiness = {
   description: string;
   address: string;
   phone: string;
+  brandColor: string;
+  logoUrl: string | null;
   published: boolean;
 };
 

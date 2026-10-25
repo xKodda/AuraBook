@@ -8,10 +8,13 @@ import {
 } from "lucide-react";
 import {
   archiveServiceAction, archiveStaffAction, checkSlugAction, createBusinessAction, publishBusinessAction,
-  saveScheduleAction, saveServiceAction, saveStaffAction, updateBusinessAction, type OnboardingResult,
+  removeLogoAction, saveScheduleAction, saveServiceAction, saveStaffAction, setBrandColorAction,
+  updateBusinessAction, uploadLogoAction, type OnboardingResult,
 } from "@/app/onboarding/actions";
 import { BrandMark } from "@/components/brand";
+import { LogoPicker } from "@/components/logo-picker";
 import { formatPrice } from "@/lib/dates";
+import { BRAND_COLORS, ROLE_TITLES, SERVICE_PRESETS, TAGLINES } from "@/lib/presets";
 import { isValidSlug, slugify } from "@/lib/slug";
 import { CATEGORY_COPY, CATEGORY_LABEL } from "@/lib/theme";
 import type {
@@ -182,6 +185,47 @@ function ErrorBox({ error }: { error: string | null }) {
   return error ? <div className="form-error" role="alert">{error}</div> : null;
 }
 
+/**
+ * Elegir entre opciones sugeridas o escribir otra. `value` vacío = nada elegido.
+ * Si el valor guardado no está entre las opciones, se muestra como «Otro».
+ */
+function ChoiceField({ label, options, value, onChange, optional, placeholder, maxLength, onPick }: {
+  label: string; options: string[]; value: string; onChange: (v: string) => void;
+  optional?: boolean; placeholder: string; maxLength: number; onPick?: (v: string) => void;
+}) {
+  const [custom, setCustom] = useState(() => value !== "" && !options.includes(value));
+  const isCustom = custom || (value !== "" && !options.includes(value));
+  return (
+    <fieldset className="onb-field">
+      <legend className="field-label">
+        {label} {optional && <em className="onb-optional">opcional</em>}
+      </legend>
+      <div className="onb-chips">
+        {options.map((o) => (
+          <button key={o} type="button" className={`onb-chip${!isCustom && value === o ? " selected" : ""}`}
+            aria-pressed={!isCustom && value === o}
+            onClick={() => {
+              setCustom(false);
+              const next = optional && value === o ? "" : o;
+              onChange(next);
+              if (next) onPick?.(next);
+            }}>
+            {o}
+          </button>
+        ))}
+        <button type="button" className={`onb-chip${isCustom ? " selected" : ""}`} aria-pressed={isCustom}
+          onClick={() => { setCustom(true); if (options.includes(value)) onChange(""); }}>
+          Otro…
+        </button>
+      </div>
+      {isCustom && (
+        <input className="text-input" value={value} onChange={(e) => onChange(e.target.value)} autoFocus
+          maxLength={maxLength} placeholder={placeholder} aria-label={label} />
+      )}
+    </fieldset>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────
 // 1. Negocio
 // ─────────────────────────────────────────────────────────────
@@ -194,6 +238,9 @@ function BusinessStep({ state, run, pending, error, goTo, origin }: StepProps & 
   const [description, setDescription] = useState(b?.description ?? "");
   const [address, setAddress] = useState(b?.address ?? "");
   const [phone, setPhone] = useState(b?.phone ?? "");
+  const [brandColor, setBrandColor] = useState((b?.brandColor ?? BRAND_COLORS[0].hex).toUpperCase());
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [removeLogo, setRemoveLogo] = useState(false);
   const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
 
   const slug = b ? b.slug : (slugInput ?? slugify(name));
@@ -215,10 +262,28 @@ function BusinessStep({ state, run, pending, error, goTo, origin }: StepProps & 
   function submit(e: FormEvent) {
     e.preventDefault();
     const profile = { name, category, tagline, description, address, phone };
-    run(
-      () => (b ? updateBusinessAction(b.id, profile) : createBusinessAction({ ...profile, slug })),
-      () => goTo(1),
-    );
+    run(async () => {
+      // Datos → color → logo, en orden: cada paso necesita el negocio ya creado.
+      let result = b ? await updateBusinessAction(b.id, profile) : await createBusinessAction({ ...profile, slug });
+      const id = result.ok ? result.state.business?.id : undefined;
+      if (!result.ok || !id) return result;
+      if (brandColor !== result.state.business?.brandColor.toUpperCase()) {
+        result = await setBrandColorAction(id, brandColor);
+        if (!result.ok) return result;
+      }
+      if (logoFile) {
+        const form = new FormData();
+        form.append("logo", logoFile);
+        result = await uploadLogoAction(id, form);
+      } else if (removeLogo && result.state.business?.logoUrl) {
+        result = await removeLogoAction(id);
+      }
+      return result;
+    }, () => {
+      setLogoFile(null);
+      setRemoveLogo(false);
+      goTo(1);
+    });
   }
 
   const host = origin.replace(/^https?:\/\//, "") || "aurabook.cl";
@@ -266,11 +331,33 @@ function BusinessStep({ state, run, pending, error, goTo, origin }: StepProps & 
           </small>
         </label>
 
-        <label className="onb-field">
-          <span className="field-label">Frase corta <em className="onb-optional">opcional</em></span>
-          <input className="text-input" value={tagline} onChange={(e) => setTagline(e.target.value)}
-            maxLength={160} placeholder={CATEGORY_COPY[category].headline.join(" ")} />
-        </label>
+        <ChoiceField key={`tagline-${category}`} label="Frase corta" optional options={TAGLINES[category]}
+          value={tagline} onChange={setTagline} maxLength={160} placeholder="Escribe tu propia frase" />
+
+        <div className="onb-field">
+          <span className="field-label">Tu marca</span>
+          <div className="onb-brand">
+            <LogoPicker
+              name={name || "Tu negocio"}
+              brandColor={brandColor}
+              currentUrl={removeLogo ? null : (b?.logoUrl ?? null)}
+              file={logoFile}
+              onFile={(f) => { setLogoFile(f); setRemoveLogo(false); }}
+              onRemove={() => { setLogoFile(null); setRemoveLogo(true); }}
+            />
+            <div className="onb-swatches" role="radiogroup" aria-label="Color de marca">
+              {BRAND_COLORS.map((c) => (
+                <button key={c.hex} type="button" role="radio" aria-checked={brandColor === c.hex}
+                  className={`onb-swatch${brandColor === c.hex ? " selected" : ""}`}
+                  style={{ background: c.hex }} title={c.name} aria-label={c.name}
+                  onClick={() => setBrandColor(c.hex)}>
+                  {brandColor === c.hex && <Check size={14} />}
+                </button>
+              ))}
+            </div>
+          </div>
+          <small className="field-hint">Tu logo y color se ven en tu página de reservas. PNG, JPG o WebP.</small>
+        </div>
 
         <label className="onb-field">
           <span className="field-label">Descripción <em className="onb-optional">opcional</em></span>
@@ -331,11 +418,20 @@ function TeamStep({ state, run, pending, error, goTo }: StepProps) {
     setLinkToMe(s.linkedToMe);
   }
 
+  const save = () => saveStaffAction(business.id, {
+    id: editing?.id ?? null, name, roleTitle, linkToMe: Boolean(canLinkMe && linkToMe),
+  });
+  const hasDraft = name.trim().length >= 2;
+
   function submit(e: FormEvent) {
     e.preventDefault();
-    run(() => saveStaffAction(business.id, {
-      id: editing?.id ?? null, name, roleTitle, linkToMe: Boolean(canLinkMe && linkToMe),
-    }), reset);
+    run(save, reset);
+  }
+
+  // Si quedó un nombre escrito sin agregar, se guarda antes de avanzar (no se descarta en silencio).
+  function next() {
+    if (hasDraft) run(save, () => { reset(); goTo(2); });
+    else goTo(2);
   }
 
   function remove(s: OnboardingStaff) {
@@ -374,18 +470,13 @@ function TeamStep({ state, run, pending, error, goTo }: StepProps) {
 
       <form onSubmit={submit} className="onb-subform">
         <h3>{editing ? `Editar a ${editing.name}` : state.staff.length ? "Agregar otra persona" : "Agrega a la primera persona"}</h3>
-        <div className="onb-grid-2">
-          <label className="onb-field">
-            <span className="field-label">Nombre</span>
-            <input className="text-input" value={name} onChange={(e) => setName(e.target.value)}
-              required minLength={2} maxLength={120} placeholder="Ej: Camila" />
-          </label>
-          <label className="onb-field">
-            <span className="field-label">Cargo <em className="onb-optional">opcional</em></span>
-            <input className="text-input" value={roleTitle} onChange={(e) => setRoleTitle(e.target.value)}
-              maxLength={60} placeholder={copy.staffSingular} />
-          </label>
-        </div>
+        <label className="onb-field">
+          <span className="field-label">Nombre</span>
+          <input className="text-input" value={name} onChange={(e) => setName(e.target.value)}
+            required minLength={2} maxLength={120} placeholder="Ej: Camila" />
+        </label>
+        <ChoiceField key={editing?.id ?? "new"} label="Cargo" optional options={ROLE_TITLES[business.category]}
+          value={roleTitle} onChange={setRoleTitle} maxLength={60} placeholder={copy.staffSingular} />
         {canLinkMe && (
           <label className="onb-check">
             <input type="checkbox" checked={linkToMe} onChange={(e) => setLinkToMe(e.target.checked)} />
@@ -402,8 +493,8 @@ function TeamStep({ state, run, pending, error, goTo }: StepProps) {
 
       <ErrorBox error={error} />
       <StepFooter onBack={() => goTo(0)}>
-        <button type="button" className="btn-primary" disabled={pending || state.staff.length === 0} onClick={() => goTo(2)}>
-          Continuar <ArrowRight size={16} />
+        <button type="button" className="btn-primary" disabled={pending || (state.staff.length === 0 && !hasDraft)} onClick={next}>
+          {hasDraft ? `Agregar a ${name.trim()} y continuar` : "Continuar"} <ArrowRight size={16} />
         </button>
       </StepFooter>
     </div>
@@ -631,12 +722,14 @@ function ServicesStep({ state, run, pending, error, goTo }: StepProps) {
     setStaffIds((current) => (current.includes(id) ? current.filter((x) => x !== id) : [...current, id]));
   }
 
+  const save = () => saveServiceAction(business.id, {
+    id: editing?.id ?? null, name, description, priceClp, durationMin: duration,
+    staffIds: state.staff.length === 1 ? allStaffIds : staffIds,
+  });
+
   function submit(e: FormEvent) {
     e.preventDefault();
-    run(() => saveServiceAction(business.id, {
-      id: editing?.id ?? null, name, description, priceClp, durationMin: duration,
-      staffIds: state.staff.length === 1 ? allStaffIds : staffIds,
-    }), (next) => {
+    run(save, (next) => {
       reset();
       setStaffIds(next.staff.map((s) => s.id));
     });
@@ -649,6 +742,17 @@ function ServicesStep({ state, run, pending, error, goTo }: StepProps) {
 
   const canSubmit = name.trim().length >= 2 && Number.isFinite(priceClp)
     && (state.staff.length === 1 || staffIds.length > 0);
+  // Algo escrito sin agregar: «Continuar» lo guarda (si está completo) o avisa (si está a medias).
+  const hasDraft = !editing && (name.trim() !== "" || price !== "");
+
+  function next() {
+    if (!hasDraft) return goTo(4);
+    if (canSubmit) run(save, () => { reset(); goTo(4); });
+    else window.alert("Completa el servicio que estás agregando (nombre y precio) o bórralo antes de continuar.");
+  }
+
+  const presets = SERVICE_PRESETS[business.category]
+    .filter((p) => !state.services.some((s) => s.name === p.name && s.id !== editing?.id));
 
   return (
     <div>
@@ -683,11 +787,10 @@ function ServicesStep({ state, run, pending, error, goTo }: StepProps) {
 
       <form onSubmit={submit} className="onb-subform">
         <h3>{editing ? `Editar «${editing.name}»` : state.services.length ? "Agregar otro servicio" : "Agrega tu primer servicio"}</h3>
-        <label className="onb-field">
-          <span className="field-label">Nombre del servicio</span>
-          <input className="text-input" value={name} onChange={(e) => setName(e.target.value)}
-            required minLength={2} maxLength={120} placeholder="Ej: Corte de pelo" />
-        </label>
+        <ChoiceField key={editing?.id ?? `new-${state.services.length}`} label="Servicio"
+          options={presets.map((p) => p.name)} value={name} onChange={setName}
+          onPick={(v) => { const p = presets.find((x) => x.name === v); if (p && !editing) setDuration(p.durationMin); }}
+          maxLength={120} placeholder="Nombre del servicio" />
         <div className="onb-grid-2">
           <label className="onb-field">
             <span className="field-label">Duración</span>
@@ -730,8 +833,8 @@ function ServicesStep({ state, run, pending, error, goTo }: StepProps) {
 
       <ErrorBox error={error} />
       <StepFooter onBack={() => goTo(2)}>
-        <button type="button" className="btn-primary" disabled={pending || state.services.length === 0} onClick={() => goTo(4)}>
-          Continuar <ArrowRight size={16} />
+        <button type="button" className="btn-primary" disabled={pending || (state.services.length === 0 && !canSubmit)} onClick={next}>
+          {hasDraft && canSubmit ? "Agregar y continuar" : "Continuar"} <ArrowRight size={16} />
         </button>
       </StepFooter>
     </div>

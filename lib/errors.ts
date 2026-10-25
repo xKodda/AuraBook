@@ -10,6 +10,8 @@ const MESSAGES: Record<string, string> = {
   SLUG_ALREADY_EXISTS: "Ese enlace ya está en uso. Prueba con otro.",
   INVALID_CATEGORY: "Elige el rubro de tu negocio.",
   INVALID_TIMEZONE: "Zona horaria no válida.",
+  INVALID_LOGO: "El logo no es válido. Sube una imagen PNG, JPG o WebP.",
+  INVALID_COLOR: "Elige un color de la paleta.",
   INVALID_PROFILE: "Algún dato del negocio es demasiado largo.",
   BUSINESS_LIMIT_REACHED: "Alcanzaste el máximo de 3 negocios por cuenta. Escríbenos si necesitas más.",
   INVALID_ROLE_TITLE: "El cargo puede tener hasta 60 caracteres.",

@@ -45,7 +45,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
   const db = await sessionDb();
   const { data: b, error } = await db
     .from("businesses")
-    .select("id,slug,name,category,tagline,description,address,phone,is_active")
+    .select("id,slug,name,category,tagline,description,address,phone,brand_color,logo_url,is_active")
     .eq("id", businessId)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -87,6 +87,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
   const row = b as {
     id: string; slug: string; name: string; category: BusinessCategory; tagline: string | null;
     description: string | null; address: string | null; phone: string | null; is_active: boolean;
+    brand_color: string; logo_url: string | null;
   };
   return {
     business: {
@@ -98,6 +99,8 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
       description: row.description ?? "",
       address: row.address ?? "",
       phone: row.phone ?? "",
+      brandColor: row.brand_color,
+      logoUrl: row.logo_url,
       published: row.is_active,
     },
     staff: ((staffRes.data ?? []) as { id: string; name: string; role_title: string | null }[]).map((s) => ({

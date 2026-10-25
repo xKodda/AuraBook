@@ -10,6 +10,7 @@ type DbBusiness = {
   name: string;
   category: BusinessCategory;
   tagline: string | null;
+  description: string | null;
   address: string | null;
   phone: string | null;
   timezone: string;
@@ -37,7 +38,7 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
   const db = publicDb();
   const { data: row, error } = await db
     .from("businesses")
-    .select("id,slug,name,category,tagline,address,phone,timezone,brand_color,logo_url,max_days_ahead,cancel_notice_min")
+    .select("id,slug,name,category,tagline,description,address,phone,timezone,brand_color,logo_url,max_days_ahead,cancel_notice_min")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
@@ -74,7 +75,8 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
     slug: business.slug,
     name: business.name,
     category: business.category,
-    tagline: business.tagline ?? "Agenda tu visita en minutos",
+    tagline: business.tagline ?? "",
+    description: business.description ?? "",
     address: business.address ?? "",
     phone: business.phone ?? "",
     timezone: business.timezone,
