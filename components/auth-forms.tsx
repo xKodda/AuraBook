@@ -2,7 +2,8 @@
 
 import { useActionState, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { AuraMark } from "./aura-mark";
 import {
   requestPasswordResetAction,
   resendConfirmationAction,
@@ -18,7 +19,7 @@ function AuthHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="auth-header">
       <Link href="/" className="brand-symbol auth-symbol" aria-label="AuraBook, inicio">
-        <Sparkles size={22} strokeWidth={2.3} />
+        <AuraMark size={26} />
       </Link>
       <h2>{title}</h2>
       <p>{subtitle}</p>

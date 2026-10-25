@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import Link from "next/link";
+import { AuraMark } from "@/components/aura-mark";
 import { renderMarkdown } from "@/lib/markdown";
 
 export const LEGAL_DOCS = [
@@ -21,7 +22,7 @@ export function LegalPage({ file }: { file: string }) {
   return (
     <div className="legal-shell">
       <header className="legal-header">
-        <Link href="/" className="legal-brand">AURA<span>BOOK</span></Link>
+        <Link href="/" className="legal-brand"><AuraMark size={24} /><span>AURA<span>BOOK</span></span></Link>
         <Link href="/registro" className="legal-header-link">Crear cuenta</Link>
       </header>
       <div className="legal-layout">

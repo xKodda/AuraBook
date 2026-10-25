@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   ArrowRight, BellRing, CalendarCheck, CalendarX2, Check, Clock, Mail, Palette, ShieldCheck, Smartphone, UserPlus, Users,
 } from "lucide-react";
+import { AuraMark } from "@/components/aura-mark";
 import { DEMO_MODE } from "@/lib/env";
 
 export const metadata: Metadata = {
@@ -97,7 +98,7 @@ export default function Home() {
   return (
     <div className="lp">
       <header className="lp-header">
-        <Link href="/" className="lp-brand">AURA<span>BOOK</span></Link>
+        <Link href="/" className="lp-brand"><AuraMark size={26} title="AuraBook" /><span>AURA<span>BOOK</span></span></Link>
         <nav className="lp-nav" aria-label="Principal">
           <a href="#como-funciona">Cómo funciona</a>
           <a href="#preguntas">Preguntas</a>
@@ -197,7 +198,7 @@ export default function Home() {
       </section>
 
       <footer className="lp-footer">
-        <span className="lp-brand">AURA<span>BOOK</span></span>
+        <span className="lp-brand"><AuraMark size={22} /><span>AURA<span>BOOK</span></span></span>
         <nav aria-label="Legal">
           <Link href="/terminos">Términos</Link>
           <Link href="/privacidad">Privacidad</Link>

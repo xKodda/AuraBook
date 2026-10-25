@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Calendar, CalendarDays, CheckCircle2, MapPin, MessageCircle, XCircle } from "lucide-react";
 import { calendarStamp, formatDate, formatPrice } from "@/lib/dates";
 import { brandStyle } from "@/lib/theme";
+import { AuraMark } from "./aura-mark";
 import { BusinessLogo } from "./business-logo";
 import type { ManagedBooking } from "@/lib/types";
 
@@ -195,7 +196,7 @@ export function ManagedBookingView({ initialBooking, token }: Props) {
       </main>
 
       <footer className="bk-footer">
-        Reservas con <Link href="/">AURA<b>BOOK</b></Link>
+        Reservas con <Link href="/" className="bk-footer-brand"><AuraMark size={16} /><span>AURA<b>BOOK</b></span></Link>
         <span className="bk-footer-links">
           <Link href="/privacidad">Privacidad</Link>
           <Link href="/terminos">Términos</Link>

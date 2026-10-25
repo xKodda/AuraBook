@@ -11,6 +11,7 @@ import {
 } from "@/lib/dates";
 import { CATEGORY_COPY, brandStyle } from "@/lib/theme";
 import type { AvailableSlot, BookingSuccess, Business, StaffMember } from "@/lib/types";
+import { AuraMark } from "./aura-mark";
 import { BusinessLogo } from "./business-logo";
 import { Turnstile } from "./turnstile";
 
@@ -431,7 +432,7 @@ export function BookingExperience({ business, demo }: Props) {
       </main>
 
       <footer className="bk-footer">
-        Reservas con <Link href="/">AURA<b>BOOK</b></Link>
+        Reservas con <Link href="/" className="bk-footer-brand"><AuraMark size={16} /><span>AURA<b>BOOK</b></span></Link>
         <span className="bk-footer-links">
           <Link href="/privacidad">Privacidad</Link>
           <Link href="/terminos">Términos</Link>
