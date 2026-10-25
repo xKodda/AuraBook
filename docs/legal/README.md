@@ -9,13 +9,13 @@
 | Archivo | Para quién | Se acepta |
 |---|---|---|
 | [terminos.md](terminos.md) | Negocios que usan AuraBook | Al crear la cuenta (casilla obligatoria) |
-| [privacidad.md](privacidad.md) | Negocios y clientes finales que reservan | Enlazada en registro y en cada página de reservas |
+| [privacidad.md](privacidad.md) | Negocios y usuarios finales que reservan | Enlazada en registro y en cada página de reservas |
 | [tratamiento-datos.md](tratamiento-datos.md) | Negocios (anexo a los términos) | Junto con los términos |
 | [seguridad.md](seguridad.md) | Público (resumen de medidas) | Informativo |
 
 ## Rol de cada parte frente a los datos
 
-- **Datos de los clientes finales** (nombre, teléfono, correo de quien reserva): el **negocio** decide para qué
+- **Datos de los usuarios finales** (nombre, teléfono, correo de quien reserva): el **negocio** decide para qué
   los usa → es el **responsable**. **Clikium** los trata por encargo del negocio → es **encargado**.
   Por eso existe el acuerdo de tratamiento de datos.
 - **Datos de las cuentas de los negocios** (correo del dueño, datos de facturación): **Clikium** es responsable.

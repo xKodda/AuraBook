@@ -1,4 +1,4 @@
--- AuraBook · Instalación completa (8 migraciones). Pegar en Supabase > SQL Editor y ejecutar UNA vez.
+-- AuraBook · Instalación completa (9 migraciones). Pegar en Supabase > SQL Editor y ejecutar UNA vez.
 -- Todo corre en una transacción: si algo falla, no queda nada a medias.
 -- Archivo GENERADO a partir de supabase/migrations/ (no editar a mano). Úsalo solo para instalar en un proyecto vacío.
 begin;
@@ -2257,6 +2257,26 @@ $$;
 
 revoke all on function public.update_booking_rules(uuid, integer, integer, integer) from public, anon;
 grant execute on function public.update_booking_rules(uuid, integer, integer, integer) to authenticated;
+
+-- ════════ 20261031000000_legal_acceptances.sql ════════
+-- AuraBook · Registro de aceptación de documentos legales
+-- Aditiva y no destructiva. Guarda qué versión de cada documento aceptó cada usuario y cuándo.
+-- Se escribe solo desde el servidor (service_role) al registrarse; el usuario puede leer las suyas.
+
+create table if not exists public.legal_acceptances (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  document text not null check (document in ('terminos', 'privacidad', 'tratamiento-datos')),
+  version text not null check (length(version) between 1 and 20),
+  accepted_at timestamptz not null default now(),
+  primary key (user_id, document, version)
+);
+
+alter table public.legal_acceptances enable row level security;
+revoke all on table public.legal_acceptances from anon, authenticated;
+
+create policy self_legal_acceptances on public.legal_acceptances for select to authenticated
+  using (user_id = auth.uid());
+grant select on table public.legal_acceptances to authenticated;
 
 commit;
 

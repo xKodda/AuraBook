@@ -21,7 +21,7 @@ sistema; las marcadas como *pendiente* están planificadas.
 - Límite de intentos para iniciar sesión, registrarse y reservar, para frenar ataques automatizados.
 - El acceso al panel de administración de la plataforma está restringido a personal autorizado de Clikium.
 
-## Datos de los clientes finales
+## Datos de los usuarios finales
 
 - Quien reserva no crea cuenta. Gestiona su cita con un enlace privado con un identificador aleatorio de
   alta entropía, que el equipo del negocio no puede ver.

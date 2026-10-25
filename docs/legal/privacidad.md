@@ -10,12 +10,12 @@ Ley 19.628 y a la Ley 21.719 sobre protección de datos personales.
 
 | Datos | Responsable | Rol de Clikium |
 |---|---|---|
-| Datos de **quien reserva una hora** (Cliente Final) | El **negocio** donde reserva | **Encargado**: los trata por cuenta del negocio |
+| Datos de **quien reserva una hora** (Usuario Final) | El **negocio** donde reserva | **Encargado**: los trata por cuenta del negocio |
 | Datos de las **cuentas de los negocios** | **Clikium** | Responsable |
 
-Clikium: **[RAZÓN SOCIAL]**, RUT **[RUT]**, **[DOMICILIO]**. Contacto para privacidad: **[CORREO]**.
+El Operador de AuraBook («Clikium»): **[RAZÓN SOCIAL]**, RUT **[RUT]**, **[DOMICILIO]**. Contacto para privacidad: **[CORREO]**.
 
-## 2. Si reservas una hora (Cliente Final)
+## 2. Si reservas una hora (Usuario Final)
 
 **Datos que entregas:** nombre, teléfono, correo (opcional) y la cita que eliges (servicio, profesional,
 fecha y hora). Si marcas «Recordarme por correo», guardamos esa preferencia.
@@ -71,7 +71,7 @@ También podremos entregar datos si lo exige una autoridad competente conforme a
 
 | Dato | Plazo |
 |---|---|
-| Reservas y datos de Clientes Finales | Mientras el negocio tenga cuenta, o el plazo que el negocio defina. Tras cerrarse la cuenta, se eliminan en **[30] días** |
+| Reservas y datos de Usuarios Finales | Mientras el negocio tenga cuenta, o el plazo que el negocio defina. Tras cerrarse la cuenta, se eliminan en **[30] días** |
 | Cuenta de negocio | Hasta que se elimine la cuenta; luego **[30] días** |
 | Registros de pagos y facturación | El plazo que exija la ley tributaria |
 | IP para control de abusos | 1 día |
@@ -81,7 +81,7 @@ También podremos entregar datos si lo exige una autoridad competente conforme a
 
 Puedes pedir **acceso, rectificación, supresión, oposición, portabilidad y bloqueo** de tus datos.
 
-- **Clientes Finales:** como el responsable es el negocio, escríbele a él. También puedes escribirnos a
+- **Usuarios Finales:** como el responsable es el negocio, escríbele a él. También puedes escribirnos a
   **[CORREO]** y lo derivaremos al negocio y le ayudaremos a responder. Puedes cancelar tu cita en cualquier
   momento desde tu enlace.
 - **Negocios:** escríbenos a **[CORREO]**. Puedes exportar tus datos y eliminar tu cuenta.

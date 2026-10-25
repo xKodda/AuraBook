@@ -3,12 +3,12 @@
 **BORRADOR — revisar con abogado antes de publicar.**
 Versión 0.1 · Vigente desde: [FECHA]
 
-Este acuerdo forma parte de los Términos y Condiciones entre el **Negocio** (responsable) y **Clikium**
-(encargado), respecto de los datos de los Clientes Finales que reservan horas en la página del Negocio.
+Este acuerdo forma parte de los Términos y Condiciones entre el **Negocio** (responsable) y **el Operador de AuraBook («Clikium»)**
+(encargado), respecto de los datos de los Usuarios Finales que reservan horas en la página del Negocio.
 
 ## 1. Objeto
 
-Clikium tratará los datos de los Clientes Finales únicamente para prestar AuraBook al Negocio: registrar
+Clikium tratará los datos de los Usuarios Finales únicamente para prestar AuraBook al Negocio: registrar
 reservas, mostrarlas en el panel, enviar confirmaciones, avisos y recordatorios, y prevenir abusos.
 
 ## 2. Datos y titulares
@@ -40,7 +40,7 @@ nuevos subencargados; el Negocio podrá oponerse terminando el servicio.
 
 ## 5. Obligaciones del Negocio
 
-1. Contar con base legal para tratar los datos de sus Clientes Finales e informarles (la página de reservas
+1. Contar con base legal para tratar los datos de sus Usuarios Finales e informarles (la página de reservas
    enlaza a la Política de Privacidad).
 2. Usar los datos solo para gestionar sus citas, y no para enviar publicidad sin consentimiento.
 3. Mantener seguras sus credenciales y las de su equipo, y dar acceso solo a quien lo necesite.

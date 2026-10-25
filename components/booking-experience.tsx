@@ -18,6 +18,14 @@ import { Turnstile } from "./turnstile";
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
 type Props = { business: Business; demo: boolean };
+
+/** Plazo de cancelación online, mostrado antes de confirmar (lo exigen los Términos, punto 6). */
+function cancelPolicy(min: number): string {
+  if (min <= 0) return "Puedes cancelar online hasta la hora de tu cita.";
+  const when = min % 1440 === 0 ? `${min / 1440} ${min === 1440 ? "día" : "días"}`
+    : min % 60 === 0 ? `${min / 60} ${min === 60 ? "hora" : "horas"}` : `${min} minutos`;
+  return `Puedes cancelar online hasta ${when} antes.`;
+}
 type AvailabilityState = "idle" | "loading" | "success" | "error";
 
 function getMessage(response: unknown, fallback: string): string {
@@ -409,7 +417,13 @@ export function BookingExperience({ business, demo }: Props) {
                     || (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)}>
                   {submitting ? "Confirmando…" : slot ? `Confirmar ${slot} h` : "Confirmar mi hora"} <ArrowRight size={18} />
                 </button>
-                <p className="privacy-note"><ShieldCheck size={13} /> Sin cuenta ni pagos online. Pagas en el local.</p>
+                <p className="bk-policy">
+                  <ShieldCheck size={13} />
+                  <span>
+                    Pagas en el local, sin pagos online. {cancelPolicy(business.cancelNoticeMin)}{" "}
+                    Al reservar aceptas la <Link href="/privacidad" target="_blank">Política de Privacidad</Link>.
+                  </span>
+                </p>
               </div>
             </form>
           )}
@@ -418,6 +432,10 @@ export function BookingExperience({ business, demo }: Props) {
 
       <footer className="bk-footer">
         Reservas con <Link href="/">AURA<b>BOOK</b></Link>
+        <span className="bk-footer-links">
+          <Link href="/privacidad">Privacidad</Link>
+          <Link href="/terminos">Términos</Link>
+        </span>
       </footer>
     </div>
   );

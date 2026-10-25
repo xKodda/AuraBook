@@ -126,6 +126,14 @@ export function SignUpForm({ demo }: { demo: boolean }) {
       <form action={action} className="auth-form">
         <EmailField />
         <PasswordField autoComplete="new-password" hint="Mínimo 8 caracteres." />
+        <label className="auth-terms">
+          <input type="checkbox" name="terms" required />
+          <span>
+            Acepto los <Link href="/terminos" target="_blank">Términos y Condiciones</Link>, la{" "}
+            <Link href="/privacidad" target="_blank">Política de Privacidad</Link> y el{" "}
+            <Link href="/tratamiento-datos" target="_blank">Acuerdo de Tratamiento de Datos</Link>.
+          </span>
+        </label>
         {state.status === "error" && <div className="form-error">{state.message}</div>}
         <Submit pending={pending}>Crear cuenta</Submit>
       </form>

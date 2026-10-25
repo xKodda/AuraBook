@@ -5,9 +5,10 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { siteOrigin } from "@/lib/auth";
 import { DEMO_MODE } from "@/lib/env";
+import { ACCEPTED_DOCUMENTS, LEGAL_VERSION } from "@/lib/legal";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { safeNextPath } from "@/lib/redirects";
-import { sessionDb } from "@/lib/supabase";
+import { privilegedDb, sessionDb } from "@/lib/supabase";
 import { emailSchema } from "@/lib/validation";
 
 export type AuthFormState = {
@@ -39,9 +40,12 @@ export async function signUpAction(_prev: AuthFormState, formData: FormData): Pr
   const password = passwordSchema.safeParse(String(formData.get("password") ?? ""));
   if (!email.success) return { status: "error", message: "Ingresa un correo electrónico válido." };
   if (!password.success) return { status: "error", message: "La contraseña debe tener al menos 8 caracteres." };
+  if (formData.get("terms") !== "on") {
+    return { status: "error", message: "Para crear tu cuenta debes aceptar los términos y la política de privacidad." };
+  }
 
   const db = await sessionDb();
-  const { error } = await db.auth.signUp({
+  const { data, error } = await db.auth.signUp({
     email: email.data,
     password: password.data,
     options: { emailRedirectTo: `${await siteOrigin()}/auth/confirm?next=/onboarding` },
@@ -54,7 +58,16 @@ export async function signUpAction(_prev: AuthFormState, formData: FormData): Pr
     if (error.code === "over_email_send_rate_limit") return RATE_LIMITED;
     return { status: "error", message: "No pudimos crear la cuenta. Intenta nuevamente." };
   }
-  // Si el correo ya existía, Supabase responde igual (no revela qué correos tienen cuenta).
+  // Registro de la aceptación (versión y fecha). Si el correo ya existía, Supabase devuelve un usuario
+  // sin identidades: no se registra nada y la respuesta es la misma (no revela qué correos tienen cuenta).
+  const user = data.user;
+  if (user && (user.identities?.length ?? 0) > 0) {
+    const { error: legalError } = await privilegedDb().from("legal_acceptances").upsert(
+      ACCEPTED_DOCUMENTS.map((document) => ({ user_id: user.id, document, version: LEGAL_VERSION })),
+      { onConflict: "user_id,document,version", ignoreDuplicates: true },
+    );
+    if (legalError) console.error("legal_acceptances:", legalError.message);
+  }
   return { status: "sent", email: email.data };
 }
 

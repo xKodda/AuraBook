@@ -103,3 +103,16 @@ describe("reglas de reserva", () => {
     }
   });
 });
+
+describe("aceptación de documentos legales", () => {
+  test("cada usuario ve solo sus aceptaciones y no puede escribirlas", async () => {
+    await db.query("insert into public.legal_acceptances (user_id, document, version) values ($1, 'terminos', '1.0'), ($2, 'terminos', '1.0')", [owner, outsider]);
+    const { rows } = await as(db, "authenticated", owner, (tx) => tx.query("select user_id from public.legal_acceptances"));
+    assert.deepEqual(rows.map((r) => r.user_id), [owner]);
+    await assert.rejects(
+      as(db, "authenticated", owner, (tx) => tx.query("insert into public.legal_acceptances (user_id, document, version) values ($1, 'privacidad', '1.0')", [owner])),
+      /permission denied/,
+    );
+    await assert.rejects(as(db, "anon", null, (tx) => tx.query("select * from public.legal_acceptances")), /permission denied/);
+  });
+});
