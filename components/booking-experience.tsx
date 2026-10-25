@@ -40,6 +40,9 @@ export function BookingExperience({ business, demo }: Props) {
   const [retry, setRetry] = useState(0);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [wantsReminder, setWantsReminder] = useState(true);
+  const emailLooksValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(customerEmail.trim());
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState<BookingSuccess | null>(null);
@@ -141,6 +144,8 @@ export function BookingExperience({ business, demo }: Props) {
           time: slot,
           name: customerName.trim(),
           phone: customerPhone.trim(),
+          email: customerEmail.trim(),
+          reminder: emailLooksValid && wantsReminder,
           ...(captchaToken ? { captchaToken } : {}),
         }),
       });
@@ -167,6 +172,7 @@ export function BookingExperience({ business, demo }: Props) {
     setConfirmed(null);
     setCustomerName("");
     setCustomerPhone("");
+    setCustomerEmail("");
     setSlot("");
     setFormError(null);
     setRetry((n) => n + 1);
@@ -364,7 +370,20 @@ export function BookingExperience({ business, demo }: Props) {
                     <input className="text-input" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)}
                       autoComplete="tel" type="tel" inputMode="tel" placeholder="+56 9 1234 5678" required minLength={8} maxLength={20} />
                   </label>
+                  <label className="bk-input-wide">
+                    <span className="field-label">Correo <em className="onb-optional">opcional</em></span>
+                    <input className="text-input" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)}
+                      autoComplete="email" type="email" inputMode="email" placeholder="Para recibir la confirmación" maxLength={254} />
+                  </label>
                 </div>
+                <label className={`bk-reminder${emailLooksValid ? "" : " disabled"}`}>
+                  <input type="checkbox" checked={emailLooksValid && wantsReminder} disabled={!emailLooksValid}
+                    onChange={(e) => setWantsReminder(e.target.checked)} />
+                  <span>
+                    Recordarme por correo el día antes
+                    {!emailLooksValid && <small>Ingresa tu correo para activarlo.</small>}
+                  </span>
+                </label>
               </div>
 
               {/* Resumen y confirmación */}

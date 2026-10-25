@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { DEMO_MODE, demoCreateBooking } from "@/lib/demo";
 import { getBusiness } from "@/lib/business";
 import { dateWithinBookingWindow } from "@/lib/dates";
+import { notifyNewBooking } from "@/lib/email";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { privilegedDb } from "@/lib/supabase";
 import { verifyCaptcha } from "@/lib/turnstile";
@@ -31,9 +32,9 @@ export async function POST(request: Request) {
   }
   const parsed = bookingSchema.safeParse(raw);
   if (!parsed.success || !isValidChileanPhoneOrInternational(parsed.data.phone)) {
-    return errorJson("Revisa tu nombre, teléfono y los datos de la reserva.", 400);
+    return errorJson("Revisa tu nombre, teléfono, correo y los datos de la reserva.", 400);
   }
-  const { captchaToken, ...data } = parsed.data;
+  const { captchaToken, email, reminder, ...data } = parsed.data;
 
   // 2) CAPTCHA verificado en servidor.
   const captcha = await verifyCaptcha(captchaToken, ip);
@@ -85,6 +86,16 @@ export async function POST(request: Request) {
       booking_id: string; public_token: string; assigned_staff_id: string; assigned_staff_name: string; slot_time: string;
     } | undefined;
     if (!row) return errorJson("No se pudo confirmar este horario.", 409);
+
+    // La reserva ya existe: el correo y los avisos no deben hacerla fallar.
+    if (email) {
+      const { error: contactError } = await privilegedDb().rpc("set_public_booking_contact", {
+        p_booking_id: row.booking_id, p_email: email, p_reminder: reminder,
+      });
+      if (contactError) console.error("set_public_booking_contact:", contactError.message);
+    }
+    after(() => notifyNewBooking(row.booking_id));
+
     return NextResponse.json({
       bookingId: row.booking_id,
       manageToken: row.public_token,

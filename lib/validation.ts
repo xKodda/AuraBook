@@ -8,6 +8,9 @@ export const bookingSchema = z.object({
   time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
   name: z.string().trim().min(2).max(80),
   phone: z.string().trim().regex(/^\+?[\d\s-]{8,20}$/),
+  // Opcionales: sin correo no hay confirmación ni recordatorio por correo.
+  email: z.union([z.literal(""), z.email().max(254)]).optional().transform((e) => e || null),
+  reminder: z.boolean().optional().default(false),
   captchaToken: z.string().max(4096).optional(),
 });
 

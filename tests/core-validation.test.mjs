@@ -104,3 +104,23 @@ test("Avisos de suscripción para el dueño (sin bloqueo)", async () => {
   assert.match(billingAlert({ status: "active", endsAt: inDays(3) }, now).message, /renueva en 3/);
   assert.equal(billingAlert({ status: "cancelled", endsAt: null }, now), null);
 });
+
+test("Correos de reserva: datos correctos y HTML del cliente escapado", async () => {
+  const { ownerNewBookingEmail, clientConfirmationEmail, clientReminderEmail, formatWhen } = await import("../lib/email-templates.ts");
+  const b = {
+    manageToken: "a".repeat(64), startAt: "2026-10-27T13:30:00.000Z", endAt: "2026-10-27T14:30:00.000Z", priceClp: 13000,
+    clientName: "<img src=x onerror=alert(1)> Ana", clientPhone: "+56 9 8765 4321", clientEmail: "ana@correo.cl",
+    reminderOptIn: true, serviceName: "Corte de pelo", staffName: "Felipe", businessName: "BarberShop",
+    businessSlug: "barbershop", businessAddress: "Calle 1", businessPhone: "", timezone: "America/Santiago",
+  };
+  assert.equal(formatWhen(b.startAt, b.timezone), "martes 27 de octubre, 10:30 h");
+  const owner = ownerNewBookingEmail(b, "https://aurabook.clikium.cl");
+  assert.ok(!owner.html.includes("<img src=x"));
+  assert.ok(owner.html.includes("&lt;img"));
+  assert.match(owner.html, /\$13\.000/);
+  assert.match(owner.text, /ana@correo\.cl/);
+  const confirm = clientConfirmationEmail(b, "https://aurabook.clikium.cl");
+  assert.ok(confirm.html.includes(`https://aurabook.clikium.cl/reserva/${"a".repeat(64)}`));
+  assert.match(confirm.text, /recordatorio el día antes/);
+  assert.match(clientReminderEmail(b, "https://x.cl").subject, /mañana tienes hora en BarberShop/);
+});
