@@ -1,106 +1,183 @@
 # Política de Privacidad de AuraBook
 
-**BORRADOR — revisar con abogado antes de publicar.**
-Versión 0.1 · Vigente desde: [FECHA]
+> **Borrador en revisión legal.** Los textos marcados como *Propuesta* describen lo que la plataforma hace
+> hoy y completan los espacios pendientes; deben confirmarse antes de publicar.
 
-Esta política explica qué datos personales se tratan en AuraBook, para qué y con qué derechos, conforme a la
-Ley 19.628 y a la Ley 21.719 sobre protección de datos personales.
+**Versión:** 1.0
+**Última actualización:** [FECHA DE PUBLICACIÓN]
+**Responsable de la plataforma:** [Nombre o razón social]
+**Contacto de privacidad:** [Correo electrónico]
 
-## 1. Quién es responsable
+## 1. Alcance
 
-| Datos | Responsable | Rol de Clikium |
+Esta Política de Privacidad describe cómo AuraBook recopila, utiliza, almacena, protege y, cuando corresponde, comunica datos personales relacionados con sus servicios de agendamiento.
+
+Se aplica a los Negocios registrados, sus trabajadores o profesionales autorizados, los Usuarios Finales que realizan reservas y las personas que interactúan directamente con AuraBook.
+
+## 2. Responsabilidades sobre los datos
+
+AuraBook distingue dos situaciones:
+
+**Datos propios de la plataforma:** El Operador determina las finalidades del tratamiento de información necesaria para gestionar suscripciones, cuentas, soporte, seguridad y funcionamiento comercial de AuraBook.
+
+**Datos administrados por los Negocios:** Como regla general, el Negocio determina las finalidades del tratamiento de la información de sus clientes. AuraBook la procesa por cuenta de ese Negocio para proporcionar las herramientas de reserva contratadas.
+
+Esta distribución podrá variar si el Operador incorpora funcionalidades que impliquen decidir nuevas finalidades propias de tratamiento.
+
+## 3. Información recopilada
+
+Dependiendo del servicio y de la información proporcionada, podrán tratarse las siguientes categorías:
+
+**Datos de negocios:** Nombre comercial, persona de contacto, correo electrónico, teléfono, información de facturación y configuración de la cuenta.
+
+**Datos de profesionales:** Nombre, datos de contacto profesionales, horarios, servicios asignados y permisos administrativos.
+
+**Datos de clientes:** Nombre, teléfono, correo electrónico, servicio solicitado, fecha, hora y estado de una reserva.
+
+**Datos técnicos:** Identificadores de sesión, información básica del dispositivo, registros técnicos de acceso y eventos necesarios para seguridad y funcionamiento.
+
+**Comunicaciones:** Solicitudes de soporte, consultas y antecedentes que los usuarios proporcionen al comunicarse con AuraBook.
+
+Sólo se recopilarán los datos necesarios para las finalidades informadas.
+
+*Propuesta (detalle de lo que se recopila hoy):* quien reserva entrega nombre, teléfono y, de forma opcional, su correo electrónico y la preferencia de recibir un recordatorio; no necesita crear una cuenta. La contraseña de los Negocios la gestiona el proveedor de autenticación y el Operador no puede verla. La dirección IP se usa temporalmente para limitar intentos abusivos. Solo se utilizan cookies necesarias: la sesión de los usuarios del panel y la preferencia del negocio que se administra; no se usan cookies publicitarias ni de analítica de terceros.
+
+## 4. Finalidades del tratamiento
+
+La información podrá utilizarse para:
+
+- Crear y administrar cuentas.
+- Procesar y gestionar reservas.
+- Mostrar disponibilidad de servicios.
+- Enviar confirmaciones y recordatorios.
+- Gestionar planes y facturación.
+- Prestar soporte técnico.
+- Prevenir fraude y accesos no autorizados.
+- Mantener la seguridad y estabilidad de la Plataforma.
+- Cumplir obligaciones legales.
+- Elaborar estadísticas operativas agregadas o anonimizadas, cuando corresponda.
+
+El tratamiento deberá contar con una base jurídica válida conforme a la legislación aplicable.
+
+Las comunicaciones comerciales y cualquier finalidad adicional deberán sustentarse en la autorización u otra base legal que corresponda, respetando los derechos de los destinatarios.
+
+## 5. Datos sensibles y relacionados con la salud
+
+AuraBook está diseñada inicialmente para la gestión administrativa de reservas y no para el almacenamiento de fichas clínicas.
+
+Los Negocios no deberán ingresar diagnósticos, historiales médicos, resultados de exámenes u otra información clínica en funcionalidades que no hayan sido expresamente habilitadas para este propósito.
+
+Se reconoce que determinados datos de reserva, como la especialidad médica o el tipo de atención solicitada, pueden revelar información relacionada con la salud de una persona.
+
+Por esta razón, tales datos deberán tratarse con medidas de protección acordes con su sensibilidad y evitando su divulgación innecesaria.
+
+Si en el futuro se habilitan funciones clínicas especializadas, se establecerán condiciones adicionales antes del tratamiento correspondiente.
+
+## 6. Acceso y separación de información
+
+Los datos de cada Negocio estarán sujetos a restricciones de acceso destinadas a impedir que otros Negocios consulten información privada que no les corresponde.
+
+El personal autorizado de un Negocio podrá acceder únicamente a los datos necesarios para las funciones y permisos que le hayan sido asignados.
+
+AuraBook podrá permitir acceso técnico restringido a personal autorizado del Operador cuando sea necesario para soporte, mantenimiento, seguridad o cumplimiento legal, bajo deberes de confidencialidad.
+
+## 7. Proveedores tecnológicos
+
+Para operar, AuraBook podrá utilizar proveedores externos de alojamiento, bases de datos, autenticación, correo electrónico, mensajería, análisis técnico o procesamiento de pagos.
+
+Estos proveedores deberán ser evaluados conforme a las necesidades de seguridad, privacidad y obligaciones legales correspondientes.
+
+**Proveedores y ubicaciones de tratamiento:** [Completar con los proveedores efectivamente contratados, los servicios que prestan y países pertinentes].
+
+*Propuesta (proveedores contratados hoy):*
+
+| Proveedor | Servicio | Ubicación |
 |---|---|---|
-| Datos de **quien reserva una hora** (Usuario Final) | El **negocio** donde reserva | **Encargado**: los trata por cuenta del negocio |
-| Datos de las **cuentas de los negocios** | **Clikium** | Responsable |
+| Supabase | Base de datos, autenticación y almacenamiento de logotipos | [Región del proyecto] |
+| Vercel | Alojamiento de la aplicación | [Región] |
+| Resend | Envío de correos (confirmaciones, avisos y recordatorios) | Brasil (São Paulo) |
+| Cloudflare | Verificación anti-bots, solo si se activa | Global |
 
-El Operador de AuraBook («Clikium»): **[RAZÓN SOCIAL]**, RUT **[RUT]**, **[DOMICILIO]**. Contacto para privacidad: **[CORREO]**.
+No se comunicará información personal a terceros para finalidades incompatibles con aquellas informadas, salvo que exista una base legal válida.
 
-## 2. Si reservas una hora (Usuario Final)
+## 8. Comunicaciones y recordatorios
 
-**Datos que entregas:** nombre, teléfono, correo (opcional) y la cita que eliges (servicio, profesional,
-fecha y hora). Si marcas «Recordarme por correo», guardamos esa preferencia.
+Los Negocios podrán utilizar las funcionalidades habilitadas para gestionar comunicaciones relacionadas con sus reservas.
 
-**Para qué se usan:**
+Los recordatorios operativos se limitarán a la información necesaria para identificar y administrar la cita.
 
-1. Registrar tu reserva y que el negocio pueda atenderte y contactarte por ella.
-2. Enviarte la confirmación y, si lo pediste, un recordatorio el día antes.
-3. Evitar abusos: por ejemplo, limitar la cantidad de reservas activas por teléfono.
+Las comunicaciones publicitarias, promociones y campañas de fidelización se regirán por requisitos separados de legitimidad, consentimiento cuando corresponda y mecanismos de oposición o baja.
 
-**Base:** la ejecución de la reserva que solicitas y, para el recordatorio, tu consentimiento (puedes no
-marcarlo).
+AuraBook no considera que realizar una reserva implique automáticamente aceptar comunicaciones publicitarias.
 
-**No** usamos tus datos para publicidad, no los vendemos y no se los entregamos a otros negocios.
+## 9. Conservación de datos
 
-**Tu enlace de reserva:** la confirmación incluye un enlace privado para ver o cancelar tu cita. No lo
-compartas.
+Los datos personales serán conservados mientras resulten necesarios para las finalidades informadas, el cumplimiento de obligaciones contractuales o las exigencias legales aplicables.
 
-## 3. Si tienes un negocio en AuraBook
+Los plazos dependerán de la categoría de datos y del contexto de tratamiento.
 
-**Datos:** correo y contraseña de acceso (la contraseña se guarda cifrada por nuestro proveedor de
-autenticación; Clikium no puede verla), datos del negocio (nombre, dirección, teléfono, logo) y datos de
-facturación cuando corresponda.
+Cuando corresponda, la información será eliminada, devuelta, anonimizada o conservada de forma restringida por razones legales justificadas.
 
-**Para qué:** prestarte el servicio, avisarte de nuevas reservas, gestionar tu plan y pagos, darte soporte y
-avisarte cambios importantes del servicio.
+**Tabla de conservación:** [Completar con los plazos aprobados para cuentas, reservas, registros técnicos, soporte, facturación y respaldos].
 
-## 4. Datos técnicos
+*Propuesta (coincide con la plataforma):*
 
-- **Dirección IP:** se usa temporalmente para limitar intentos abusivos (por ejemplo, muchas reservas
-  seguidas). Se elimina al día siguiente.
-- **Cookies:** solo las necesarias para mantener la sesión iniciada de los negocios. No usamos cookies de
-  publicidad ni de analítica de terceros.
-
-## 5. Con quién se comparten (proveedores)
-
-Para operar, AuraBook usa proveedores que tratan datos por nuestra cuenta, con obligaciones de
-confidencialidad y seguridad:
-
-| Proveedor | Para qué | Ubicación |
-|---|---|---|
-| Supabase | Base de datos, autenticación y archivos (logos) | [REGIÓN DEL PROYECTO] |
-| Vercel | Alojamiento de la aplicación | [REGIÓN] |
-| Resend | Envío de correos | Brasil (São Paulo) |
-| Cloudflare (si se activa Turnstile) | Verificación anti-bots | Global |
-
-Algunos de estos proveedores están fuera de Chile; la transferencia se hace con las garantías que exige la ley
-**[REVISAR con abogado: cláusulas contractuales de cada proveedor]**.
-
-También podremos entregar datos si lo exige una autoridad competente conforme a la ley.
-
-## 6. Cuánto tiempo se guardan
-
-| Dato | Plazo |
+| Información | Plazo |
 |---|---|
-| Reservas y datos de Usuarios Finales | Mientras el negocio tenga cuenta, o el plazo que el negocio defina. Tras cerrarse la cuenta, se eliminan en **[30] días** |
-| Cuenta de negocio | Hasta que se elimine la cuenta; luego **[30] días** |
-| Registros de pagos y facturación | El plazo que exija la ley tributaria |
-| IP para control de abusos | 1 día |
-| Respaldos | Se sobrescriben según el ciclo del proveedor (**[N] días**) |
+| Cuenta del Negocio | Mientras la cuenta exista; al eliminarla, dentro de 30 días |
+| Reservas y datos de clientes | Mientras el Negocio mantenga su cuenta; al eliminarla, dentro de 30 días |
+| Registros de limitación de intentos (incluyen IP) | Hasta 48 horas |
+| Registros técnicos del proveedor de alojamiento | Según la configuración del proveedor |
+| Facturación y pagos de planes | El plazo que exija la normativa tributaria [confirmar] |
+| Solicitudes de soporte | [Definir] |
+| Respaldos | Según el ciclo de respaldo del proveedor [confirmar según plan contratado] |
 
-## 7. Tus derechos
+## 10. Derechos de los titulares
 
-Puedes pedir **acceso, rectificación, supresión, oposición, portabilidad y bloqueo** de tus datos.
+Los titulares podrán ejercer los derechos que reconozca la normativa vigente, incluyendo el acceso a su información, rectificación de datos incorrectos y solicitudes de eliminación, bloqueo u oposición cuando procedan.
 
-- **Usuarios Finales:** como el responsable es el negocio, escríbele a él. También puedes escribirnos a
-  **[CORREO]** y lo derivaremos al negocio y le ayudaremos a responder. Puedes cancelar tu cita en cualquier
-  momento desde tu enlace.
-- **Negocios:** escríbenos a **[CORREO]**. Puedes exportar tus datos y eliminar tu cuenta.
+A partir de la entrada en vigencia de las nuevas disposiciones legales, se aplicarán también los derechos y procedimientos incorporados por éstas, incluyendo la portabilidad en los casos legalmente previstos.
 
-Responderemos dentro del plazo legal **[CONFIRMAR plazo según Ley 21.719]**. Si no quedas conforme, puedes
-recurrir a la Agencia de Protección de Datos Personales.
+Cuando una solicitud se refiera a datos gestionados por un Negocio, AuraBook podrá derivarla al responsable correspondiente y colaborar para su atención.
 
-## 8. Seguridad
+Las solicitudes podrán presentarse mediante [correo de privacidad o formulario habilitado].
 
-Aplicamos medidas técnicas y organizativas para proteger los datos (ver la
-[política de seguridad](seguridad.md)). Si ocurre una vulneración que afecte tus datos, la informaremos a
-quien corresponda en los plazos que establece la ley.
+*Propuesta:* quien reservó puede cancelar su cita en cualquier momento desde el enlace privado que recibe al reservar, dentro del plazo informado por el Negocio. Los Negocios pueden descargar sus datos y eliminar su cuenta desde «Mi cuenta».
 
-## 9. Menores de edad
+## 11. Transferencias internacionales
 
-AuraBook no está dirigido a menores de 14 años **[CONFIRMAR edad con abogado]**. Si un menor reserva una hora,
-se presume que lo hace con autorización de su representante.
+Determinados proveedores tecnológicos podrían realizar tratamientos o almacenamiento de datos fuera de Chile.
 
-## 10. Cambios
+Cuando ello ocurra, AuraBook adoptará los mecanismos jurídicos y contractuales exigibles para dichas operaciones e informará los aspectos pertinentes conforme a la legislación aplicable.
 
-Publicaremos cualquier cambio en esta página con su fecha. Si es importante, lo avisaremos por correo a los
-negocios.
+Los países, proveedores y condiciones correspondientes deberán documentarse previamente.
+
+## 12. Seguridad
+
+AuraBook mantendrá un programa de protección de información con controles técnicos y organizativos apropiados según los riesgos del tratamiento.
+
+Estos controles podrán comprender gestión de identidades, permisos, cifrado, registros de eventos, copias de seguridad y procedimientos de respuesta a incidentes, según su implementación efectiva.
+
+Ningún sistema conectado a Internet puede garantizar la eliminación absoluta de todos los riesgos.
+
+## 13. Niños, niñas y adolescentes
+
+Cuando una reserva involucre a una persona menor de edad, deberán respetarse las reglas legales aplicables a su representación, consentimiento y protección de datos.
+
+Los Negocios deberán evitar recopilar información innecesaria de menores y utilizar los mecanismos de autorización que legalmente correspondan.
+
+## 14. Actualizaciones
+
+Esta Política podrá actualizarse por cambios normativos, tecnológicos u operativos.
+
+Las modificaciones relevantes serán comunicadas por medios adecuados y se solicitará una nueva autorización cuando legalmente resulte necesaria.
+
+## 15. Contacto
+
+Para consultas o solicitudes relacionadas con datos personales:
+
+**Operador:** [Razón social]
+**Correo de privacidad:** [Correo electrónico]
+**Canal de solicitudes:** [URL o procedimiento]
+
+Fin de la Política de Privacidad de AuraBook.

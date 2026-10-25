@@ -2,10 +2,13 @@ import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { DEMO_MODE } from "@/lib/env";
 import { sendDueReminders } from "@/lib/email";
+import { privilegedDb } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
 // Vercel Cron llama a esta ruta una vez al día (vercel.json) con `Authorization: Bearer <CRON_SECRET>`.
+// Además de los recordatorios, borra los registros de limitación de intentos (contienen IP) de más de 1 día:
+// la Política de Privacidad compromete eliminarlos dentro de 48 horas.
 function authorized(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
@@ -18,6 +21,9 @@ export async function GET(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   if (DEMO_MODE) return NextResponse.json({ skipped: "demo" });
   try {
+    const cutoff = new Date(Date.now() - 86_400_000).toISOString();
+    const { error: purgeError } = await privilegedDb().from("rate_limits").delete().lt("window_start", cutoff);
+    if (purgeError) console.error("purge rate_limits:", purgeError.message);
     const result = await sendDueReminders();
     console.log("Recordatorios:", result);
     return NextResponse.json(result);
