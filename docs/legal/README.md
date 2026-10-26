@@ -1,8 +1,8 @@
-# Documentos legales de AuraBook (BORRADORES)
+# Documentos legales de AuraBook
 
-> **Estos textos son borradores de trabajo, no asesoría legal.** Deben ser revisados por un abogado
-> chileno antes de publicarse, en especial frente a la **Ley 21.719** de protección de datos personales
-> (vigente desde el 1 de diciembre de 2026, según su texto publicado; confirmar).
+Versión oficial **1.0**, publicada el 25 de octubre de 2026 (revisada por el titular). Se muestran en
+`/terminos`, `/privacidad`, `/tratamiento-datos` y `/seguridad`, generadas a partir de estos archivos.
+La versión aceptada al registrarse se guarda con `LEGAL_VERSION` (lib/legal.ts).
 
 ## Documentos
 
@@ -31,11 +31,12 @@ Los textos describen lo que el sistema hace hoy (revisado contra el código el 2
 - Proveedores (subencargados): Supabase (base de datos y archivos), Vercel (hosting), Resend (correos);
   Cloudflare (Turnstile) si se activa el captcha.
 
-## Antes de publicar
+## Datos que conviene completar
 
-1. Completar los campos entre `[CORCHETES]`.
-2. Confirmar la región de los servidores de Supabase del proyecto (Settings → General).
-3. Revisión de un abogado.
-4. Publicar como páginas `/terminos` y `/privacidad`, agregar la casilla de aceptación en `/registro`
-   (con fecha y versión aceptada guardadas en BD) y enlaces en el pie de cada página de reservas.
-5. Cada cambio sustancial: nueva versión con fecha, y aviso por correo a los negocios.
+- Razón social (y RUT, si se quiere mostrar) del operador: hoy figura «Clikium».
+- Región del proyecto de Supabase (Settings → General), para precisar la tabla de proveedores.
+
+## Al cambiar un texto
+
+1. Subir la versión y la fecha en el encabezado del documento.
+2. Si el cambio es sustancial: subir `LEGAL_VERSION` y avisar por correo a los negocios con 15 días de anticipación.

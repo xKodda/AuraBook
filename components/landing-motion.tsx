@@ -14,17 +14,21 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 // Mientras se ve la pantalla de entrada (components/landing-intro.tsx), la portada espera para animarse.
 const IntroReady = createContext(true);
 
-/** Duración de la pantalla de entrada antes de que empiece a desvanecerse (debe calzar con el CSS de .lp-intro). */
-const INTRO_MS = 1150;
-const INTRO_REDUCED_MS = 400;
+/** Momento en que la cortina de entrada empieza a subir (debe calzar con el CSS de .lp-intro). */
+const INTRO_MS = 1850;
+const INTRO_REDUCED_MS = 1000;
 
 export function LandingMotion({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     if (document.documentElement.dataset.intro === "off") { setReady(true); return; }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const t = window.setTimeout(() => setReady(true), reduced ? INTRO_REDUCED_MS : INTRO_MS);
-    return () => window.clearTimeout(t);
+    const go = () => setReady(true);
+    if (document.documentElement.dataset.intro === "skip") { go(); return; }
+    // La cortina (CSS) corre desde que se pinta la página, no desde que React hidrata: se descuenta lo ya transcurrido.
+    const t = window.setTimeout(go, Math.max(0, (reduced ? INTRO_REDUCED_MS : INTRO_MS) - performance.now()));
+    window.addEventListener("aurabook-intro-skip", go, { once: true });
+    return () => { window.clearTimeout(t); window.removeEventListener("aurabook-intro-skip", go); };
   }, []);
   return (
     <LazyMotion features={domAnimation} strict>

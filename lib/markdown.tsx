@@ -4,7 +4,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-export type Heading = { id: string; text: string };
+export type Heading = { id: string; text: string; num?: string };
+export type MetaField = { label: string; value: string };
 
 const LEGAL_ROUTES: Record<string, string> = {
   "terminos.md": "/terminos",
@@ -41,11 +42,18 @@ function inline(text: string, key: string): ReactNode[] {
 }
 
 /** Convierte el documento en bloques y devuelve también los títulos de sección (para el índice). */
-export function renderMarkdown(source: string): { title: string; nodes: ReactNode[]; headings: Heading[] } {
+export function renderMarkdown(source: string): { title: string; meta: MetaField[]; nodes: ReactNode[]; headings: Heading[] } {
   const lines = source.replace(/\r\n/g, "\n").split("\n");
   const nodes: ReactNode[] = [];
   const headings: Heading[] = [];
+  const meta: MetaField[] = [];
   let title = "";
+  // Ficha del documento: líneas «**Campo:** valor» antes de la primera sección.
+  const firstSection = lines.findIndex((l) => l.startsWith("## "));
+  for (let n = 0; n < (firstSection < 0 ? lines.length : firstSection); n++) {
+    const field = /^\*\*([^*]+):\*\*\s+(.+)$/.exec(lines[n].trim());
+    if (field) { meta.push({ label: field[1], value: field[2].trim() }); lines[n] = ""; }
+  }
   let i = 0;
   let k = 0;
   while (i < lines.length) {
@@ -56,10 +64,18 @@ export function renderMarkdown(source: string): { title: string; nodes: ReactNod
       title = line.slice(2).trim();
       i++;
     } else if (line.startsWith("## ")) {
-      const text = line.slice(3).trim();
-      const id = slugId(text);
-      headings.push({ id, text });
-      nodes.push(<h2 key={key} id={id}>{inline(text, key)}</h2>);
+      const full = line.slice(3).trim();
+      const numbered = /^(\d+)\.\s+(.+)$/.exec(full);
+      const text = numbered ? numbered[2] : full;
+      const num = numbered ? numbered[1].padStart(2, "0") : undefined;
+      const id = slugId(full);
+      headings.push({ id, text, num });
+      nodes.push(
+        <h2 key={key} id={id}>
+          {num && <span className="legal-num" aria-hidden="true">{num}</span>}
+          <span>{inline(text, key)}</span>
+        </h2>,
+      );
       i++;
     } else if (line.startsWith("### ")) {
       nodes.push(<h3 key={key}>{inline(line.slice(4).trim(), key)}</h3>);
@@ -109,5 +125,5 @@ export function renderMarkdown(source: string): { title: string; nodes: ReactNod
       );
     }
   }
-  return { title, nodes, headings };
+  return { title, meta, nodes, headings };
 }

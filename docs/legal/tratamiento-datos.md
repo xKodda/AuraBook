@@ -1,7 +1,7 @@
 # Acuerdo de Tratamiento de Datos Personales (anexo a los Términos)
 
-**BORRADOR — revisar con abogado antes de publicar.**
-Versión 0.1 · Vigente desde: [FECHA]
+**Versión:** 1.0
+**Vigente desde:** 25 de octubre de 2026
 
 Este acuerdo forma parte de los Términos y Condiciones entre el **Negocio** (responsable) y **el Operador de AuraBook («Clikium»)**
 (encargado), respecto de los datos de los Usuarios Finales que reservan horas en la página del Negocio.
@@ -17,7 +17,8 @@ reservas, mostrarlas en el panel, enviar confirmaciones, avisos y recordatorios,
 - **Datos:** nombre, teléfono, correo electrónico (opcional), datos de la cita, preferencia de recordatorio y
   notas que el Negocio agregue.
 - No se tratan datos sensibles. El Negocio **no debe** registrar datos de salud u otros datos sensibles en las
-  notas **[REVISAR para rubros de estética]**.
+  notas, incluidos los antecedentes de salud propios de los servicios de belleza y estética, como alergias,
+  tratamientos dermatológicos, embarazo o condiciones de la piel.
 
 ## 3. Obligaciones de Clikium
 
@@ -27,15 +28,15 @@ reservas, mostrarlas en el panel, enviar confirmaciones, avisos y recordatorios,
 3. Asegurar que su personal y proveedores con acceso estén obligados a confidencialidad.
 4. Aplicar las medidas de seguridad descritas en la [política de seguridad](seguridad.md).
 5. Ayudar al Negocio a responder solicitudes de derechos de los titulares.
-6. Avisar al Negocio sin demora indebida, y dentro de **[72] horas** de conocerla, de cualquier vulneración
+6. Avisar al Negocio sin demora indebida, y dentro de **72 horas** de conocerla, de cualquier vulneración
    de seguridad que afecte sus datos.
-7. Al terminar el servicio, eliminar los datos en **[30] días**, salvo obligación legal de conservarlos,
+7. Al terminar el servicio, eliminar los datos en **30 días**, salvo obligación legal de conservarlos,
    permitiendo antes su exportación.
 
 ## 4. Subencargados
 
 El Negocio autoriza a Clikium a usar los proveedores listados en la Política de Privacidad (Supabase, Vercel,
-Resend y, si se activa, Cloudflare). Clikium informará con **[15] días** de anticipación la incorporación de
+Resend y, si se activa, Cloudflare). Clikium informará con **15 días** de anticipación la incorporación de
 nuevos subencargados; el Negocio podrá oponerse terminando el servicio.
 
 ## 5. Obligaciones del Negocio

@@ -106,16 +106,17 @@ export default async function MyPlanPage() {
             <p className="adm-empty">Aún no registras pagos.</p>
           ) : (
             <div className="adm-table-wrap">
-              <table className="adm-table">
+              {/* En celular cada fila se muestra como ficha (data-label da el nombre de cada dato). */}
+              <table className="adm-table pay-table">
                 <thead><tr><th>Fecha</th><th>Plan</th><th className="num">Monto</th><th>Cubre hasta</th><th>Medio</th></tr></thead>
                 <tbody>
                   {sub.payments.map((p) => (
                     <tr key={p.id}>
-                      <td>{formatShortDate(p.paidAt)}</td>
-                      <td>{p.planName ?? "—"}{p.months > 1 ? ` × ${p.months} meses` : ""}</td>
-                      <td className="num">{formatPrice(p.amountClp)}</td>
-                      <td>{formatShortDate(p.periodEnd)}</td>
-                      <td>{METHOD_LABEL[p.method]}</td>
+                      <td data-label="Fecha">{formatShortDate(p.paidAt)}</td>
+                      <td data-label="Plan">{p.planName ?? "—"}{p.months > 1 ? ` × ${p.months} meses` : ""}</td>
+                      <td data-label="Monto" className="num">{formatPrice(p.amountClp)}</td>
+                      <td data-label="Cubre hasta">{formatShortDate(p.periodEnd)}</td>
+                      <td data-label="Medio">{METHOD_LABEL[p.method]}</td>
                     </tr>
                   ))}
                 </tbody>

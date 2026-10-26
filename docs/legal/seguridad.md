@@ -1,9 +1,9 @@
 # Seguridad de la información en AuraBook
 
-**BORRADOR — revisar antes de publicar.** Versión 0.1 · [FECHA]
+**Versión:** 1.0
+**Última actualización:** 25 de octubre de 2026
 
-Resumen público de cómo protegemos los datos. Cada punto describe una medida que **existe hoy** en el
-sistema; las marcadas como *pendiente* están planificadas.
+Resumen público de cómo protegemos los datos. Cada punto describe una medida que existe hoy en el sistema.
 
 ## Separación entre negocios
 
@@ -36,15 +36,15 @@ sistema; las marcadas como *pendiente* están planificadas.
 
 ## Continuidad
 
-- Respaldos de la base de datos: **[según plan de Supabase; pendiente pasar a Pro con respaldos diarios]**.
-- *Pendiente:* monitoreo de errores y alertas.
+- La base de datos se aloja en Supabase, con respaldos según el plan contratado con ese proveedor.
+- La aplicación se publica en Vercel, que la distribuye en su red global.
 
 ## Incidentes
 
 Ante una vulneración de seguridad: se contiene, se evalúa qué datos se vieron afectados, se avisa a los
-negocios afectados dentro de **[72] horas** y a la autoridad cuando la ley lo exija.
+negocios afectados dentro de **72 horas** y a la autoridad cuando la ley lo exija.
 
 ## Reportar un problema de seguridad
 
-Escríbenos a **[CORREO DE SEGURIDAD]**. Agradecemos los reportes responsables y respondemos dentro de
-**[5] días hábiles**.
+Escríbenos a **contacto@clikium.cl**. Agradecemos los reportes responsables y respondemos dentro de
+**5 días hábiles**.

@@ -64,7 +64,7 @@ export const CATEGORY_COPY: Record<BusinessCategory, CategoryCopy> = {
 export const CATEGORY_LABEL: Record<BusinessCategory, string> = {
   barberia: "Barbería",
   peluqueria: "Peluquería",
-  unas: "Uñas",
+  unas: "Belleza",
   spa: "Spa",
   estetica: "Estética",
   otro: "Otro",

@@ -1,13 +1,10 @@
 # Términos y Condiciones de Uso de AuraBook
 
-> **Borrador en revisión legal.** Los textos marcados como *Propuesta* son sugerencias técnicas para que
-> el texto coincida con lo que la plataforma hace; deben confirmarse antes de publicar.
-
 **Versión:** 1.0
-**Última actualización:** [FECHA DE PUBLICACIÓN]
-**Operador:** [Razón social o nombre legal del titular]
+**Última actualización:** 25 de octubre de 2026
+**Operador:** Clikium
 **Nombre comercial:** AuraBook
-**Contacto:** [Correo electrónico de soporte y contacto legal]
+**Contacto:** contacto@clikium.cl
 
 ## 1. Objeto y aceptación
 
@@ -107,9 +104,11 @@ Cuando exista renovación automática, esta condición deberá mostrarse antes d
 
 Las modificaciones de precios, prestaciones o condiciones de contratación deberán ser informadas con una anticipación razonable y respetando los derechos reconocidos por la legislación aplicable.
 
-**Condiciones pendientes de definición:** [Periodicidad de cobro, plazo de aviso, mecanismo de cancelación, reembolsos y condiciones de prueba gratuita].
+Los Negocios nuevos pueden contar con un periodo de prueba gratuito, cuya duración se informa en la sección «Mi plan» del panel. Al terminar la prueba, la cuenta continúa con las funciones del plan gratuito, sin eliminar información ni reservas ya tomadas.
 
-*Propuesta (coincide con la plataforma):* los planes de pago se cobran por adelantado de forma mensual o anual, sin renovación automática mientras el cobro sea manual. Si un plan de pago vence sin renovarse, la cuenta continúa con las funciones del plan gratuito, sin eliminar información ni reservas ya tomadas. Los cambios de precio se avisan por correo con al menos 30 días de anticipación y se aplican desde el periodo siguiente.
+Los planes de pago se cobran por adelantado de forma mensual o anual, sin renovación automática mientras el cobro sea manual. Para dejar de usar un plan de pago basta con no renovarlo. Si un plan de pago vence sin renovarse, la cuenta continúa con las funciones del plan gratuito, sin eliminar información ni reservas ya tomadas.
+
+Los cambios de precio se avisan por correo electrónico con al menos 30 días de anticipación y se aplican desde el periodo siguiente.
 
 ## 8. Pagos por servicios de los negocios
 
@@ -147,7 +146,7 @@ El uso de AuraBook para programar consultas médicas no supone autorización par
 
 En tanto AuraBook no habilite un módulo específico para estos fines, los Negocios deberán abstenerse de incorporar dichos datos en campos de observaciones, nombres de servicios, adjuntos u otros espacios de la Plataforma.
 
-*Propuesta:* esto incluye información de salud propia de los servicios de belleza y estética, como alergias, tratamientos dermatológicos, embarazo o condiciones de la piel.
+Esto incluye información de salud propia de los servicios de belleza y estética, como alergias, tratamientos dermatológicos, embarazo o condiciones de la piel.
 
 La gestión de expedientes médicos, fichas clínicas y datos sensibles sólo podrá habilitarse previa implementación de las condiciones técnicas, contractuales y legales correspondientes.
 
@@ -203,9 +202,7 @@ Al terminar la relación, el Negocio podrá solicitar la exportación o recupera
 
 La eliminación, devolución o conservación posterior de información se realizará de conformidad con la legislación aplicable, la Política de Privacidad y el Acuerdo de Tratamiento de Datos.
 
-**Pendiente:** [Plazo de exportación de datos, plazo de eliminación y procedimiento de cierre].
-
-*Propuesta (coincide con la plataforma):* el Negocio puede descargar sus reservas y clientes en formato CSV en cualquier momento desde «Mi cuenta» y eliminar su cuenta desde la misma sección. Al eliminarla, la página de reservas deja de estar disponible de inmediato y la información se elimina dentro de 30 días, salvo aquella que deba conservarse por obligación legal.
+El Negocio puede solicitar en cualquier momento, escribiendo a contacto@clikium.cl desde el correo de su cuenta, una copia de sus reservas y clientes en formato CSV, que se entregará sin costo dentro de 10 días hábiles. Del mismo modo puede solicitar la eliminación de su cuenta. Al eliminarla, la página de reservas deja de estar disponible de inmediato y la información se elimina dentro de 30 días, salvo aquella que deba conservarse por obligación legal.
 
 ## 17. Responsabilidad
 
@@ -221,9 +218,7 @@ Ninguna disposición de estos Términos excluirá responsabilidades que no pueda
 
 El Operador podrá actualizar estos Términos por razones legales, técnicas, comerciales o de seguridad.
 
-Las modificaciones relevantes deberán comunicarse por medios adecuados y con la anticipación que corresponda.
-
-*Propuesta:* las modificaciones relevantes se comunicarán por correo electrónico con al menos 15 días de anticipación a su entrada en vigencia.
+Las modificaciones relevantes se comunicarán por correo electrónico con al menos 15 días de anticipación a su entrada en vigencia.
 
 Cuando una modificación requiera una nueva aceptación, ésta será solicitada antes de aplicar las nuevas condiciones al usuario correspondiente.
 
@@ -235,14 +230,13 @@ Las controversias se resolverán ante los organismos o tribunales competentes, s
 
 La eventual expansión internacional de AuraBook requerirá revisar las disposiciones aplicables en los países donde se ofrezcan los servicios.
 
-*Propuesta (divisibilidad):* si alguna disposición de estos Términos fuera declarada inválida o inaplicable, las demás conservarán plena vigencia.
+Si alguna disposición de estos Términos fuera declarada inválida o inaplicable, las demás conservarán plena vigencia.
 
 ## 20. Contacto
 
 Las consultas, solicitudes legales o comunicaciones relacionadas con estos Términos podrán dirigirse a:
 
-**Operador:** [Nombre legal]
-**Correo:** [Correo legal o de soporte]
-**Domicilio:** [Domicilio comercial o legal, cuando corresponda]
+**Operador:** Clikium
+**Correo:** contacto@clikium.cl
 
 Fin de los Términos y Condiciones de Uso de AuraBook.

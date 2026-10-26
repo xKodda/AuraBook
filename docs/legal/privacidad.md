@@ -1,12 +1,9 @@
 # Política de Privacidad de AuraBook
 
-> **Borrador en revisión legal.** Los textos marcados como *Propuesta* describen lo que la plataforma hace
-> hoy y completan los espacios pendientes; deben confirmarse antes de publicar.
-
 **Versión:** 1.0
-**Última actualización:** [FECHA DE PUBLICACIÓN]
-**Responsable de la plataforma:** [Nombre o razón social]
-**Contacto de privacidad:** [Correo electrónico]
+**Última actualización:** 25 de octubre de 2026
+**Responsable de la plataforma:** Clikium
+**Contacto de privacidad:** contacto@clikium.cl
 
 ## 1. Alcance
 
@@ -40,7 +37,7 @@ Dependiendo del servicio y de la información proporcionada, podrán tratarse la
 
 Sólo se recopilarán los datos necesarios para las finalidades informadas.
 
-*Propuesta (detalle de lo que se recopila hoy):* quien reserva entrega nombre, teléfono y, de forma opcional, su correo electrónico y la preferencia de recibir un recordatorio; no necesita crear una cuenta. La contraseña de los Negocios la gestiona el proveedor de autenticación y el Operador no puede verla. La dirección IP se usa temporalmente para limitar intentos abusivos. Solo se utilizan cookies necesarias: la sesión de los usuarios del panel y la preferencia del negocio que se administra; no se usan cookies publicitarias ni de analítica de terceros.
+En concreto, quien reserva entrega nombre, teléfono y, de forma opcional, su correo electrónico y la preferencia de recibir un recordatorio; no necesita crear una cuenta. La contraseña de los Negocios la gestiona el proveedor de autenticación y el Operador no puede verla. La dirección IP se usa temporalmente para limitar intentos abusivos. Solo se utilizan cookies necesarias: la sesión de los usuarios del panel y la preferencia del negocio que se administra; no se usan cookies publicitarias ni de analítica de terceros.
 
 ## 4. Finalidades del tratamiento
 
@@ -87,14 +84,12 @@ Para operar, AuraBook podrá utilizar proveedores externos de alojamiento, bases
 
 Estos proveedores deberán ser evaluados conforme a las necesidades de seguridad, privacidad y obligaciones legales correspondientes.
 
-**Proveedores y ubicaciones de tratamiento:** [Completar con los proveedores efectivamente contratados, los servicios que prestan y países pertinentes].
-
-*Propuesta (proveedores contratados hoy):*
+Los proveedores que tratan datos para operar AuraBook son:
 
 | Proveedor | Servicio | Ubicación |
 |---|---|---|
-| Supabase | Base de datos, autenticación y almacenamiento de logotipos | [Región del proyecto] |
-| Vercel | Alojamiento de la aplicación | [Región] |
+| Supabase | Base de datos, autenticación y almacenamiento de logotipos | Fuera de Chile (región del proyecto) |
+| Vercel | Alojamiento de la aplicación | Estados Unidos y red global |
 | Resend | Envío de correos (confirmaciones, avisos y recordatorios) | Brasil (São Paulo) |
 | Cloudflare | Verificación anti-bots, solo si se activa | Global |
 
@@ -118,9 +113,7 @@ Los plazos dependerán de la categoría de datos y del contexto de tratamiento.
 
 Cuando corresponda, la información será eliminada, devuelta, anonimizada o conservada de forma restringida por razones legales justificadas.
 
-**Tabla de conservación:** [Completar con los plazos aprobados para cuentas, reservas, registros técnicos, soporte, facturación y respaldos].
-
-*Propuesta (coincide con la plataforma):*
+Los plazos de conservación son los siguientes:
 
 | Información | Plazo |
 |---|---|
@@ -128,9 +121,9 @@ Cuando corresponda, la información será eliminada, devuelta, anonimizada o con
 | Reservas y datos de clientes | Mientras el Negocio mantenga su cuenta; al eliminarla, dentro de 30 días |
 | Registros de limitación de intentos (incluyen IP) | Hasta 48 horas |
 | Registros técnicos del proveedor de alojamiento | Según la configuración del proveedor |
-| Facturación y pagos de planes | El plazo que exija la normativa tributaria [confirmar] |
-| Solicitudes de soporte | [Definir] |
-| Respaldos | Según el ciclo de respaldo del proveedor [confirmar según plan contratado] |
+| Facturación y pagos de planes | El plazo que exija la normativa tributaria chilena |
+| Solicitudes de soporte | Mientras se atienden y hasta 2 años después |
+| Respaldos | Según el ciclo de respaldo del proveedor de base de datos |
 
 ## 10. Derechos de los titulares
 
@@ -140,9 +133,9 @@ A partir de la entrada en vigencia de las nuevas disposiciones legales, se aplic
 
 Cuando una solicitud se refiera a datos gestionados por un Negocio, AuraBook podrá derivarla al responsable correspondiente y colaborar para su atención.
 
-Las solicitudes podrán presentarse mediante [correo de privacidad o formulario habilitado].
+Las solicitudes podrán presentarse escribiendo a contacto@clikium.cl.
 
-*Propuesta:* quien reservó puede cancelar su cita en cualquier momento desde el enlace privado que recibe al reservar, dentro del plazo informado por el Negocio. Los Negocios pueden descargar sus datos y eliminar su cuenta desde «Mi cuenta».
+Quien reservó puede cancelar su cita en cualquier momento desde el enlace privado que recibe al reservar, dentro del plazo informado por el Negocio. Los Negocios pueden solicitar una copia de sus datos o la eliminación de su cuenta escribiendo a contacto@clikium.cl.
 
 ## 11. Transferencias internacionales
 
@@ -176,8 +169,7 @@ Las modificaciones relevantes serán comunicadas por medios adecuados y se solic
 
 Para consultas o solicitudes relacionadas con datos personales:
 
-**Operador:** [Razón social]
-**Correo de privacidad:** [Correo electrónico]
-**Canal de solicitudes:** [URL o procedimiento]
+**Operador:** Clikium
+**Correo de privacidad:** contacto@clikium.cl
 
 Fin de la Política de Privacidad de AuraBook.
