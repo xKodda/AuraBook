@@ -5,8 +5,9 @@ import {
   ArrowRight, BellRing, CalendarCheck, CalendarX2, Check, Clock, Mail, Palette, ShieldCheck, Smartphone, UserPlus, Users,
 } from "lucide-react";
 import { AuraMark } from "@/components/aura-mark";
+import { LandingIntro } from "@/components/landing-intro";
 import {
-  HeroPhone, HorizontalGallery, LandingMotion, PopIn, Reveal, RevealImage, RevealItem, ScrollZoom,
+  FinalHalo, HeroPhone, HorizontalGallery, LandingMotion, PopIn, Reveal, RevealImage, RevealItem, ScrollZoom,
 } from "@/components/landing-motion";
 import fotoTijeras from "@/public/photos/barberia-tijeras.jpg";
 import fotoBarberia from "@/public/photos/barberia-herramientas.jpg";
@@ -38,7 +39,7 @@ const RUBRO_FOTOS: RubroFoto[] = [
     alt: "Velas encendidas junto a toallas blancas y una flor", position: "40% center" },
 ];
 
-const RUBROS = ["Barberías", "Peluquerías", "Salones de uñas", "Estética", "Spa"];
+const RUBROS = ["Barberías", "Peluquerías", "Salones de belleza", "Estética", "Spa"];
 
 const STEPS = [
   { title: "Crea tu negocio", text: "Nombre, rubro, logo y color. Recibes tu enlace propio al instante." },
@@ -159,6 +160,7 @@ export default function Home() {
   return (
     <LandingMotion>
     <div className="lp">
+      <LandingIntro />
       <header className="lp-header">
         <Link href="/" className="lp-brand"><AuraMark size={26} title="AuraBook" /><span>AURA<span>BOOK</span></span></Link>
         <nav className="lp-nav" aria-label="Principal">
@@ -207,8 +209,7 @@ export default function Home() {
         </ScrollZoom>
 
         <section className="lp-section" id="como-funciona">
-          <p className="lp-eyebrow">Cómo funciona</p>
-          <h2>De cero a recibir reservas, en tres pasos.</h2>
+          <SectionHeading eyebrow="Cómo funciona" title="De cero a recibir reservas, en tres pasos." />
           <Reveal as="ol" className="lp-steps">
             {STEPS.map((s, i) => (
               <RevealItem as="li" key={s.title}>
@@ -253,7 +254,7 @@ export default function Home() {
           <AgendaPreview />
         </section>
 
-        <HorizontalGallery header={<><p className="lp-eyebrow">Pensado para tu rubro</p><h2>Para negocios que trabajan con hora.</h2></>}>
+        <HorizontalGallery header={<SectionHeading eyebrow="Pensado para tu rubro" title="Para negocios que trabajan con hora." />}>
           {RUBRO_FOTOS.map((r) => (
             <figure key={r.title} className="lp-gallery-card">
               <RevealImage className="lp-photo lp-photo-tall">
@@ -266,8 +267,7 @@ export default function Home() {
         </HorizontalGallery>
 
         <section className="lp-section">
-          <p className="lp-eyebrow">Lo esencial, bien hecho</p>
-          <h2>Simple para ti. Más simple para tus clientes.</h2>
+          <SectionHeading eyebrow="Lo esencial, bien hecho" title="Simple para ti. Más simple para tus clientes." />
           <Reveal className="lp-features">
             {FEATURES.map(({ icon: Icon, title, text }) => (
               <RevealItem key={title} className="lp-feature">
@@ -279,24 +279,37 @@ export default function Home() {
         </section>
 
         <section className="lp-section lp-faq" id="preguntas">
-          <p className="lp-eyebrow">Preguntas frecuentes</p>
-          <h2>Lo que suelen preguntarnos.</h2>
-          <div>
+          <SectionHeading eyebrow="Preguntas frecuentes" title="Lo que suelen preguntarnos." />
+          <Reveal className="lp-faq-list">
             {FAQ.map((f) => (
-              <details key={f.q}>
-                <summary>{f.q}</summary>
-                <p>{f.a}</p>
-              </details>
+              <RevealItem key={f.q}>
+                <details>
+                  <summary>{f.q}</summary>
+                  <p>{f.a}</p>
+                </details>
+              </RevealItem>
             ))}
-          </div>
+          </Reveal>
         </section>
       </main>
 
-      <Reveal as="section" className="lp-final">
-        <RevealItem as="h2">Empieza hoy con tu negocio.</RevealItem>
-        <RevealItem as="p">Configúralo tú mismo en minutos. Sin instalaciones ni contratos.</RevealItem>
-        <RevealItem><Link href="/registro" className="lp-final-btn">Crear cuenta <ArrowRight size={17} /></Link></RevealItem>
-      </Reveal>
+      <section className="lp-final">
+        <FinalHalo />
+        <Reveal className="lp-final-inner">
+          <RevealItem as="p" className="lp-final-eyebrow">Tu agenda online, lista hoy</RevealItem>
+          <RevealItem as="h2">Empieza hoy con <span>tu negocio.</span></RevealItem>
+          <RevealItem as="p" className="lp-final-lead">Configúralo tú mismo en minutos. Sin instalaciones ni contratos.</RevealItem>
+          <RevealItem className="lp-final-actions">
+            <Link href="/registro" className="lp-final-btn">Crear cuenta <ArrowRight size={18} /></Link>
+            <a href="#como-funciona" className="lp-final-link">Ver cómo funciona</a>
+          </RevealItem>
+          <RevealItem as="ul" className="lp-final-checks">
+            <li><Check size={16} /> Prueba gratis</li>
+            <li><Check size={16} /> Sin tarjeta de crédito</li>
+            <li><Check size={16} /> Tus clientes no descargan nada</li>
+          </RevealItem>
+        </Reveal>
+      </section>
 
       <footer className="lp-footer">
         <span className="lp-brand"><AuraMark size={22} /><span>AURA<span>BOOK</span></span></span>
@@ -306,9 +319,19 @@ export default function Home() {
           <Link href="/seguridad">Seguridad</Link>
           <Link href="/login">Acceso negocios</Link>
         </nav>
-        <small>© {new Date().getFullYear()} AuraBook · Un producto de Clikium</small>
+        <small>© {new Date().getFullYear()} AuraBook · Un producto de <a href="https://clikium.cl/" target="_blank" rel="noopener">Clikium</a></small>
       </footer>
     </div>
     </LandingMotion>
+  );
+}
+
+/** Título de sección (etiqueta + h2) que aparece igual que el resto de los textos al entrar en pantalla. */
+function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <Reveal className="lp-heading">
+      <RevealItem as="p" className="lp-eyebrow">{eyebrow}</RevealItem>
+      <RevealItem as="h2">{title}</RevealItem>
+    </Reveal>
   );
 }

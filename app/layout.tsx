@@ -10,8 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // suppressHydrationWarning: la portada marca data-intro en <html> antes de hidratar (components/landing-intro.tsx).
   return (
-    <html lang="es-CL">
+    <html lang="es-CL" suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );
