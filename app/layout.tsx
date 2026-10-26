@@ -17,7 +17,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   // suppressHydrationWarning: la portada marca data-intro en <html> antes de hidratar (components/landing-intro.tsx).
   return (
-    <html lang="es-CL" suppressHydrationWarning>
+    // data-scroll-behavior: el desplazamiento suave de globals.css no se aplica al cambiar de página (Next).
+    <html lang="es-CL" suppressHydrationWarning data-scroll-behavior="smooth">
       <body>{children}</body>
     </html>
   );

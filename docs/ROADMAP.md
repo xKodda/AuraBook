@@ -2,6 +2,26 @@
 
 Última revisión: 2026-10-25. Documento vivo: actualizar al cerrar cada etapa.
 
+## 0. Estado y próxima sesión (actualizado 2026-10-26)
+
+**En producción con el último push:** planes Free/Premium con límites aplicados en la base de datos, `/precios`,
+`/demo`, SEO (robots, sitemap, Open Graph), ingresos por semana/mes/rango, reservas manuales con sobrecupo,
+textos legales oficiales v1.0 y panel optimizado para celular. Migraciones aplicadas hasta `20261102000000`.
+
+**Pendientes de configuración (no son código):**
+1. Supabase → Authentication → URL Configuration: *Site URL* = `https://aurabook.clikium.cl` y *Redirect URLs* con
+   `https://aurabook.clikium.cl/**`. Es la causa de que el enlace de confirmación lleve a localhost.
+2. Vercel → `NEXT_PUBLIC_SITE_URL=https://aurabook.clikium.cl` en Production y redeploy (también lo usan el sitemap y
+   las imágenes para compartir).
+3. Confirmar con el contador que los precios se publiquen «IVA incluido».
+4. Medir Core Web Vitals con el sitio publicado (PageSpeed Insights o Vercel Speed Insights).
+
+**Siguiente trabajo sugerido, en orden:**
+1. Agenda por semana y en columnas por profesional; bloqueos de agenda (vacaciones, feriados) con `time_off`.
+2. «Mi cuenta»: cambiar contraseña, descargar reservas y clientes (CSV) y eliminar la cuenta (hoy se piden por correo).
+3. `/admin`: editar el precio anual y ver el plan efectivo (Free/Premium) de cada negocio.
+4. Invitaciones al equipo (cada profesional con su acceso), que sería otra capacidad de Premium.
+
 ## 1. Posicionamiento
 
 AuraBook **no compite en funciones** con AgendaPro, Fresha o Setmore. Compite en:

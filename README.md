@@ -70,12 +70,19 @@ Abre `http://localhost:3000/dashboard` o cualquiera de las páginas de reserva p
 ## 2. Conectar a Supabase (Producción / Datos Reales)
 
 1. Crear un proyecto en [Supabase](https://supabase.com).
-2. En **SQL Editor** (o `npx supabase db push`), ejecutar **todas** las migraciones en orden:
-   - `supabase/migrations/20261023000000_init.sql` (esquema, RLS, RPCs y restricción GiST anti-solapamiento).
-   - `supabase/migrations/20261024100000_saas_roles_and_permissions.sql` (rol admin, onboarding, reserva manual).
-   - `supabase/migrations/20261025000000_phase1_tenant_hardening.sql` (integridad multi-tenant y endurecimiento).
-   - `supabase/migrations/20261026000000_phase2_onboarding.sql` (onboarding: perfil, equipo, servicios, horarios, publicar).
-   - `supabase/migrations/20261027000000_platform_billing.sql` (planes, suscripciones, pagos y panel de plataforma).
+2. **Proyecto nuevo:** pegar `supabase/aurabook_setup.sql` en el **SQL Editor** y ejecutarlo una vez (son todas las
+   migraciones en una transacción). **Proyecto existente:** ejecutar solo las migraciones nuevas, en orden:
+   - `20261023000000_init.sql` (esquema, RLS, RPCs y restricción GiST anti-solapamiento).
+   - `20261024100000_saas_roles_and_permissions.sql` (rol admin, onboarding, reserva manual).
+   - `20261025000000_phase1_tenant_hardening.sql` (integridad multi-tenant y endurecimiento).
+   - `20261026000000_phase2_onboarding.sql` (onboarding: perfil, equipo, servicios, horarios, publicar).
+   - `20261027000000_platform_billing.sql` (planes, suscripciones, pagos y panel de plataforma).
+   - `20261028000000_business_branding.sql` (logo y color de cada negocio).
+   - `20261029000000_booking_notifications.sql` (correo del cliente, avisos y recordatorios).
+   - `20261030000000_booking_rules.sql` (anticipación, días hacia adelante y plazo de cancelación).
+   - `20261031000000_legal_acceptances.sql` (aceptación de documentos legales).
+   - `20261101000000_overbooking_and_revenue.sql` (sobrecupos e ingresos por rango).
+   - `20261102000000_plan_entitlements.sql` (planes Free y Premium y sus límites).
    - Opcional: `supabase/002_demo_seed.sql` (datos de prueba multi-rubro; no usar en producción).
    - `supabase/legacy/` es histórico: **no ejecutar**.
 3. Configurar `.env.local`:

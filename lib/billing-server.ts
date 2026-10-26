@@ -80,7 +80,8 @@ export async function myEntitlements(): Promise<Map<string, Entitlements>> {
 /** Planes publicados para /precios. Si la base de datos no responde, se usan los valores de lib/plans.ts. */
 export async function getPublicPlans(): Promise<PublicPlans> {
   if (DEMO_MODE) return DEFAULT_PUBLIC_PLANS;
-  const { data, error } = await publicDb().rpc("public_plans");
+  // Si Supabase tarda, /precios se muestra igual con los precios de respaldo (lib/plans.ts).
+  const { data, error } = await publicDb().rpc("public_plans").abortSignal(AbortSignal.timeout(4000));
   if (error || !data) {
     console.error("public_plans:", error?.message);
     return DEFAULT_PUBLIC_PLANS;

@@ -14,10 +14,19 @@ function anonKey(): string {
   return SUPABASE_ANON_KEY;
 }
 
+// Una consulta pública nunca debe dejar una página «cargando» indefinidamente: se corta a los 8 s.
+const PUBLIC_TIMEOUT_MS = 8000;
+
+function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const timeout = AbortSignal.timeout(PUBLIC_TIMEOUT_MS);
+  return fetch(input, { ...init, signal: init?.signal ? AbortSignal.any([init.signal, timeout]) : timeout });
+}
+
 /** Cliente anónimo sin sesión: solo catálogo público y disponibilidad. */
 export function publicDb() {
   return createClient(url(), anonKey(), {
     auth: { autoRefreshToken: false, persistSession: false },
+    global: { fetch: fetchWithTimeout },
   });
 }
 
