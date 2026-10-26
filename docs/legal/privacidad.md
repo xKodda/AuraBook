@@ -2,7 +2,8 @@
 
 **Versión:** 1.0
 **Última actualización:** 25 de octubre de 2026
-**Responsable de la plataforma:** Clikium
+**Responsable de la plataforma:** Clikium SpA
+**RUT:** 78.399.278-7
 **Contacto de privacidad:** contacto@clikium.cl
 
 ## 1. Alcance
@@ -169,7 +170,8 @@ Las modificaciones relevantes serán comunicadas por medios adecuados y se solic
 
 Para consultas o solicitudes relacionadas con datos personales:
 
-**Operador:** Clikium
+**Operador:** Clikium SpA
+**RUT:** 78.399.278-7
 **Correo de privacidad:** contacto@clikium.cl
 
 Fin de la Política de Privacidad de AuraBook.

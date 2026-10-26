@@ -2,7 +2,8 @@
 
 **Versión:** 1.0
 **Última actualización:** 25 de octubre de 2026
-**Operador:** Clikium
+**Operador:** Clikium SpA
+**RUT:** 78.399.278-7
 **Nombre comercial:** AuraBook
 **Contacto:** contacto@clikium.cl
 
@@ -236,7 +237,8 @@ Si alguna disposición de estos Términos fuera declarada inválida o inaplicabl
 
 Las consultas, solicitudes legales o comunicaciones relacionadas con estos Términos podrán dirigirse a:
 
-**Operador:** Clikium
+**Operador:** Clikium SpA
+**RUT:** 78.399.278-7
 **Correo:** contacto@clikium.cl
 
 Fin de los Términos y Condiciones de Uso de AuraBook.

@@ -31,9 +31,9 @@ Los textos describen lo que el sistema hace hoy (revisado contra el código el 2
 - Proveedores (subencargados): Supabase (base de datos y archivos), Vercel (hosting), Resend (correos);
   Cloudflare (Turnstile) si se activa el captcha.
 
-## Datos que conviene completar
+## Datos del operador y pendientes
 
-- Razón social (y RUT, si se quiere mostrar) del operador: hoy figura «Clikium».
+- Operador: Clikium SpA, RUT 78.399.278-7.
 - Región del proyecto de Supabase (Settings → General), para precisar la tabla de proveedores.
 
 ## Al cambiar un texto

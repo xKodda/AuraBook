@@ -3,7 +3,7 @@
 **Versión:** 1.0
 **Vigente desde:** 25 de octubre de 2026
 
-Este acuerdo forma parte de los Términos y Condiciones entre el **Negocio** (responsable) y **el Operador de AuraBook («Clikium»)**
+Este acuerdo forma parte de los Términos y Condiciones entre el **Negocio** (responsable) y **Clikium SpA, RUT 78.399.278-7, operador de AuraBook («Clikium»)**
 (encargado), respecto de los datos de los Usuarios Finales que reservan horas en la página del Negocio.
 
 ## 1. Objeto
