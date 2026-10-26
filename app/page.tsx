@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight, BellRing, CalendarCheck, CalendarX2, Check, Clock, Mail, Palette, ShieldCheck, Smartphone, UserPlus, Users,
 } from "lucide-react";
 import { AuraMark } from "@/components/aura-mark";
-import { HeroPhone, LandingMotion, PopIn, Reveal, RevealItem, ScrollZoom } from "@/components/landing-motion";
+import { HeroPhone, LandingMotion, PopIn, Reveal, RevealImage, RevealItem, ScrollZoom } from "@/components/landing-motion";
+import fotoTijeras from "@/public/photos/barberia-tijeras.jpg";
+import fotoBarberia from "@/public/photos/barberia-herramientas.jpg";
+import fotoUnas from "@/public/photos/unas-manicure.jpg";
+import fotoCliente from "@/public/photos/cliente-reservando.jpg";
 import { DEMO_MODE } from "@/lib/env";
 
 export const metadata: Metadata = {
@@ -177,7 +182,7 @@ export default function Home() {
           {RUBROS.map((r) => <b key={r}>{r}</b>)}
         </div>
 
-        <ScrollZoom heading={<><p className="lp-eyebrow">Tu página de reservas</p><h2>Tu negocio, a un enlace de distancia.</h2></>}>
+        <ScrollZoom background={<Image src={fotoTijeras} alt="" fill sizes="100vw" placeholder="blur" style={{ objectFit: "cover" }} />} heading={<><p className="lp-eyebrow">Tu página de reservas</p><h2>Tu negocio, a un enlace de distancia.</h2></>}>
           <BrowserPreview />
         </ScrollZoom>
 
@@ -195,6 +200,25 @@ export default function Home() {
           </Reveal>
         </section>
 
+        <section className="lp-split lp-split-reverse">
+          <RevealImage className="lp-photo lp-photo-wide">
+            <Image src={fotoCliente} alt="Persona revisando su celular junto a una taza de café" fill placeholder="blur"
+              sizes="(max-width: 960px) 100vw, 55vw" style={{ objectFit: "cover" }} />
+          </RevealImage>
+          <Reveal className="lp-split-text">
+            <RevealItem as="p" className="lp-eyebrow">Para tus clientes</RevealItem>
+            <RevealItem as="h2">Reservar contigo, tan fácil como mandar un mensaje.</RevealItem>
+            <RevealItem as="p">Eligen servicio, profesional y hora desde cualquier celular. Sin descargar nada, sin crear cuentas y sin esperar a que contestes.</RevealItem>
+            <RevealItem>
+              <ul className="lp-checks">
+                <li><Check size={17} /> Menos de un minuto para reservar</li>
+                <li><Mail size={17} /> Confirmación y recordatorio por correo, si lo piden</li>
+                <li><CalendarX2 size={17} /> Cancelan desde su enlace, dentro de tu plazo</li>
+              </ul>
+            </RevealItem>
+          </Reveal>
+        </section>
+
         <section className="lp-split">
           <div className="lp-split-text">
             <p className="lp-eyebrow">Para ti</p>
@@ -207,6 +231,28 @@ export default function Home() {
             </ul>
           </div>
           <AgendaPreview />
+        </section>
+
+        <section className="lp-section lp-rubros-photos">
+          <p className="lp-eyebrow">Pensado para tu rubro</p>
+          <h2>Para negocios que trabajan con hora.</h2>
+          <div className="lp-photo-pair">
+            <figure>
+              <RevealImage className="lp-photo lp-photo-tall">
+                <Image src={fotoBarberia} alt="Máquina de cortar pelo, peinetas y escobilla sobre una toalla gris" fill placeholder="blur"
+                  sizes="(max-width: 720px) 100vw, 45vw" style={{ objectFit: "cover" }} />
+              </RevealImage>
+              <figcaption><b>Barberías</b> Cortes, barba y perfilados, cada barbero con su agenda.</figcaption>
+            </figure>
+            <figure>
+              <RevealImage className="lp-photo lp-photo-tall">
+                <Image src={fotoUnas} alt="Manicurista pintando una uña con un pincel fino" fill placeholder="blur"
+                  sizes="(max-width: 720px) 100vw, 45vw" style={{ objectFit: "cover" }} />
+              </RevealImage>
+              <figcaption><b>Salones de uñas</b> Servicios de distinta duración sin que se crucen las horas.</figcaption>
+            </figure>
+          </div>
+          <p className="lp-rubros-more">También peluquerías, centros de estética y spa.</p>
         </section>
 
         <section className="lp-section">

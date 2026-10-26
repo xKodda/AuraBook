@@ -80,7 +80,9 @@ export function HeroPhone({ children, toast }: { children: ReactNode; toast: Rea
  * Sección de 220vh con un bloque fijo (sticky). Mientras se recorre, el título sube y se desvanece
  * y la ventana del producto pasa de 62 % a 100 % de escala, con esquinas cada vez más rectas.
  */
-export function ScrollZoom({ heading, children }: { heading: ReactNode; children: ReactNode }) {
+export function ScrollZoom({ heading, background, children }: {
+  heading: ReactNode; background?: ReactNode; children: ReactNode;
+}) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
@@ -92,10 +94,20 @@ export function ScrollZoom({ heading, children }: { heading: ReactNode; children
   const boxShadow = useTransform(shadow, (a) => `0 40px 90px rgba(24, 25, 28, ${a})`);
   const headingY = useTransform(progress, [0, 0.4], reduce ? [0, 0] : [0, -60]);
   const headingOpacity = useTransform(progress, [0, 0.35], [1, reduce ? 1 : 0]);
+  // Fondo (foto): se acerca, se desenfoca y se desvanece mientras sube la página de reservas.
+  const bgScale = useTransform(progress, [0, 0.8], reduce ? [1, 1] : [1.04, 1.32]);
+  const bgOpacity = useTransform(progress, [0.08, 0.7], [1, reduce ? 1 : 0]);
+  const bgBlur = useTransform(progress, [0.05, 0.6], reduce ? [0, 0] : [0, 10]);
+  const filter = useTransform(bgBlur, (b) => `blur(${b}px)`);
 
   return (
-    <section ref={ref} className="lp-zoom" aria-label="Así se ve tu página de reservas">
+    <section ref={ref} className={`lp-zoom${background ? " has-photo" : ""}`} aria-label="Así se ve tu página de reservas">
       <div className="lp-zoom-sticky">
+        {background && (
+          <m.div className="lp-zoom-bg" aria-hidden="true" style={{ scale: bgScale, opacity: bgOpacity, filter }}>
+            {background}
+          </m.div>
+        )}
         <m.div className="lp-zoom-heading" style={{ y: headingY, opacity: headingOpacity }}>{heading}</m.div>
         <m.div className="lp-zoom-frame" style={{ scale, borderRadius: radius, boxShadow }}>
           {children}
@@ -114,5 +126,23 @@ export function PopIn({ children, className, index = 0 }: { children?: ReactNode
       transition={{ duration: 0.45, ease: EASE, delay: 0.15 + index * 0.08 }}>
       {children}
     </m.span>
+  );
+}
+
+// ─── Foto que se revela al entrar en pantalla (marco que se abre + leve desplazamiento interno) ───
+
+export function RevealImage({ children, className }: { children: ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const innerScale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [1.18, 1.02]);
+  return (
+    <m.div ref={ref} className={className}
+      initial={{ clipPath: reduce ? "inset(0% 0% 0% 0% round 18px)" : "inset(10% 8% 10% 8% round 28px)", opacity: 0.4 }}
+      whileInView={{ clipPath: "inset(0% 0% 0% 0% round 18px)", opacity: 1 }}
+      viewport={{ once: true, margin: "0px 0px -15% 0px" }}
+      transition={{ duration: 1.1, ease: EASE }}>
+      <m.div className="lp-photo-inner" style={{ scale: innerScale }}>{children}</m.div>
+    </m.div>
   );
 }
