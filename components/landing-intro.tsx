@@ -1,10 +1,11 @@
 /**
  * Pantalla de entrada de la portada («cortina»): sobre el fondo marfil se dibuja el isotipo, entran el nombre,
  * la frase y «Un producto de Clikium», y la capa sube como una cortina dejando ver la portada.
- * Es HTML + CSS (.lp-intro en globals.css): se ve antes de que cargue JavaScript y se retira sola, así nunca
- * queda pegada. Se muestra una vez por sesión del navegador y se salta con un clic o una tecla.
+ * Es HTML + CSS (.lp-intro en globals.css) más un script en línea mínimo: se ve antes de que cargue la app y se retira sola, así nunca
+ * queda pegada. Se muestra en cada carga de la página (no al volver a la portada sin recargar) y se salta
+ * con un clic o una tecla.
  */
-const SCRIPT = `try{var d=document.documentElement;if(sessionStorage.getItem('aurabook-intro')){d.dataset.intro='off'}else{sessionStorage.setItem('aurabook-intro','1');var s=function(){if(d.dataset.intro)return;d.dataset.intro='skip';window.dispatchEvent(new Event('aurabook-intro-skip'))};document.getElementById('lp-intro').addEventListener('click',s);window.addEventListener('keydown',s,{once:true})}}catch(e){}`;
+const SCRIPT = `try{var d=document.documentElement;d.dataset.intro='play';var s=function(){if(d.dataset.intro!=='play')return;d.dataset.intro='skip';window.dispatchEvent(new Event('aurabook-intro-skip'))};document.getElementById('lp-intro').addEventListener('click',s);window.addEventListener('keydown',s,{once:true})}catch(e){}`;
 
 export function LandingIntro() {
   return (

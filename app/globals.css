@@ -1725,14 +1725,14 @@ a { color: inherit; text-decoration: none; }
 /* ─── Pantalla de entrada de la portada (components/landing-intro.tsx) ───
    «Cortina» sobre el fondo marfil: el isotipo se dibuja, entran el nombre y la frase línea por línea, la barra
    se llena y a los ~1,8 s la capa sube y deja ver la portada (calza con INTRO_MS en landing-motion.tsx).
-   data-intro="off": ya se vio en esta sesión. data-intro="skip": la persona hizo clic o tocó una tecla. */
+   Solo se ve con data-intro="play" (lo pone el script al cargar) o "skip" (clic o tecla); "done" = ya subió. */
 .lp-intro {
-  position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 24px;
+  position: fixed; inset: 0; z-index: 1000; display: none; place-items: center; padding: 24px;
   background: var(--warm); color: var(--ink); text-align: center; cursor: pointer;
   box-shadow: 0 1px 0 var(--line), 0 30px 60px rgba(24, 25, 28, .08);
   animation: lp-curtain .8s cubic-bezier(.76, 0, .24, 1) 1.8s forwards;
 }
-html[data-intro="off"] .lp-intro { display: none; }
+html[data-intro="play"] .lp-intro, html[data-intro="skip"] .lp-intro { display: grid; }
 html[data-intro="skip"] .lp-intro { animation: lp-curtain-skip .55s cubic-bezier(.76, 0, .24, 1) forwards; }
 .lp-intro-inner { display: grid; justify-items: center; animation: lp-intro-leave .5s cubic-bezier(.65, 0, .35, 1) 1.65s forwards; }
 .lp-intro-mark { margin-bottom: 22px; color: var(--brand); }

@@ -21,14 +21,19 @@ const INTRO_REDUCED_MS = 1000;
 export function LandingMotion({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    if (document.documentElement.dataset.intro === "off") { setReady(true); return; }
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const html = document.documentElement;
+    const intro = document.getElementById("lp-intro");
+    // Al terminar de subir, la cortina queda retirada: si se vuelve a la portada sin recargar, no se repite.
+    const done = (e: AnimationEvent) => { if (e.target === intro && /^lp-(curtain|intro-fade)/.test(e.animationName)) html.dataset.intro = "done"; };
+    intro?.addEventListener("animationend", done);
+    const cleanup = () => intro?.removeEventListener("animationend", done);
     const go = () => setReady(true);
-    if (document.documentElement.dataset.intro === "skip") { go(); return; }
+    if (html.dataset.intro !== "play") { go(); return cleanup; }
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // La cortina (CSS) corre desde que se pinta la página, no desde que React hidrata: se descuenta lo ya transcurrido.
     const t = window.setTimeout(go, Math.max(0, (reduced ? INTRO_REDUCED_MS : INTRO_MS) - performance.now()));
     window.addEventListener("aurabook-intro-skip", go, { once: true });
-    return () => { window.clearTimeout(t); window.removeEventListener("aurabook-intro-skip", go); };
+    return () => { cleanup(); window.clearTimeout(t); window.removeEventListener("aurabook-intro-skip", go); };
   }, []);
   return (
     <LazyMotion features={domAnimation} strict>
