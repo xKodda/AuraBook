@@ -19,3 +19,6 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/,
 export const BILLING_CONTACT_EMAIL = process.env.NEXT_PUBLIC_BILLING_CONTACT_EMAIL ?? "";
 export const BILLING_CONTACT_WHATSAPP = (process.env.NEXT_PUBLIC_BILLING_CONTACT_WHATSAPP ?? "").replace(/\D/g, "");
 
+
+/** Origen público para enlaces absolutos (sitemap, Open Graph). */
+export const PUBLIC_ORIGIN = SITE_URL || "https://aurabook.clikium.cl";

@@ -2,7 +2,8 @@ import "server-only";
 import {
   DEMO_MODE, DEMO_BUSINESSES, demoCatalog, demoCreatePanelBooking, demoListBookings, demoPanelBusinesses, demoRevenue, demoSetStatus,
 } from "./demo";
-import { mySubscriptions } from "./billing-server";
+import { myEntitlements, mySubscriptions } from "./billing-server";
+import { FREE_ENTITLEMENTS, type Entitlements } from "./plans";
 import { addCalendarDays, timeInTimeZone, zonedTimeToUtc } from "./dates";
 import { sessionDb } from "./supabase";
 import type {
@@ -42,7 +43,7 @@ export async function getPanelSession(): Promise<PanelSession | null> {
     .select("role, businesses(id,slug,name,category,brand_color,timezone,is_active,logo_url)")
     .eq("user_id", user.id);
   if (error) throw new Error(`No se pudieron cargar los negocios: ${error.message}`);
-  const billing = await mySubscriptions();
+  const [billing, entitlements] = await Promise.all([mySubscriptions(), myEntitlements()]);
   const businesses = ((data ?? []) as unknown as DbMembership[])
     .filter((m) => m.businesses)
     .map((m) => ({
@@ -56,6 +57,7 @@ export async function getPanelSession(): Promise<PanelSession | null> {
       published: m.businesses!.is_active,
       logoUrl: m.businesses!.logo_url,
       billing: billing.get(m.businesses!.id),
+      entitlements: entitlements.get(m.businesses!.id) ?? FREE_ENTITLEMENTS,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
   return { userId: user.id, email: user.email ?? null, businesses, demo: false };

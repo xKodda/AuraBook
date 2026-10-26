@@ -99,7 +99,8 @@ test("Avisos de suscripción para el dueño (sin bloqueo)", async () => {
   assert.equal(billingAlert({ status: "trial", endsAt: inDays(10) }, now), null);
   assert.match(billingAlert({ status: "trial", endsAt: inDays(5) }, now).message, /5 días/);
   assert.match(billingAlert({ status: "trial", endsAt: inDays(0.5) }, now).message, /hoy/);
-  assert.equal(billingAlert({ status: "past_due", endsAt: inDays(-2) }, now).tone, "warning");
+  assert.match(billingAlert({ status: "past_due", endsAt: inDays(-2) }, now).message, /ahora estás en Free/);
+  assert.equal(billingAlert({ status: "past_due", endsAt: inDays(-30) }, now), null);
   assert.equal(billingAlert({ status: "active", endsAt: inDays(20) }, now), null);
   assert.match(billingAlert({ status: "active", endsAt: inDays(3) }, now).message, /renueva en 3/);
   assert.equal(billingAlert({ status: "cancelled", endsAt: null }, now), null);

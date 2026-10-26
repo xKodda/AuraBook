@@ -92,8 +92,7 @@ describe("ingresos por rango", () => {
   });
 
   test("otro negocio no ve ingresos ajenos", async () => {
-    const { rows } = await as(db, "authenticated", nailsOwner, (tx) => revenue(tx, tuesday, tuesday));
-    assert.equal(rows.length, 0);
+    await assert.rejects(as(db, "authenticated", nailsOwner, (tx) => revenue(tx, tuesday, tuesday)), /FORBIDDEN/);
   });
 
   test("rangos invertidos o mayores a un año no devuelven nada", async () => {

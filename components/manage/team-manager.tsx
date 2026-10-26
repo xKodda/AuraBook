@@ -5,12 +5,13 @@ import Link from "next/link";
 import { Check, Clock, Pencil, Plus } from "lucide-react";
 import { archiveStaffAction, saveServiceAction, saveStaffAction } from "@/app/onboarding/actions";
 import { ChoiceField, useBusinessState } from "@/components/business-editors";
+import { canAddStaff, staffLimitLabel, type Entitlements } from "@/lib/plans";
 import { ROLE_TITLES } from "@/lib/presets";
 import { CATEGORY_COPY } from "@/lib/theme";
 import type { OnboardingStaff, OnboardingState } from "@/lib/types";
 import { PageHead, Saved, scheduleSummary } from "./common";
 
-export function TeamManager({ initial }: { initial: OnboardingState }) {
+export function TeamManager({ initial, entitlements }: { initial: OnboardingState; entitlements: Entitlements }) {
   const { state, run, pending, error } = useBusinessState(initial);
   const business = state.business!;
   const copy = CATEGORY_COPY[business.category];
@@ -22,6 +23,9 @@ export function TeamManager({ initial }: { initial: OnboardingState }) {
   const [saved, setSaved] = useState<string | null>(null);
 
   const current = editing && editing !== "new" ? editing : null;
+  // El límite se evalúa con el equipo actual (cambia al agregar o quitar personas sin recargar).
+  const plan = { ...entitlements, staffCount: state.staff.length };
+  const atLimit = !canAddStaff(plan);
   const someoneIsMe = state.staff.some((s) => s.linkedToMe);
 
   function open(s: OnboardingStaff | "new") {
@@ -73,20 +77,32 @@ export function TeamManager({ initial }: { initial: OnboardingState }) {
   return (
     <main className="dash-page">
       <PageHead title="Equipo" subtitle="Quienes atienden clientes en tu página de reservas.">
-        <button type="button" className="btn-primary dash-btn" onClick={() => open("new")}><Plus size={16} /> Agregar persona</button>
+        <button type="button" className="btn-primary dash-btn" onClick={() => open("new")} disabled={atLimit}>
+          <Plus size={16} /> Agregar persona
+        </button>
       </PageHead>
+      {atLimit && (
+        <p className="plan-note">
+          Tu plan incluye {staffLimitLabel(plan.maxStaff).toLowerCase()}. <Link href="/dashboard/plan">Pásate a Premium</Link> para sumar a tu equipo.
+        </p>
+      )}
       <Saved message={saved} />
       {error && <div className="form-error" role="alert">{error}</div>}
 
       <section className="dash-card dash-list" aria-label="Personas del equipo">
         {state.staff.length === 0 && <p className="dash-empty">Aún no hay nadie en el equipo.</p>}
-        {state.staff.map((s) => {
+        {state.staff.map((s, index) => {
           const services = state.services.filter((v) => v.staffIds.includes(s.id)).length;
+          // Fuera del plan: sigue en el panel, pero la página pública no lo ofrece (business_bookable_staff).
+          const hidden = plan.maxStaff !== null && index >= plan.maxStaff;
           return (
             <div key={s.id} className="dash-row">
               <span className="bk-avatar dash-avatar">{s.name.charAt(0).toUpperCase()}</span>
               <span className="dash-row-body">
-                <strong>{s.name} {s.linkedToMe && <span className="onb-badge">Tú</span>}</strong>
+                <strong>
+                  {s.name} {s.linkedToMe && <span className="onb-badge">Tú</span>}
+                  {hidden && <span className="onb-badge plan-badge">No aparece en tu página</span>}
+                </strong>
                 <small>
                   {s.roleTitle || copy.staffSingular} · {services} {services === 1 ? "servicio" : "servicios"} · {scheduleSummary(state.schedules[s.id])}
                 </small>

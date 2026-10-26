@@ -10,6 +10,7 @@ import {
   suggestedBookingDate,
 } from "@/lib/dates";
 import { CATEGORY_COPY, brandStyle } from "@/lib/theme";
+import { sandboxSlots } from "@/lib/sandbox";
 import type { AvailableSlot, BookingSuccess, Business, StaffMember } from "@/lib/types";
 import { AuraMark } from "./aura-mark";
 import { BusinessLogo } from "./business-logo";
@@ -18,7 +19,11 @@ import { Turnstile } from "./turnstile";
 // Se incrusta en el build (NEXT_PUBLIC_*). Sin clave, no se muestra el captcha.
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
-type Props = { business: Business; demo: boolean };
+/**
+ * `demo`: el sitio corre en DEMO_MODE (reservas en memoria del servidor).
+ * `sandbox`: demo pública /demo; todo ocurre en el navegador y no se envía ni guarda nada.
+ */
+type Props = { business: Business; demo: boolean; sandbox?: boolean };
 
 /** Plazo de cancelación online, mostrado antes de confirmar (lo exigen los Términos, punto 6). */
 function cancelPolicy(min: number): string {
@@ -36,7 +41,8 @@ function getMessage(response: unknown, fallback: string): string {
   return fallback;
 }
 
-export function BookingExperience({ business, demo }: Props) {
+export function BookingExperience({ business, demo, sandbox = false }: Props) {
+  const captchaKey = sandbox ? "" : TURNSTILE_SITE_KEY;
   const copy = CATEGORY_COPY[business.category] ?? CATEGORY_COPY.otro;
   const brandVars = useMemo(() => brandStyle(business.brandColor), [business.brandColor]);
 
@@ -52,6 +58,8 @@ export function BookingExperience({ business, demo }: Props) {
   const [customerEmail, setCustomerEmail] = useState("");
   const [wantsReminder, setWantsReminder] = useState(true);
   const emailLooksValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(customerEmail.trim());
+  // El recordatorio solo se ofrece si el plan del negocio lo incluye (lib/plans.ts).
+  const offersReminder = business.features.includes("client_reminders");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState<BookingSuccess | null>(null);
@@ -99,6 +107,13 @@ export function BookingExperience({ business, demo }: Props) {
     setSlots([]);
     setSlot("");
     setAvailabilityState("loading");
+    if (sandbox) {
+      const timer = window.setTimeout(() => {
+        setSlots(sandboxSlots(serviceId, date, staffId === "any" ? null : staffId));
+        setAvailabilityState("success");
+      }, 250);
+      return () => window.clearTimeout(timer);
+    }
     const query = new URLSearchParams({
       slug: business.slug,
       serviceId,
@@ -127,7 +142,7 @@ export function BookingExperience({ business, demo }: Props) {
         }
       });
     return () => controller.abort();
-  }, [business.slug, staffId, date, retry, serviceId]);
+  }, [business.slug, staffId, date, retry, serviceId, sandbox]);
 
   function changeService(id: string) {
     setServiceId(id);
@@ -141,6 +156,19 @@ export function BookingExperience({ business, demo }: Props) {
     if (!service || !slot || submitting) return;
     setSubmitting(true);
     setFormError(null);
+    if (sandbox) {
+      // Demo pública: se simula la confirmación sin enviar los datos a ningún lado.
+      const assigned = slots.find((s) => s.time === slot && (staffId === "any" || s.staffId === staffId));
+      window.setTimeout(() => {
+        setConfirmed({
+          bookingId: "demo", manageToken: "", time: slot, demo: true,
+          assignedStaffId: assigned?.staffId ?? "", assignedStaffName: assigned?.staffName ?? "",
+        });
+        setSubmitting(false);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 500);
+      return;
+    }
     try {
       const response = await fetch("/api/bookings", {
         method: "POST",
@@ -154,14 +182,14 @@ export function BookingExperience({ business, demo }: Props) {
           name: customerName.trim(),
           phone: customerPhone.trim(),
           email: customerEmail.trim(),
-          reminder: emailLooksValid && wantsReminder,
+          reminder: offersReminder && emailLooksValid && wantsReminder,
           ...(captchaToken ? { captchaToken } : {}),
         }),
       });
       const body: unknown = await response.json();
       if (!response.ok) {
         // El token de Turnstile ya se consumió: pedir uno nuevo para el siguiente intento.
-        if (TURNSTILE_SITE_KEY) setCaptchaReset((n) => n + 1);
+        if (captchaKey) setCaptchaReset((n) => n + 1);
         if (response.status === 409) {
           setSlot("");
           setRetry((n) => n + 1);
@@ -216,7 +244,16 @@ export function BookingExperience({ business, demo }: Props) {
 
   return (
     <div className="bk-shell" style={brandVars}>
-      {demo && (
+      {sandbox && (
+        <div className="demo-ribbon" role="status">
+          <span className="demo-dot" />
+          <span>DEMOSTRACIÓN · Negocio ficticio, no se guarda ningún dato</span>
+          <Link href="/registro" style={{ textDecoration: "underline", marginLeft: 8, fontWeight: 700 }}>
+            Crear la mía →
+          </Link>
+        </div>
+      )}
+      {demo && !sandbox && (
         <div className="demo-ribbon" role="status">
           <span className="demo-dot" />
           <span>MODO DEMO · Reservas simuladas</span>
@@ -235,7 +272,9 @@ export function BookingExperience({ business, demo }: Props) {
               <span className="success-icon"><CheckCircle2 size={30} /></span>
               <h2>{demo ? "¡Prueba completada!" : "¡Tu hora está reservada!"}</h2>
               <p className="bk-muted">
-                Guarda el enlace de tu reserva: desde ahí puedes verla, agregarla a tu calendario o cancelarla.
+                {sandbox
+                  ? "Así de rápido reservan tus clientes. Esta reserva fue simulada: no se guardó ni se envió ningún dato."
+                  : "Guarda el enlace de tu reserva: desde ahí puedes verla, agregarla a tu calendario o cancelarla."}
               </p>
               <dl className="bk-ticket">
                 <div><dt>Servicio</dt><dd>{service?.name}</dd></div>
@@ -245,9 +284,15 @@ export function BookingExperience({ business, demo }: Props) {
                 <div><dt>Total en el local</dt><dd>{service && formatPrice(service.priceClp)}</dd></div>
               </dl>
               <div className="bk-confirm-actions">
-                <Link href={`/reserva/${confirmed.manageToken}`} className="btn-primary">
-                  <ExternalLink size={16} /> Ver mi reserva
-                </Link>
+                {sandbox ? (
+                  <Link href="/registro" className="btn-primary">
+                    Crear mi página de reservas <ArrowRight size={16} />
+                  </Link>
+                ) : (
+                  <Link href={`/reserva/${confirmed.manageToken}`} className="btn-primary">
+                    <ExternalLink size={16} /> Ver mi reserva
+                  </Link>
+                )}
                 <button type="button" className="btn-secondary" onClick={reset}>
                   <ArrowLeft size={16} /> Agendar otra hora
                 </button>
@@ -385,14 +430,14 @@ export function BookingExperience({ business, demo }: Props) {
                       autoComplete="email" type="email" inputMode="email" placeholder="Para recibir la confirmación" maxLength={254} />
                   </label>
                 </div>
-                <label className={`bk-reminder${emailLooksValid ? "" : " disabled"}`}>
+                {offersReminder && <label className={`bk-reminder${emailLooksValid ? "" : " disabled"}`}>
                   <input type="checkbox" checked={emailLooksValid && wantsReminder} disabled={!emailLooksValid}
                     onChange={(e) => setWantsReminder(e.target.checked)} />
                   <span>
                     Recordarme por correo el día antes
                     {!emailLooksValid && <small>Ingresa tu correo para activarlo.</small>}
                   </span>
-                </label>
+                </label>}
               </div>
 
               {/* Resumen y confirmación */}
@@ -409,13 +454,13 @@ export function BookingExperience({ business, demo }: Props) {
 
                 {formError && <div role="alert" className="form-error">{formError}</div>}
 
-                {TURNSTILE_SITE_KEY && (
-                  <Turnstile siteKey={TURNSTILE_SITE_KEY} resetKey={captchaReset} onToken={setCaptchaToken} />
+                {captchaKey && (
+                  <Turnstile siteKey={captchaKey} resetKey={captchaReset} onToken={setCaptchaToken} />
                 )}
 
                 <button className="submit-button" type="submit"
                   disabled={!slot || !service || submitting || availabilityState !== "success"
-                    || (Boolean(TURNSTILE_SITE_KEY) && !captchaToken)}>
+                    || (Boolean(captchaKey) && !captchaToken)}>
                   {submitting ? "Confirmando…" : slot ? `Confirmar ${slot} h` : "Confirmar mi hora"} <ArrowRight size={18} />
                 </button>
                 <p className="bk-policy">

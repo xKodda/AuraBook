@@ -8,5 +8,5 @@ export const metadata: Metadata = { title: "Equipo | AuraBook" };
 export default async function TeamPage() {
   const { business, session } = await requireManager();
   const state = await getOnboardingState(business.id, session.userId);
-  return <TeamManager key={business.id} initial={state} />;
+  return <TeamManager key={business.id} initial={state} entitlements={business.entitlements} />;
 }

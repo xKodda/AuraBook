@@ -1,7 +1,8 @@
 import "server-only";
 import { DEMO_MODE } from "./env";
 import { demoAdminSnapshot, demoBusinessSubscription } from "./demo-billing";
-import { sessionDb } from "./supabase";
+import { DEFAULT_PUBLIC_PLANS, type Entitlements, type FeatureKey, type PlanTier, type PublicPlans } from "./plans";
+import { publicDb, sessionDb } from "./supabase";
 import type { AdminSnapshot, BillingSummary, BusinessSubscription, SubscriptionStatus } from "./types";
 
 export async function isPlatformAdmin(): Promise<boolean> {
@@ -51,8 +52,39 @@ export async function mySubscriptions(): Promise<Map<string, BillingSummary>> {
   }[]) {
     result.set(row.business_id, {
       status: row.status,
-      endsAt: row.status === "trial" ? row.trial_ends_at : row.paid_until,
+      // Vencido sin pagos: la fecha relevante es el fin de la prueba.
+      endsAt: row.status === "trial" ? row.trial_ends_at : (row.paid_until ?? row.trial_ends_at),
     });
   }
   return result;
+}
+
+/** Capacidades del plan vigente de cada negocio del usuario (cualquier rol). Ante un error, se asume Free. */
+export async function myEntitlements(): Promise<Map<string, Entitlements>> {
+  const result = new Map<string, Entitlements>();
+  if (DEMO_MODE) return result;
+  const db = await sessionDb();
+  const { data, error } = await db.rpc("my_entitlements");
+  if (error) {
+    console.error("my_entitlements:", error.message);
+    return result;
+  }
+  for (const row of (data ?? []) as {
+    business_id: string; tier: PlanTier; max_staff: number | null; features: FeatureKey[]; staff_count: number;
+  }[]) {
+    result.set(row.business_id, { tier: row.tier, maxStaff: row.max_staff, features: row.features ?? [], staffCount: row.staff_count });
+  }
+  return result;
+}
+
+/** Planes publicados para /precios. Si la base de datos no responde, se usan los valores de lib/plans.ts. */
+export async function getPublicPlans(): Promise<PublicPlans> {
+  if (DEMO_MODE) return DEFAULT_PUBLIC_PLANS;
+  const { data, error } = await publicDb().rpc("public_plans");
+  if (error || !data) {
+    console.error("public_plans:", error?.message);
+    return DEFAULT_PUBLIC_PLANS;
+  }
+  const plans = data as PublicPlans;
+  return plans.plans.length ? plans : DEFAULT_PUBLIC_PLANS;
 }

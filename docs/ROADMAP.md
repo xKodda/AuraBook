@@ -14,6 +14,12 @@ Regla para decidir qué construir: *si una función no ayuda a llenar la agenda 
 
 ## 2. Planes: gratis y pagado
 
+> **Vigente desde 2026-10-26:** Free ($0, 1 profesional) y Premium ($12.990/mes o $129.900/año, hasta 3 profesionales,
+> recordatorio al cliente e ingresos por semana y mes). Prueba de Premium por 30 días sin tarjeta y sin cobro automático;
+> al terminar pasa a Free. Precios publicados en `/precios`; capacidades en `lib/plans.ts` y `public.business_limits`.
+> Un plan superior (más de 3 profesionales, $19.990–$24.990) queda en estudio, sin anunciar.
+> La propuesta original de abajo se conserva como referencia.
+
 ### Criterio
 
 1. **Lo gratis debe servir de verdad** a quien trabaja solo. Si el plan gratis no sirve, nadie llega al pagado.

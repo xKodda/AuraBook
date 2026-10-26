@@ -74,6 +74,12 @@ Un perfil profesional (`staff`) se vincula como máximo a un usuario.
 - **Sobrecupo** (`bookings.is_overbook`, migración 20261101000000): desde el panel se puede agendar a sabiendas sobre
   una hora ocupada. Esas reservas quedan fuera de `bookings_no_overlap`, pero siguen ocupando la hora en
   `available_slots`, así que la página pública nunca ofrece ese horario. En la agenda se marcan como «Sobrecupo».
+- **Planes Free y Premium** (migración 20261102000000): lo que puede usar un negocio sale de una sola función,
+  `business_limits` (prueba vigente o pago vigente → Premium; lo demás → Free). La lista de capacidades vive en
+  `plans.features` y se describe en `lib/plans.ts` (`can`, `canAddStaff`); ninguna pantalla compara nombres de plan.
+  Se aplica en la base de datos: `save_staff` (no agregar por sobre el límite), `available_slots` (la página pública solo
+  ofrece a los primeros profesionales que caben en el plan), `due_reminders` y `panel_revenue`. Nunca se cancela una
+  reserva ni se archiva a nadie por bajar de plan.
 - **Ingresos** (`panel_revenue`): suma por día de las reservas confirmadas y completadas, en fechas locales del negocio y
   con ambos extremos incluidos. Es `security invoker`, así que un profesional solo suma sus propias reservas. El panel
   muestra la semana (lunes a domingo) y el mes en curso (del día 1 al último día real del mes), y un rango libre de

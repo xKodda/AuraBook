@@ -6,9 +6,8 @@ const at = (days: number) => new Date(Date.now() + days * DAY).toISOString();
 const day = (days: number) => at(days).slice(0, 10);
 
 const PLANS: AdminPlan[] = [
-  { id: "d0000000-0000-4000-8000-000000000001", name: "Esencial", description: "Para quien atiende solo.", priceClp: 9990, maxStaff: 1, isActive: true, subscribers: 0 },
-  { id: "d0000000-0000-4000-8000-000000000002", name: "Equipo", description: "Hasta 5 profesionales.", priceClp: 19990, maxStaff: 5, isActive: true, subscribers: 0 },
-  { id: "d0000000-0000-4000-8000-000000000003", name: "Salón", description: "Profesionales ilimitados.", priceClp: 34990, maxStaff: null, isActive: true, subscribers: 0 },
+  { id: "d0000000-0000-4000-8000-000000000001", name: "Free", description: "Para quien atiende solo.", priceClp: 0, maxStaff: 1, isActive: true, subscribers: 0 },
+  { id: "d0000000-0000-4000-8000-000000000002", name: "Premium", description: "Para negocios con equipo que quieren menos inasistencias.", priceClp: 12990, maxStaff: 3, isActive: true, subscribers: 0 },
 ];
 
 type Seed = [name: string, slug: string, category: AdminBusiness["category"], plan: number | null,
@@ -16,18 +15,18 @@ type Seed = [name: string, slug: string, category: AdminBusiness["category"], pl
 
 const SEEDS: Seed[] = [
   ["Barber Studio", "barber-studio", "barberia", 1, "active", 120, 2, 84],
-  ["Aura Nails Studio", "aura-nails", "unas", 0, "active", 95, 2, 61],
-  ["Salón Lumière", "salon-lumiere", "peluqueria", 2, "active", 70, 6, 132],
+  ["Aura Nails Studio", "aura-nails", "unas", 1, "active", 95, 2, 61],
+  ["Salón Lumière", "salon-lumiere", "peluqueria", 1, "active", 70, 3, 132],
   ["Barbería Norte", "barberia-norte", "barberia", 1, "past_due", 60, 3, 22],
   ["Estudio Kora", "estudio-kora", "estetica", null, "trial", 9, 1, 7],
   ["Spa Raíz", "spa-raiz", "spa", null, "trial", 3, 2, 1],
-  ["Uñas Marga", "unas-marga", "unas", 0, "cancelled", 150, 1, 0],
+  ["Uñas Marga", "unas-marga", "unas", 1, "cancelled", 150, 1, 0],
 ];
 
 function businesses(): AdminBusiness[] {
   return SEEDS.map(([name, slug, category, planIndex, status, created, staff, bookings], i) => {
     const plan = planIndex === null ? null : PLANS[planIndex];
-    const trialEnds = at(-created + 14);
+    const trialEnds = at(-created + 30);
     return {
       id: `d1000000-0000-4000-8000-00000000000${i}`,
       name, slug, category,
@@ -99,7 +98,7 @@ export function demoAdminSnapshot(): AdminSnapshot {
       subscribers: list.filter((b) => b.planId === p.id && (b.status === "active" || b.status === "trial")).length,
     })),
     payments: pays,
-    settings: { trialDays: 14 },
+    settings: { trialDays: 30 },
   };
 }
 

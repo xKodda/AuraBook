@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Check, Mail, MessageSquare } from "lucide-react";
-import { METHOD_LABEL, STATUS_LABEL, daysUntil, formatShortDate } from "@/lib/billing";
-import { getBusinessSubscription } from "@/lib/billing-server";
+import { METHOD_LABEL, daysUntil, formatShortDate } from "@/lib/billing";
+import { getBusinessSubscription, getPublicPlans } from "@/lib/billing-server";
 import { formatPrice } from "@/lib/dates";
 import { BILLING_CONTACT_EMAIL, BILLING_CONTACT_WHATSAPP } from "@/lib/env";
 import { requireManager } from "@/lib/dashboard";
+import { FEATURES, TIER_LABEL, staffLimitLabel } from "@/lib/plans";
 
 export const metadata: Metadata = {
   title: "Mi plan | AuraBook",
@@ -14,91 +15,92 @@ export const metadata: Metadata = {
 
 export default async function MyPlanPage() {
   const { business } = await requireManager();
-  const sub = await getBusinessSubscription(business.id);
+  const [sub, published] = await Promise.all([getBusinessSubscription(business.id), getPublicPlans()]);
   if (!sub) notFound();
 
-  const endsAt = sub.status === "trial" ? sub.trialEndsAt : sub.paidUntil;
-  const days = daysUntil(endsAt);
-  const overLimit = sub.plan?.maxStaff != null && sub.staffCount > sub.plan.maxStaff;
-  const message = `Hola, soy de ${business.name} (aurabook /${business.slug}). Quiero pagar o cambiar mi plan.`;
+  const plan = business.entitlements;
+  const premium = published.plans.find((p) => p.code === "premium");
+  const days = daysUntil(sub.status === "trial" ? sub.trialEndsAt : sub.paidUntil);
+  const overLimit = plan.maxStaff !== null && sub.staffCount > plan.maxStaff;
+  const message = `Hola, soy de ${business.name} (aurabook /${business.slug}). Quiero pasarme a Premium.`;
 
+  const badge = sub.status === "trial" ? "Prueba de Premium" : sub.status === "active" ? "Activo" : "Free";
   const headline =
-    sub.status === "trial" ? (days !== null && days > 0 ? `Te quedan ${days} días de prueba gratis` : "Tu prueba gratis terminó hoy")
-    : sub.status === "active" ? `Plan ${sub.plan?.name ?? ""} activo`
-    : sub.status === "past_due" ? "Tu plan está vencido"
-    : "Suscripción cancelada";
+    sub.status === "trial" ? (days !== null && days > 0 ? `Estás probando Premium: te quedan ${days} días` : "Tu prueba de Premium termina hoy")
+    : sub.status === "active" ? `Plan ${sub.plan?.name ?? TIER_LABEL[plan.tier]} activo`
+    : "Estás en el plan Free";
 
   return (
     <main className="plan-main dash-page">
         <section className="adm-card plan-hero">
-          <span className={`sub-badge sub-${sub.status}`}>{STATUS_LABEL[sub.status]}</span>
+          <span className={`sub-badge sub-${sub.status === "trial" ? "trial" : sub.status === "active" ? "active" : "free"}`}>{badge}</span>
           <h1>{headline}</h1>
           <p className="adm-muted">
-            {sub.status === "trial" && `Tu prueba termina el ${formatShortDate(sub.trialEndsAt)}. Tu página sigue funcionando mientras regularizas.`}
+            {sub.status === "trial" && `Tu prueba termina el ${formatShortDate(sub.trialEndsAt)}. Después pasas a Free automáticamente, sin cobros ni datos de tarjeta.`}
             {sub.status === "active" && `Pagado hasta el ${formatShortDate(sub.paidUntil)}${days !== null ? ` (${days} días)` : ""}.`}
-            {sub.status === "past_due" && "Tu página de reservas sigue activa. Escríbenos para regularizar y evitar interrupciones."}
-            {sub.status === "cancelled" && "Escríbenos si quieres reactivar tu suscripción."}
+            {(sub.status === "past_due" || sub.status === "cancelled") &&
+              "Tu página de reservas sigue funcionando y tus reservas se mantienen. Con Premium vuelves a tener todo tu equipo y estas funciones."}
           </p>
 
           <dl className="plan-facts">
-            <div><dt>Plan</dt><dd>{sub.plan ? `${sub.plan.name} · ${formatPrice(sub.plan.priceClp)}/mes` : "Aún no eliges plan"}</dd></div>
+            <div><dt>Plan</dt><dd>{TIER_LABEL[plan.tier]}</dd></div>
             <div>
               <dt>Profesionales</dt>
               <dd className={overLimit ? "adm-warn" : undefined}>
-                {sub.staffCount}{sub.plan?.maxStaff != null ? ` de ${sub.plan.maxStaff}` : ""}
-                {overLimit && " · supera tu plan"}
+                {sub.staffCount}{plan.maxStaff !== null ? ` de ${plan.maxStaff}` : ""}
+                {overLimit && " · los demás no aparecen en tu página"}
               </dd>
             </div>
             <div><dt>Negocio</dt><dd>{business.name}</dd></div>
           </dl>
 
-          {!BILLING_CONTACT_WHATSAPP && !BILLING_CONTACT_EMAIL && sub.status !== "active" && (
-            <p className="adm-note">Para pagar o cambiar de plan, comunícate con el equipo de AuraBook.</p>
-          )}
-          {(BILLING_CONTACT_WHATSAPP || BILLING_CONTACT_EMAIL) && (
-            <div className="plan-contact">
-              {BILLING_CONTACT_WHATSAPP && (
-                <a className="btn-primary" target="_blank" rel="noreferrer"
-                  href={`https://wa.me/${BILLING_CONTACT_WHATSAPP}?text=${encodeURIComponent(message)}`}>
-                  <MessageSquare size={16} /> Pagar o cambiar plan por WhatsApp
-                </a>
-              )}
-              {BILLING_CONTACT_EMAIL && (
-                <a className="btn-secondary"
-                  href={`mailto:${BILLING_CONTACT_EMAIL}?subject=${encodeURIComponent(`Plan AuraBook · ${business.name}`)}&body=${encodeURIComponent(message)}`}>
-                  <Mail size={16} /> Escribir por correo
-                </a>
-              )}
-            </div>
-          )}
+          {plan.tier === "free" || sub.status === "trial" ? (
+            (BILLING_CONTACT_WHATSAPP || BILLING_CONTACT_EMAIL) ? (
+              <div className="plan-contact">
+                {BILLING_CONTACT_WHATSAPP && (
+                  <a className="btn-primary" target="_blank" rel="noreferrer"
+                    href={`https://wa.me/${BILLING_CONTACT_WHATSAPP}?text=${encodeURIComponent(message)}`}>
+                    <MessageSquare size={16} /> Pasar a Premium por WhatsApp
+                  </a>
+                )}
+                {BILLING_CONTACT_EMAIL && (
+                  <a className="btn-secondary"
+                    href={`mailto:${BILLING_CONTACT_EMAIL}?subject=${encodeURIComponent(`Premium AuraBook · ${business.name}`)}&body=${encodeURIComponent(message)}`}>
+                    <Mail size={16} /> Escribir por correo
+                  </a>
+                )}
+              </div>
+            ) : (
+              <p className="adm-note">Para pasarte a Premium, escríbenos a contacto@clikium.cl.</p>
+            )
+          ) : null}
         </section>
 
-        {sub.availablePlans.length > 0 && (
-          <section className="adm-stack">
-            <h2 className="plan-section-title">Planes disponibles</h2>
-            <div className="adm-plans">
-              {sub.availablePlans.map((p) => {
-                const current = p.id === sub.plan?.id;
-                const fits = p.maxStaff === null || sub.staffCount <= p.maxStaff;
-                return (
-                  <article key={p.id} className={`adm-plan${current ? " current" : ""}`}>
-                    <div className="adm-plan-head">
-                      <strong>{p.name}</strong>
-                      {current && <span className="sub-badge sub-active">Tu plan</span>}
-                    </div>
-                    <span className="adm-plan-price">{formatPrice(p.priceClp)}<small>/mes</small></span>
-                    {p.description && <p>{p.description}</p>}
-                    <ul>
-                      <li><Check size={13} /> {p.maxStaff === null ? "Profesionales ilimitados" : `Hasta ${p.maxStaff} ${p.maxStaff === 1 ? "profesional" : "profesionales"}`}</li>
-                      <li><Check size={13} /> Página de reservas y panel</li>
-                    </ul>
-                    {!fits && <small className="adm-warn">Tienes {sub.staffCount} profesionales activos.</small>}
-                  </article>
-                );
-              })}
-            </div>
-          </section>
-        )}
+        <section className="adm-stack">
+          <h2 className="plan-section-title">Planes</h2>
+          <div className="adm-plans">
+            {published.plans.map((p) => {
+              const current = p.code === plan.tier;
+              return (
+                <article key={p.code} className={`adm-plan${current ? " current" : ""}`}>
+                  <div className="adm-plan-head">
+                    <strong>{p.name}</strong>
+                    {current && <span className="sub-badge sub-active">{sub.status === "trial" ? "En prueba" : "Tu plan"}</span>}
+                  </div>
+                  <span className="adm-plan-price">{formatPrice(p.priceClp)}<small>/mes</small></span>
+                  {p.priceYearlyClp ? <small className="adm-muted">o {formatPrice(p.priceYearlyClp)} al año</small> : null}
+                  {p.description && <p>{p.description}</p>}
+                  <ul>
+                    <li><Check size={13} /> {staffLimitLabel(p.maxStaff)}</li>
+                    {p.features.map((f) => <li key={f}><Check size={13} /> {FEATURES[f].label}</li>)}
+                    {p.code === "free" && <li><Check size={13} /> Página de reservas y panel</li>}
+                  </ul>
+                </article>
+              );
+            })}
+          </div>
+          {premium && <p className="adm-muted plan-fine">Precios en pesos chilenos, IVA incluido. Sin renovación automática: pagas solo cuando decides seguir.</p>}
+        </section>
 
         <section className="adm-card">
           <div className="adm-card-head"><h2>Historial de pagos</h2></div>

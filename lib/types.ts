@@ -1,3 +1,5 @@
+import type { Entitlements, FeatureKey } from "./plans";
+
 export type BusinessCategory = "barberia" | "peluqueria" | "unas" | "spa" | "estetica" | "otro";
 
 export type Service = {
@@ -33,7 +35,10 @@ export type Business = {
   maxDaysAhead: number;
   cancelNoticeMin: number;
   services: Service[];
+  /** Solo los profesionales que el plan permite ofrecer en la página pública. */
   staff: StaffMember[];
+  /** Capacidades del plan vigente (por ejemplo, si se ofrece el recordatorio). */
+  features: FeatureKey[];
 };
 
 export type AvailableSlot = {
@@ -140,6 +145,8 @@ export type PanelBusiness = {
   logoUrl?: string | null;
   /** Solo para owner/admin. */
   billing?: BillingSummary;
+  /** Qué permite el plan vigente (lib/plans.ts). Todos los roles lo reciben. */
+  entitlements: Entitlements;
 };
 
 /** Un día del horario semanal. weekday sigue a PostgreSQL: domingo = 0. */

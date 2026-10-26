@@ -4,8 +4,8 @@ import Link from "next/link";
 import {
   ArrowRight, BellRing, CalendarCheck, CalendarX2, Check, Clock, Mail, Palette, ShieldCheck, Smartphone, UserPlus, Users,
 } from "lucide-react";
-import { AuraMark } from "@/components/aura-mark";
 import { LandingIntro } from "@/components/landing-intro";
+import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import {
   FinalHalo, HeroPhone, HorizontalGallery, LandingMotion, PopIn, Reveal, RevealImage, RevealItem, ScrollZoom,
 } from "@/components/landing-motion";
@@ -16,12 +16,15 @@ import fotoCliente from "@/public/photos/cliente-reservando.jpg";
 import fotoPeluqueria from "@/public/photos/peluqueria-corte.jpg";
 import fotoEstetica from "@/public/photos/estetica-facial.jpg";
 import fotoSpa from "@/public/photos/spa-velas.jpg";
-import { DEMO_MODE } from "@/lib/env";
+
+const DESCRIPTION =
+  "Tu página de reservas con tu marca, lista en minutos. Tus clientes agendan desde el celular, sin descargar apps ni crear cuentas.";
 
 export const metadata: Metadata = {
   title: "AuraBook · Reservas online para barberías, peluquerías y salones",
-  description:
-    "Tu página de reservas con tu marca, lista en minutos. Tus clientes agendan desde el celular, sin descargar apps ni crear cuentas.",
+  description: DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: { title: "AuraBook · Reservas online para tu negocio", description: DESCRIPTION, url: "/" },
 };
 
 type RubroFoto = { title: string; text: string; src: StaticImageData; alt: string; position?: string };
@@ -161,15 +164,7 @@ export default function Home() {
     <LandingMotion>
     <div className="lp">
       <LandingIntro />
-      <header className="lp-header">
-        <Link href="/" className="lp-brand"><AuraMark size={26} title="AuraBook" /><span>AURA<span>BOOK</span></span></Link>
-        <nav className="lp-nav" aria-label="Principal">
-          <a href="#como-funciona">Cómo funciona</a>
-          <a href="#preguntas">Preguntas</a>
-          <Link href="/login" className="lp-nav-login">Ingresar</Link>
-          <Link href="/registro" className="btn-primary lp-btn-sm">Crear cuenta</Link>
-        </nav>
-      </header>
+      <SiteHeader home />
 
       <main>
         <section className="lp-hero">
@@ -182,9 +177,7 @@ export default function Home() {
             </RevealItem>
             <RevealItem className="lp-actions">
               <Link href="/registro" className="btn-primary lp-btn">Crear mi página de reservas <ArrowRight size={17} /></Link>
-              {DEMO_MODE
-                ? <Link href="/reservar/barber-studio" className="lp-link">Ver un ejemplo</Link>
-                : <a href="#como-funciona" className="lp-link">Ver cómo funciona</a>}
+              <Link href="/demo" className="lp-link">Probar la demo</Link>
             </RevealItem>
             <RevealItem>
             <ul className="lp-assurances">
@@ -311,16 +304,7 @@ export default function Home() {
         </Reveal>
       </section>
 
-      <footer className="lp-footer">
-        <span className="lp-brand"><AuraMark size={22} /><span>AURA<span>BOOK</span></span></span>
-        <nav aria-label="Legal">
-          <Link href="/terminos">Términos</Link>
-          <Link href="/privacidad">Privacidad</Link>
-          <Link href="/seguridad">Seguridad</Link>
-          <Link href="/login">Acceso negocios</Link>
-        </nav>
-        <small>© {new Date().getFullYear()} AuraBook · Un producto de <a href="https://clikium.cl/" target="_blank" rel="noopener">Clikium</a></small>
-      </footer>
+      <SiteFooter />
     </div>
     </LandingMotion>
   );

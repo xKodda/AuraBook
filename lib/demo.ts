@@ -3,6 +3,7 @@ import type {
   AvailableSlot, BookingPayload, BookingStatus, BookingSuccess, Business, CancelResult,
   ManagedBooking, OnboardingState, PanelBooking, PanelBookingInput, PanelBusiness, PanelCatalog, RevenueDay, ScheduleDay,
 } from "./types";
+import type { FeatureKey } from "./plans";
 import {
   addCalendarDays, dateInTimeZone, dateWithinBookingWindow, formatMinutes, minutes,
   timeInTimeZone, weekdayOf, zonedTimeToUtc,
@@ -32,7 +33,7 @@ const SCHEDULES: Record<string, Schedule> = {
   "a3000000-0000-4000-8000-000000000002": { days: [1, 2, 3, 4, 5], open: "10:00", close: "18:00", breaks: [["13:00", "14:00"]] },
 };
 
-export const DEMO_BUSINESSES: Business[] = [
+export const DEMO_BUSINESSES: Omit<Business, "features">[] = [
   {
     id: "11111111-1111-4111-8111-111111111111",
     slug: "barber-studio",
@@ -109,14 +110,19 @@ export const DEMO_BUSINESSES: Business[] = [
 /** Compatibilidad con código previo. */
 export const DEMO_BUSINESS = DEMO_BUSINESSES[0];
 
+// En demo, los negocios tienen Premium (lo que se ve en una prueba recién creada).
+const DEMO_FEATURES: FeatureKey[] = ["client_reminders", "revenue_stats"];
+
 export function demoBusinessBySlug(slug: string): Business | null {
-  return DEMO_BUSINESSES.find((b) => b.slug === slug) ?? null;
+  const business = DEMO_BUSINESSES.find((b) => b.slug === slug);
+  return business ? { ...business, features: DEMO_FEATURES } : null;
 }
 
 export function demoPanelBusinesses(): PanelBusiness[] {
   return DEMO_BUSINESSES.map((b) => ({
     id: b.id, slug: b.slug, name: b.name, category: b.category,
     brandColor: b.brandColor, timezone: b.timezone, role: "owner" as const, published: true,
+    entitlements: { tier: "premium" as const, maxStaff: 3, features: DEMO_FEATURES, staffCount: b.staff.length },
   }));
 }
 

@@ -18,6 +18,8 @@ const MESSAGES: Record<string, string> = {
   INVALID_ROLE_TITLE: "El cargo puede tener hasta 60 caracteres.",
   STAFF_NOT_FOUND: "No encontramos a ese profesional en tu negocio.",
   STAFF_LIMIT_REACHED: "Alcanzaste el máximo de profesionales para este negocio.",
+  PLAN_STAFF_LIMIT: "Tu plan no permite más profesionales. Pásate a Premium en «Mi plan» para sumar a tu equipo.",
+  PLAN_FEATURE_REQUIRED: "Esta función es parte de Premium. Revisa «Mi plan».",
   STAFF_ALREADY_LINKED: "Ese profesional ya está vinculado a otra cuenta.",
   STAFF_HAS_UPCOMING_BOOKINGS: "Este profesional tiene reservas próximas. Reasígnalas o cancélalas antes de quitarlo.",
   INVALID_DESCRIPTION: "La descripción puede tener hasta 300 caracteres.",

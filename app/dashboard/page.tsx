@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { PanelExperience } from "@/components/panel-experience";
 import { PanelRevenue } from "@/components/panel-revenue";
+import { PlanUpsell } from "@/components/plan-upsell";
+import { can } from "@/lib/plans";
 import { getDashboardContext } from "@/lib/dashboard";
 import { dateInTimeZone } from "@/lib/dates";
 import { getPanelCatalog, listPanelBookings, listPanelStaff } from "@/lib/panel";
@@ -17,7 +19,9 @@ export default async function DashboardPage() {
   ]);
   return (
     <>
-      <PanelRevenue key={`rev-${business.id}`} business={business} today={today} />
+      {can(business.entitlements, "revenue_stats")
+        ? <PanelRevenue key={`rev-${business.id}`} business={business} today={today} />
+        : <PlanUpsell feature="revenue_stats" canManage={business.role !== "staff"} />}
       <PanelExperience
         key={business.id}
         business={business}

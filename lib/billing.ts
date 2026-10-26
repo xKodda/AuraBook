@@ -42,17 +42,23 @@ export function monthLabel(month: string): string {
 
 export type BillingAlert = { tone: "info" | "warning"; message: string };
 
-/** Aviso para el dueño en su panel. Sin bloqueo: solo informa. */
+/**
+ * Aviso para el dueño en su panel. Sin bloqueo: solo informa.
+ * Al vencer la prueba o el pago, el negocio pasa a Free (lib/plans.ts); se avisa durante las dos semanas siguientes.
+ */
 export function billingAlert(billing: BillingSummary | undefined, now = new Date()): BillingAlert | null {
   if (!billing) return null;
   const days = daysUntil(billing.endsAt, now);
   if (billing.status === "past_due") {
-    return { tone: "warning", message: "Tu plan está vencido. Tu página sigue activa; regulariza el pago para no perder el servicio." };
+    if (days === null || days < -14) return null;
+    return { tone: "warning", message: "Tu Premium terminó y ahora estás en Free. Tus reservas siguen funcionando." };
   }
   if (billing.status === "trial" && days !== null && days <= 7) {
     return {
       tone: "info",
-      message: days <= 1 ? "Tu prueba gratis termina hoy." : `Tu prueba gratis termina en ${days} días.`,
+      message: days <= 1
+        ? "Tu prueba de Premium termina hoy. Después pasas a Free, sin cobros."
+        : `Tu prueba de Premium termina en ${days} días. Después pasas a Free, sin cobros.`,
     };
   }
   if (billing.status === "active" && days !== null && days <= 5) {

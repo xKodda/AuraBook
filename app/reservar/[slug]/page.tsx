@@ -11,7 +11,16 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const business = await getBusiness(slug);
-  return { title: business ? `Reservar en ${business.name}` : "Negocio no encontrado" };
+  if (!business) return { title: "Negocio no encontrado", robots: { index: false } };
+  const description = business.tagline
+    ? `${business.tagline} Reserva tu hora online en ${business.name}, sin crear cuenta.`
+    : `Reserva tu hora online en ${business.name}, sin crear cuenta.`;
+  return {
+    title: `Reservar en ${business.name}`,
+    description,
+    alternates: { canonical: `/reservar/${business.slug}` },
+    openGraph: { title: `Reservar en ${business.name}`, description, url: `/reservar/${business.slug}` },
+  };
 }
 
 export default async function BookingPage({ params }: Props) {
