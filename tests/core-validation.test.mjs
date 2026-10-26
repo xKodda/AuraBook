@@ -124,3 +124,19 @@ test("Correos de reserva: datos correctos y HTML del cliente escapado", async ()
   assert.match(confirm.text, /recordatorio el día antes/);
   assert.match(clientReminderEmail(b, "https://x.cl").subject, /mañana tienes hora en BarberShop/);
 });
+
+test("rangos de ingresos: meses con su último día real y semanas de lunes a domingo", async () => {
+  const { monthRange, shiftMonth, weekRange, daysInRange } = await import("../lib/dates.ts");
+  assert.deepEqual(monthRange("2026-10-25"), { from: "2026-10-01", to: "2026-10-31" });
+  assert.deepEqual(monthRange("2026-11-30"), { from: "2026-11-01", to: "2026-11-30" });
+  assert.deepEqual(monthRange("2027-02-10"), { from: "2027-02-01", to: "2027-02-28" });
+  assert.deepEqual(monthRange("2028-02-10"), { from: "2028-02-01", to: "2028-02-29" });
+  assert.deepEqual(monthRange("2026-12-31"), { from: "2026-12-01", to: "2026-12-31" });
+  assert.equal(shiftMonth("2026-01-31", 1), "2026-02-01");
+  assert.equal(shiftMonth("2026-12-15", 1), "2027-01-01");
+  assert.equal(shiftMonth("2026-01-15", -1), "2025-12-01");
+  assert.deepEqual(weekRange("2026-10-25"), { from: "2026-10-19", to: "2026-10-25" }); // domingo
+  assert.deepEqual(weekRange("2026-10-26"), { from: "2026-10-26", to: "2026-11-01" }); // lunes
+  assert.equal(daysInRange("2027-02-01", "2027-02-28"), 28);
+  assert.equal(daysInRange("2026-10-01", "2026-10-31"), 31);
+});

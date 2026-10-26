@@ -1,7 +1,7 @@
 import "server-only";
 import type {
   AvailableSlot, BookingPayload, BookingStatus, BookingSuccess, Business, CancelResult,
-  ManagedBooking, OnboardingState, PanelBooking, PanelBusiness, ScheduleDay,
+  ManagedBooking, OnboardingState, PanelBooking, PanelBookingInput, PanelBusiness, PanelCatalog, RevenueDay, ScheduleDay,
 } from "./types";
 import {
   addCalendarDays, dateInTimeZone, dateWithinBookingWindow, formatMinutes, minutes,
@@ -137,6 +137,7 @@ type DemoBooking = {
   priceClp: number;
   status: BookingStatus;
   source: "web" | "panel";
+  overbook?: boolean;
 };
 
 type DemoState = { bookings: DemoBooking[]; seededFor: string | null };
@@ -177,15 +178,18 @@ const SAMPLE_CLIENTS = [
 ];
 const SAMPLE_TIMES = ["10:00", "11:00", "12:00", "15:30", "16:30", "17:30"];
 
-/** Agenda de ejemplo para hoy y mañana, para que el panel demo tenga contenido. */
+/** Agenda de ejemplo desde el día 1 del mes hasta mañana, para que el panel demo tenga agenda e ingresos. */
 function seedIfNeeded(s: DemoState) {
   const today = dateInTimeZone(new Date(), TZ);
   if (s.seededFor === today) return;
   s.seededFor = today;
+  s.bookings = [];
   const nowMin = minutes(timeInTimeZone(new Date(), TZ));
+  const dates: string[] = [];
+  for (let d = `${today.slice(0, 7)}-01`; d <= addCalendarDays(today, 1); d = addCalendarDays(d, 1)) dates.push(d);
   let n = 0;
   for (const business of DEMO_BUSINESSES) {
-    for (const date of [today, addCalendarDays(today, 1)]) {
+    for (const date of dates) {
       business.staff.forEach((member, staffIndex) => {
         const sched = scheduleFor(member.id, date);
         if (!sched) return;
@@ -197,7 +201,7 @@ function seedIfNeeded(s: DemoState) {
           const end = start + service.durationMin;
           if (!fitsSchedule(sched, start, end) || collides(s.bookings, member.id, date, start, end)) return;
           const [clientName, clientPhone] = SAMPLE_CLIENTS[n++ % SAMPLE_CLIENTS.length];
-          const past = date === today && end <= nowMin;
+          const past = date < today || (date === today && end <= nowMin);
           s.bookings.push({
             id: crypto.randomUUID(), token: newToken(), businessId: business.id, serviceId: service.id,
             staffId: member.id, date, start, end, clientName, clientPhone, priceClp: service.priceClp,
@@ -330,6 +334,7 @@ export function demoListBookings(businessId: string, date: string): PanelBooking
       endTime: formatMinutes(b.end),
       status: b.status,
       source: b.source,
+      overbook: b.overbook ?? false,
     }));
 }
 
@@ -337,10 +342,54 @@ export function demoSetStatus(businessId: string, bookingId: string, status: Boo
   const s = state();
   const b = s.bookings.find((x) => x.id === bookingId && x.businessId === businessId);
   if (!b) return "NOT_FOUND";
-  if (status === "confirmed" && b.status !== "confirmed" && collides(s.bookings, b.staffId, b.date, b.start, b.end, b.id)) {
+  if (status === "confirmed" && b.status !== "confirmed" && !b.overbook && collides(s.bookings, b.staffId, b.date, b.start, b.end, b.id)) {
     return "SLOT_TAKEN";
   }
   b.status = status;
+  return "OK";
+}
+
+export function demoRevenue(businessId: string, from: string, to: string): RevenueDay[] {
+  const byDay = new Map<string, RevenueDay>();
+  for (const b of state().bookings) {
+    if (b.businessId !== businessId || b.date < from || b.date > to) continue;
+    if (b.status !== "confirmed" && b.status !== "completed") continue;
+    const day = byDay.get(b.date) ?? { day: b.date, totalClp: 0, bookings: 0 };
+    day.totalClp += b.priceClp;
+    day.bookings += 1;
+    byDay.set(b.date, day);
+  }
+  return [...byDay.values()].sort((a, b) => a.day.localeCompare(b.day));
+}
+
+export function demoCatalog(businessId: string): PanelCatalog {
+  const business = DEMO_BUSINESSES.find((x) => x.id === businessId);
+  if (!business) return { services: [], staff: [] };
+  return {
+    staff: business.staff.map(({ id, name }) => ({ id, name })),
+    services: business.services.map((sv) => ({
+      id: sv.id, name: sv.name, durationMin: sv.durationMin, priceClp: sv.priceClp,
+      staffIds: business.staff.filter((m) => m.serviceIds.includes(sv.id)).map((m) => m.id),
+    })),
+  };
+}
+
+export function demoCreatePanelBooking(
+  businessId: string, input: PanelBookingInput,
+): "OK" | "SLOT_TAKEN" | "SERVICE_NOT_FOUND" | "STAFF_NOT_FOUND" {
+  const business = DEMO_BUSINESSES.find((x) => x.id === businessId);
+  const service = business?.services.find((x) => x.id === input.serviceId);
+  if (!business || !service) return "SERVICE_NOT_FOUND";
+  if (!business.staff.some((m) => m.id === input.staffId && m.serviceIds.includes(service.id))) return "STAFF_NOT_FOUND";
+  const s = state();
+  const start = minutes(input.time);
+  const end = start + service.durationMin;
+  if (!input.overbook && collides(s.bookings, input.staffId, input.date, start, end)) return "SLOT_TAKEN";
+  s.bookings.push({
+    id: crypto.randomUUID(), token: newToken(), businessId, serviceId: service.id, staffId: input.staffId,
+    date: input.date, start, end, clientName: input.name, clientPhone: input.phone, priceClp: service.priceClp,
+    status: "confirmed", source: "panel", overbook: input.overbook,
+  });
   return "OK";
 }
 

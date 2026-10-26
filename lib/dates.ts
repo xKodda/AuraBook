@@ -118,3 +118,50 @@ export function formatMinutes(total: number): string {
 export function calendarStamp(isoUtc: string): string {
   return new Date(isoUtc).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
+
+// ─── Rangos para ingresos (fechas locales YYYY-MM-DD, ambos extremos incluidos) ───
+
+/** Mes calendario completo que contiene `date`: del día 1 al último día real (28, 29, 30 o 31). */
+export function monthRange(date: string): { from: string; to: string } {
+  const [y, m] = date.split("-").map(Number);
+  // Día 0 del mes siguiente = último día de este mes; Date maneja bisiestos.
+  const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const month = String(m).padStart(2, "0");
+  return { from: `${y}-${month}-01`, to: `${y}-${month}-${String(lastDay).padStart(2, "0")}` };
+}
+
+/** Primer día del mes desplazado `months` meses desde el mes de `date`. */
+export function shiftMonth(date: string, months: number): string {
+  const [y, m] = date.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + months, 1, 12));
+  return d.toISOString().slice(0, 10);
+}
+
+/** Semana de lunes a domingo que contiene `date` (en Chile la semana empieza el lunes). */
+export function weekRange(date: string): { from: string; to: string } {
+  const from = addCalendarDays(date, -((weekdayOf(date) + 6) % 7));
+  return { from, to: addCalendarDays(from, 6) };
+}
+
+/** Días entre dos fechas, contando ambas (2026-10-01 a 2026-10-31 = 31). */
+export function daysInRange(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T12:00:00Z`) - Date.parse(`${from}T12:00:00Z`)) / 86_400_000) + 1;
+}
+
+/** «1 – 31 oct 2026», «27 oct – 2 nov 2026» o «15 dic 2026 – 10 ene 2027». */
+export function formatDateRange(from: string, to: string): string {
+  const fmt = (date: string, opts: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat("es-CL", { ...opts, timeZone: "UTC" }).format(new Date(`${date}T12:00:00Z`)).replace(".", "");
+  const sameYear = from.slice(0, 4) === to.slice(0, 4);
+  const sameMonth = sameYear && from.slice(5, 7) === to.slice(5, 7);
+  const end = fmt(to, { day: "numeric", month: "short", year: "numeric" });
+  if (from === to) return end;
+  if (sameMonth) return `${Number(from.slice(8))} – ${end}`;
+  return `${fmt(from, sameYear ? { day: "numeric", month: "short" } : { day: "numeric", month: "short", year: "numeric" })} – ${end}`;
+}
+
+/** «octubre de 2026» */
+export function formatMonth(date: string): string {
+  return new Intl.DateTimeFormat("es-CL", { month: "long", year: "numeric", timeZone: "UTC" })
+    .format(new Date(`${date.slice(0, 7)}-15T12:00:00Z`));
+}

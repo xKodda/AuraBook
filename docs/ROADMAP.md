@@ -78,7 +78,7 @@ Regla para decidir qué construir: *si una función no ayuda a llenar la agenda 
 | A4 | Aviso al dueño cuando un cliente **cancela** | Hoy solo se ve en el panel |
 | A5 | **Gestión desde el panel** (Fase 3): editar equipo, servicios y horarios sin volver al onboarding | Hoy el único camino es `/onboarding` |
 | A6 | **Bloqueos de agenda**: vacaciones, feriados, horas tomadas por fuera | La tabla `time_off` existe, falta la pantalla |
-| A7 | **Reserva manual** desde el panel | La función de BD existe (`panel_create_booking`), falta la pantalla |
+| A7 | ~~**Reserva manual** desde el panel~~ | Hecho: «Nueva reserva» en la agenda, con sobrecupo opcional |
 | A8 | Eliminar cuenta y negocio, y exportar datos (CSV) | Derechos de los titulares de datos |
 | A9 | Monitoreo de errores (por ejemplo, Sentry) y correo de soporte visible | Enterarse de un problema antes que el cliente |
 | A10 | Página de ayuda corta (preguntas frecuentes) | Bajar las consultas de soporte |

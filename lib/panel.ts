@@ -1,9 +1,13 @@
 import "server-only";
-import { DEMO_MODE, DEMO_BUSINESSES, demoListBookings, demoPanelBusinesses, demoSetStatus } from "./demo";
+import {
+  DEMO_MODE, DEMO_BUSINESSES, demoCatalog, demoCreatePanelBooking, demoListBookings, demoPanelBusinesses, demoRevenue, demoSetStatus,
+} from "./demo";
 import { mySubscriptions } from "./billing-server";
 import { addCalendarDays, timeInTimeZone, zonedTimeToUtc } from "./dates";
 import { sessionDb } from "./supabase";
-import type { BookingStatus, BusinessCategory, BusinessRole, PanelBooking, PanelBusiness } from "./types";
+import type {
+  BookingStatus, BusinessCategory, BusinessRole, PanelBooking, PanelBookingInput, PanelBusiness, PanelCatalog, RevenueDay,
+} from "./types";
 
 export type PanelSession = {
   userId: string;
@@ -78,6 +82,7 @@ type DbPanelBooking = {
   end_at: string;
   status: BookingStatus;
   source: "web" | "panel";
+  is_overbook: boolean;
   services: { name: string } | null;
   staff: { name: string } | null;
 };
@@ -90,7 +95,7 @@ export async function listPanelBookings(business: PanelBusiness, date: string): 
   const db = await sessionDb();
   const { data, error } = await db
     .from("bookings")
-    .select("id,staff_id,client_name,client_phone,price_clp,start_at,end_at,status,source,services(name),staff(name)")
+    .select("id,staff_id,client_name,client_phone,price_clp,start_at,end_at,status,source,is_overbook,services(name),staff(name)")
     .eq("business_id", business.id)
     .gte("start_at", from)
     .lt("start_at", to)
@@ -108,6 +113,7 @@ export async function listPanelBookings(business: PanelBusiness, date: string): 
     endTime: timeInTimeZone(new Date(b.end_at), business.timezone),
     status: b.status,
     source: b.source,
+    overbook: b.is_overbook,
   }));
 }
 
@@ -126,5 +132,62 @@ export async function setPanelBookingStatus(
   if (error.message.includes("SLOT_TAKEN")) return "SLOT_TAKEN";
   if (error.message.includes("FORBIDDEN")) return "FORBIDDEN";
   console.error("setPanelBookingStatus:", error.message);
+  return "ERROR";
+}
+
+/** Ingresos por día entre `from` y `to` (fechas locales, ambos incluidos). RLS: un profesional ve solo lo suyo. */
+export async function getPanelRevenue(business: PanelBusiness, from: string, to: string): Promise<RevenueDay[]> {
+  if (DEMO_MODE) return demoRevenue(business.id, from, to);
+  const db = await sessionDb();
+  const { data, error } = await db.rpc("panel_revenue", { p_business_id: business.id, p_from: from, p_to: to });
+  if (error) throw new Error(`No se pudieron calcular los ingresos: ${error.message}`);
+  return ((data ?? []) as { day: string; total_clp: number | string; bookings: number }[])
+    .map((d) => ({ day: d.day, totalClp: Number(d.total_clp), bookings: d.bookings }));
+}
+
+/** Servicios activos con quién los atiende, y el equipo activo, para agendar desde el panel. */
+export async function getPanelCatalog(businessId: string): Promise<PanelCatalog> {
+  if (DEMO_MODE) return demoCatalog(businessId);
+  const db = await sessionDb();
+  const [servicesRes, eligibilityRes, staff] = await Promise.all([
+    db.from("services").select("id,name,duration_min,price_clp").eq("business_id", businessId).eq("is_active", true).order("sort_order"),
+    db.from("staff_services").select("staff_id,service_id").eq("business_id", businessId),
+    listPanelStaff(businessId),
+  ]);
+  if (servicesRes.error) throw new Error(servicesRes.error.message);
+  if (eligibilityRes.error) throw new Error(eligibilityRes.error.message);
+  const active = new Set(staff.map((m) => m.id));
+  const eligibility = ((eligibilityRes.data ?? []) as { staff_id: string; service_id: string }[]).filter((e) => active.has(e.staff_id));
+  return {
+    staff,
+    services: ((servicesRes.data ?? []) as { id: string; name: string; duration_min: number; price_clp: number }[]).map((sv) => ({
+      id: sv.id, name: sv.name, durationMin: sv.duration_min, priceClp: sv.price_clp,
+      staffIds: eligibility.filter((e) => e.service_id === sv.id).map((e) => e.staff_id),
+    })),
+  };
+}
+
+export type CreatePanelBookingResult =
+  | "OK" | "FORBIDDEN" | "SLOT_TAKEN" | "INVALID_PHONE" | "INVALID_NAME" | "SERVICE_NOT_FOUND" | "STAFF_NOT_FOUND" | "ERROR";
+
+/** Reserva agregada por el equipo. Con `overbook`, se guarda aunque choque con otra (queda marcada). */
+export async function createPanelBooking(business: PanelBusiness, input: PanelBookingInput): Promise<CreatePanelBookingResult> {
+  if (DEMO_MODE) return demoCreatePanelBooking(business.id, input);
+  const db = await sessionDb();
+  const { error } = await db.rpc("panel_create_booking", {
+    p_business_id: business.id,
+    p_service_id: input.serviceId,
+    p_staff_id: input.staffId,
+    p_client_name: input.name,
+    p_client_phone: input.phone,
+    p_start_at: zonedTimeToUtc(input.date, input.time, business.timezone).toISOString(),
+    p_notes: input.notes || null,
+    p_overbook: input.overbook,
+  });
+  if (!error) return "OK";
+  const known = ["FORBIDDEN", "SLOT_TAKEN", "INVALID_PHONE", "INVALID_NAME", "SERVICE_NOT_FOUND", "STAFF_NOT_FOUND"] as const;
+  const code = known.find((k) => error.message.includes(k));
+  if (code) return code;
+  console.error("createPanelBooking:", error.message);
   return "ERROR";
 }

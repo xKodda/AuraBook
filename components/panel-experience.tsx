@@ -1,22 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, MessageSquare, RefreshCw, UserX, XCircle,
+  CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, MessageSquare, Plus, RefreshCw, UserX, XCircle,
 } from "lucide-react";
+import { PanelNewBooking } from "@/components/panel-new-booking";
 import { addCalendarDays, dateInTimeZone, formatDate, formatPrice } from "@/lib/dates";
-import type { BookingStatus, PanelBooking, PanelBusiness } from "@/lib/types";
+import type { BookingStatus, PanelBooking, PanelBusiness, PanelCatalog } from "@/lib/types";
 
 type Props = {
   business: PanelBusiness;
   initialStaff: { id: string; name: string }[];
   initialBookings: PanelBooking[];
   initialDate: string;
+  catalog: PanelCatalog;
 };
 
 /** Agenda del día. La estructura (menú, selector de negocio, avisos) la pone el layout del panel. */
-export function PanelExperience({ business: currentBusiness, initialStaff, initialBookings, initialDate }: Props) {
+export function PanelExperience({ business: currentBusiness, initialStaff, initialBookings, initialDate, catalog }: Props) {
   const [date, setDate] = useState(initialDate);
   const [staffList, setStaffList] = useState(initialStaff);
   const [selectedStaffId, setSelectedStaffId] = useState<string>("all");
@@ -24,10 +26,16 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
   const [bookings, setBookings] = useState<PanelBooking[]>(initialBookings);
   const [loading, setLoading] = useState(false);
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  // Se incrementa para volver a cargar la agenda (por ejemplo, después de agendar desde el panel).
+  const [reloadKey, setReloadKey] = useState(0);
+  const firstLoad = useRef(true);
 
   // Carga de reservas cuando cambia fecha o negocio
   useEffect(() => {
     if (!currentBusiness) return;
+    // La primera carga ya viene del servidor.
+    if (firstLoad.current) { firstLoad.current = false; return; }
     const controller = new AbortController();
     setLoading(true);
     const query = new URLSearchParams({
@@ -60,7 +68,7 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
       });
 
     return () => controller.abort();
-  }, [currentBusiness, date]);
+  }, [currentBusiness, date, reloadKey]);
 
   // Navegación de fechas
   function changeDate(daysDelta: number) {
@@ -162,6 +170,9 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
           </div>
 
           <div className="panel-filters">
+            <button type="button" className="btn-primary panel-new-btn" onClick={() => setCreating(true)}>
+              <Plus size={16} /> Nueva reserva
+            </button>
             {/* Filtro por profesional */}
             {staffList.length > 1 && (
               <select
@@ -285,6 +296,7 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
                       {b.status === "no_show" && "No asistió"}
                       {b.status === "cancelled" && "Cancelada"}
                     </span>
+                    {b.overbook && <span className="panel-booking-status-tag status-overbook" title="Agregada a pesar de chocar con otra reserva o el horario">Sobrecupo</span>}
                   </div>
 
                   {/* Acciones de gestión de estado */}
@@ -342,6 +354,20 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
               );
             })}
           </div>
+        )}
+
+        {creating && (
+          <PanelNewBooking
+            business={currentBusiness}
+            catalog={catalog}
+            initialDate={date}
+            onClose={() => setCreating(false)}
+            onCreated={(bookedDate) => {
+              setCreating(false);
+              setDate(bookedDate);
+              setReloadKey((k) => k + 1);
+            }}
+          />
         )}
     </div>
   );

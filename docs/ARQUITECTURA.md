@@ -71,6 +71,13 @@ Un perfil profesional (`staff`) se vincula como máximo a un usuario.
   ofrecer "aplicar el horario del local a todos".
 - **Reserva manual fuera de horario permitida**: el equipo puede agendar fuera del horario laboral (ej. un favor a un
   cliente), pero nunca solapada con otra reserva ni con un servicio que el profesional no ofrece.
+- **Sobrecupo** (`bookings.is_overbook`, migración 20261101000000): desde el panel se puede agendar a sabiendas sobre
+  una hora ocupada. Esas reservas quedan fuera de `bookings_no_overlap`, pero siguen ocupando la hora en
+  `available_slots`, así que la página pública nunca ofrece ese horario. En la agenda se marcan como «Sobrecupo».
+- **Ingresos** (`panel_revenue`): suma por día de las reservas confirmadas y completadas, en fechas locales del negocio y
+  con ambos extremos incluidos. Es `security invoker`, así que un profesional solo suma sus propias reservas. El panel
+  muestra la semana (lunes a domingo) y el mes en curso (del día 1 al último día real del mes), y un rango libre de
+  hasta un año.
 - **Onboarding**: requiere correo verificado, máximo 3 negocios por propietario (ajustable en
   `create_business_with_owner`), zona horaria válida y slugs reservados.
 - **`public_token`** es la credencial del cliente: el equipo no puede leerlo (grant por columnas). La reserva manual sí

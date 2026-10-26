@@ -101,6 +101,28 @@ export type PanelBooking = {
   endTime: string;
   status: BookingStatus;
   source: "web" | "panel";
+  /** Agregada desde el panel a sabiendas de que choca con otra reserva o queda fuera de horario. */
+  overbook: boolean;
+};
+
+/** Ingresos de un día (fecha local del negocio): reservas confirmadas y completadas. */
+export type RevenueDay = { day: string; totalClp: number; bookings: number };
+
+/** Servicios y profesionales para agendar desde el panel. */
+export type PanelCatalog = {
+  services: { id: string; name: string; durationMin: number; priceClp: number; staffIds: string[] }[];
+  staff: { id: string; name: string }[];
+};
+
+export type PanelBookingInput = {
+  serviceId: string;
+  staffId: string;
+  date: string;
+  time: string;
+  name: string;
+  phone: string;
+  notes: string;
+  overbook: boolean;
 };
 
 export type BusinessRole = "owner" | "admin" | "staff";

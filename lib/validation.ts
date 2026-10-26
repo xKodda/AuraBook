@@ -21,6 +21,19 @@ export function isValidChileanPhoneOrInternational(phone: string): boolean {
 
 export const uuidSchema = z.uuid();
 
+/** Reserva que el equipo agrega desde el panel (por teléfono, en persona o como sobrecupo). */
+export const panelBookingSchema = z.object({
+  businessId: z.uuid(),
+  serviceId: z.uuid(),
+  staffId: z.uuid(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  name: z.string().trim().min(2).max(80),
+  phone: z.string().trim().regex(/^\+?[\d\s-]{8,20}$/),
+  notes: z.string().trim().max(500).optional().default(""),
+  overbook: z.boolean().optional().default(false),
+});
+
 export const manageTokenSchema = z.string().regex(/^[0-9a-f]{64}$/);
 
 export const emailSchema = z.email().max(254);
