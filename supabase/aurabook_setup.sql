@@ -2306,10 +2306,10 @@ grant select (is_overbook) on table public.bookings to authenticated;
 -- 2. Reserva manual con sobrecupo opcional
 -- ─────────────────────────────────────────────────────────────
 -- Misma validación que la versión anterior. Sin sobrecupo, una hora ocupada devuelve SLOT_TAKEN;
--- con p_overbook = true la reserva se guarda igual, marcada como sobrecupo.
+-- con p_overbook = true la reserva se guarda igual, marcada como sobrecupo. Se puede volver a ejecutar sin error.
 drop function if exists public.panel_create_booking(uuid, uuid, uuid, text, text, timestamptz, text);
 
-create function public.panel_create_booking(
+create or replace function public.panel_create_booking(
   p_business_id uuid,
   p_service_id uuid,
   p_staff_id uuid,
