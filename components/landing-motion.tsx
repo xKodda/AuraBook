@@ -3,7 +3,7 @@
 // Animaciones de la portada (Motion). Carga reducida: LazyMotion + domAnimation y componentes `m`.
 // Con «reducir movimiento» activado en el sistema, todo aparece sin desplazamientos ni zoom.
 
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   LazyMotion, MotionConfig, domAnimation, m, useReducedMotion, useScroll, useSpring, useTransform,
   type Variants,
@@ -144,5 +144,45 @@ export function RevealImage({ children, className }: { children: ReactNode; clas
       transition={{ duration: 1.1, ease: EASE }}>
       <m.div className="lp-photo-inner" style={{ scale: innerScale }}>{children}</m.div>
     </m.div>
+  );
+}
+
+// ─── Galería horizontal: en escritorio avanza de lado con el scroll; en celular se desliza con el dedo ───
+
+export function HorizontalGallery({ header, children }: { header: ReactNode; children: ReactNode }) {
+  const section = useRef<HTMLElement>(null);
+  const track = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const [distance, setDistance] = useState(0);
+  const [pinned, setPinned] = useState(false);
+
+  // Distancia a recorrer = ancho de la fila − ancho visible. Solo se fija en pantallas anchas.
+  useEffect(() => {
+    const measure = () => {
+      const wide = window.matchMedia("(min-width: 900px)").matches && !reduce;
+      setPinned(wide);
+      const el = track.current;
+      setDistance(wide && el ? Math.max(0, el.scrollWidth - el.clientWidth) : 0);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (track.current) ro.observe(track.current);
+    window.addEventListener("resize", measure);
+    return () => { ro.disconnect(); window.removeEventListener("resize", measure); };
+  }, [reduce]);
+
+  const { scrollYProgress } = useScroll({ target: section, offset: ["start start", "end end"] });
+  const x = useTransform(scrollYProgress, [0.05, 0.95], [0, -distance]);
+
+  return (
+    <section ref={section} className={`lp-gallery${pinned ? " pinned" : ""}`}
+      style={pinned ? { height: `calc(100vh + ${distance}px)` } : undefined}>
+      <div className="lp-gallery-sticky">
+        <div className="lp-gallery-header">{header}</div>
+        <div className="lp-gallery-viewport" ref={track}>
+          <m.div className="lp-gallery-track" style={pinned ? { x } : undefined}>{children}</m.div>
+        </div>
+      </div>
+    </section>
   );
 }

@@ -1544,16 +1544,33 @@ a { color: inherit; text-decoration: none; }
 .lp-photo-tall { aspect-ratio: 4 / 5; }
 .lp-split-reverse { grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); }
 
-.lp-photo-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(16px, 3vw, 36px); }
-.lp-photo-pair figure { margin: 0; display: grid; gap: 14px; }
-.lp-photo-pair figcaption { font-size: 15px; line-height: 1.55; color: var(--ink-secondary); max-width: 30em; }
-.lp-photo-pair figcaption b { display: block; font-size: 18px; color: var(--ink); margin-bottom: 2px; }
-.lp-rubros-more { margin: 28px 0 0; font-size: 15px; color: var(--muted); }
-
 @media (max-width: 960px) {
   .lp-split-reverse { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 720px) {
-  .lp-photo-pair { grid-template-columns: minmax(0, 1fr); }
+
   .lp-photo-tall { aspect-ratio: 4 / 3; }
 }
+
+/* ── Portada: galería horizontal de rubros ── */
+.lp-gallery { position: relative; padding-top: clamp(56px, 8vw, 104px); border-top: 1px solid var(--line-subtle); max-width: 1112px; margin: clamp(56px, 8vw, 104px) auto 0; }
+.lp-gallery.pinned { max-width: none; margin-top: 0; padding-top: 0; border-top: none; }
+.lp-gallery-header { max-width: 1160px; margin: 0 auto; padding: 0 24px; box-sizing: border-box; }
+.lp-gallery-header h2 {
+  margin: 0 0 clamp(24px, 3vw, 40px); font-size: clamp(28px, 3.8vw, 42px); line-height: 1.12; letter-spacing: -.02em; font-weight: 800;
+}
+.lp-gallery-viewport { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.lp-gallery-viewport::-webkit-scrollbar { display: none; }
+.lp-gallery-track { display: flex; gap: 20px; width: max-content; padding: 0 24px 8px; }
+.lp-gallery-card { margin: 0; flex: 0 0 min(300px, 78vw); display: grid; gap: 12px; align-content: start; scroll-snap-align: start; }
+.lp-gallery-card figcaption { font-size: 14px; line-height: 1.55; color: var(--ink-secondary); }
+.lp-gallery-card figcaption b { display: block; font-size: 17px; color: var(--ink); margin-bottom: 2px; }
+
+/* Escritorio: la sección se fija y la fila avanza de lado con el scroll. */
+.lp-gallery.pinned .lp-gallery-sticky {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.lp-gallery.pinned .lp-gallery-viewport { overflow: hidden; scroll-snap-type: none; }
+.lp-gallery.pinned .lp-gallery-track { gap: 32px; padding-left: max(24px, calc((100vw - 1160px) / 2 + 24px)); padding-right: max(24px, calc((100vw - 1160px) / 2 + 24px)); }
+.lp-gallery.pinned .lp-gallery-card { flex-basis: min(360px, calc((100vh - 320px) * .8)); }

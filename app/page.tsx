@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import {
   ArrowRight, BellRing, CalendarCheck, CalendarX2, Check, Clock, Mail, Palette, ShieldCheck, Smartphone, UserPlus, Users,
 } from "lucide-react";
 import { AuraMark } from "@/components/aura-mark";
-import { HeroPhone, LandingMotion, PopIn, Reveal, RevealImage, RevealItem, ScrollZoom } from "@/components/landing-motion";
+import {
+  HeroPhone, HorizontalGallery, LandingMotion, PopIn, Reveal, RevealImage, RevealItem, ScrollZoom,
+} from "@/components/landing-motion";
 import fotoTijeras from "@/public/photos/barberia-tijeras.jpg";
 import fotoBarberia from "@/public/photos/barberia-herramientas.jpg";
 import fotoUnas from "@/public/photos/unas-manicure.jpg";
 import fotoCliente from "@/public/photos/cliente-reservando.jpg";
+import fotoPeluqueria from "@/public/photos/peluqueria-corte.jpg";
+import fotoEstetica from "@/public/photos/estetica-facial.jpg";
+import fotoSpa from "@/public/photos/spa-velas.jpg";
 import { DEMO_MODE } from "@/lib/env";
 
 export const metadata: Metadata = {
@@ -17,6 +22,21 @@ export const metadata: Metadata = {
   description:
     "Tu página de reservas con tu marca, lista en minutos. Tus clientes agendan desde el celular, sin descargar apps ni crear cuentas.",
 };
+
+type RubroFoto = { title: string; text: string; src: StaticImageData; alt: string; position?: string };
+
+const RUBRO_FOTOS: RubroFoto[] = [
+  { title: "Barberías", text: "Cortes, barba y perfilados, cada barbero con su agenda.", src: fotoBarberia,
+    alt: "Máquina de cortar pelo, peinetas y escobilla sobre una toalla gris" },
+  { title: "Peluquerías", text: "Corte, color y peinado, cada uno con su duración real.", src: fotoPeluqueria,
+    alt: "Estilista peinando el pelo mojado de una clienta antes del corte" },
+  { title: "Salones de belleza", text: "Manicure, pestañas y más, sin que se crucen las horas.", src: fotoUnas,
+    alt: "Manicurista pintando una uña con un pincel fino" },
+  { title: "Estética", text: "Tratamientos con su tiempo exacto y recordatorio para tus clientes.", src: fotoEstetica,
+    alt: "Tratamiento facial con un rodillo sobre crema" },
+  { title: "Spa", text: "Masajes y sesiones largas, bien repartidas en tu agenda.", src: fotoSpa,
+    alt: "Velas encendidas junto a toallas blancas y una flor", position: "40% center" },
+];
 
 const RUBROS = ["Barberías", "Peluquerías", "Salones de uñas", "Estética", "Spa"];
 
@@ -233,27 +253,17 @@ export default function Home() {
           <AgendaPreview />
         </section>
 
-        <section className="lp-section lp-rubros-photos">
-          <p className="lp-eyebrow">Pensado para tu rubro</p>
-          <h2>Para negocios que trabajan con hora.</h2>
-          <div className="lp-photo-pair">
-            <figure>
+        <HorizontalGallery header={<><p className="lp-eyebrow">Pensado para tu rubro</p><h2>Para negocios que trabajan con hora.</h2></>}>
+          {RUBRO_FOTOS.map((r) => (
+            <figure key={r.title} className="lp-gallery-card">
               <RevealImage className="lp-photo lp-photo-tall">
-                <Image src={fotoBarberia} alt="Máquina de cortar pelo, peinetas y escobilla sobre una toalla gris" fill placeholder="blur"
-                  sizes="(max-width: 720px) 100vw, 45vw" style={{ objectFit: "cover" }} />
+                <Image src={r.src} alt={r.alt} fill placeholder="blur" sizes="(max-width: 900px) 78vw, 380px"
+                  style={{ objectFit: "cover", objectPosition: r.position ?? "center" }} />
               </RevealImage>
-              <figcaption><b>Barberías</b> Cortes, barba y perfilados, cada barbero con su agenda.</figcaption>
+              <figcaption><b>{r.title}</b> {r.text}</figcaption>
             </figure>
-            <figure>
-              <RevealImage className="lp-photo lp-photo-tall">
-                <Image src={fotoUnas} alt="Manicurista pintando una uña con un pincel fino" fill placeholder="blur"
-                  sizes="(max-width: 720px) 100vw, 45vw" style={{ objectFit: "cover" }} />
-              </RevealImage>
-              <figcaption><b>Salones de uñas</b> Servicios de distinta duración sin que se crucen las horas.</figcaption>
-            </figure>
-          </div>
-          <p className="lp-rubros-more">También peluquerías, centros de estética y spa.</p>
-        </section>
+          ))}
+        </HorizontalGallery>
 
         <section className="lp-section">
           <p className="lp-eyebrow">Lo esencial, bien hecho</p>
