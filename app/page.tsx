@@ -4,6 +4,7 @@ import {
   ArrowRight, BellRing, CalendarCheck, CalendarX2, Check, Clock, Mail, Palette, ShieldCheck, Smartphone, UserPlus, Users,
 } from "lucide-react";
 import { AuraMark } from "@/components/aura-mark";
+import { HeroPhone, LandingMotion, PopIn, Reveal, RevealItem, ScrollZoom } from "@/components/landing-motion";
 import { DEMO_MODE } from "@/lib/env";
 
 export const metadata: Metadata = {
@@ -61,9 +62,44 @@ function PhonePreview() {
         </div>
         <div className="lp-mini-cta">Confirmar 11:30 h</div>
       </div>
-      <div className="lp-toast">
-        <Mail size={15} />
-        <span><b>Nueva reserva</b><small>Corte de pelo · mañana 11:30</small></span>
+    </div>
+  );
+}
+
+/** Vista grande para el scroll zoom: la página de reservas en un navegador de escritorio. */
+function BrowserPreview() {
+  return (
+    <div className="lp-browser" aria-hidden="true">
+      <div className="lp-browser-bar">
+        <i /><i /><i />
+        <span>aurabook.clikium.cl/reservar/barberia-don-jose</span>
+      </div>
+      <div className="lp-browser-page">
+        <div className="lp-browser-biz">
+          <span className="lp-mini-logo">DJ</span>
+          <small>BARBERÍA</small>
+          <b>Barbería Don José</b>
+          <p>Un buen corte empieza aquí.</p>
+          <hr />
+          <p>Av. Providencia 1234</p>
+          <p>+56 9 1234 5678</p>
+        </div>
+        <div className="lp-browser-main">
+          <p className="lp-mini-label"><span>1</span> ¿Qué servicio necesitas?</p>
+          <div className="lp-mini-service on"><i /><span><b>Corte de pelo</b><small>45 min</small></span><b>$12.000</b></div>
+          <div className="lp-mini-service"><i /><span><b>Corte + barba</b><small>60 min</small></span><b>$16.000</b></div>
+          <div className="lp-mini-service"><i /><span><b>Perfilado de barba</b><small>30 min</small></span><b>$8.000</b></div>
+          <p className="lp-mini-label"><span>2</span> Día y hora</p>
+          <div className="lp-browser-days">
+            {["hoy 27", "mié 28", "jue 29", "vie 30", "sáb 31"].map((d, i) => <span key={d} className={i === 1 ? "on" : undefined}>{d}</span>)}
+          </div>
+          <div className="lp-mini-times lp-browser-times">
+            {["10:00", "10:45", "11:30", "12:15", "15:00", "15:45", "16:30", "17:15"].map((t) => (
+              <span key={t} className={t === "11:30" ? "on" : undefined}>{t}</span>
+            ))}
+          </div>
+          <div className="lp-mini-cta">Confirmar miércoles 28, 11:30 h</div>
+        </div>
       </div>
     </div>
   );
@@ -82,11 +118,11 @@ function AgendaPreview() {
       <div className="lp-agenda-head"><b>Martes 27</b><span>5 citas</span></div>
       <div className="lp-agenda-grid">
         <span /><b>Camila</b><b>Tomás</b>
-        {rows.map(([h, a, s, b]) => (
+        {rows.map(([h, a, s, b], i) => (
           <div key={h} className="lp-agenda-row">
             <small>{h}</small>
-            <span className={a === "Almuerzo" ? "off" : a ? "appt" : ""}>{a && <><b>{a}</b>{s && <small>{s}</small>}</>}</span>
-            <span className={b === "Almuerzo" ? "off" : b ? "appt" : ""}>{b && <b>{b}</b>}</span>
+            <PopIn index={i * 2} className={a === "Almuerzo" ? "off" : a ? "appt" : ""}>{a && <><b>{a}</b>{s && <small>{s}</small>}</>}</PopIn>
+            <PopIn index={i * 2 + 1} className={b === "Almuerzo" ? "off" : b ? "appt" : ""}>{b && <b>{b}</b>}</PopIn>
           </div>
         ))}
       </div>
@@ -96,6 +132,7 @@ function AgendaPreview() {
 
 export default function Home() {
   return (
+    <LandingMotion>
     <div className="lp">
       <header className="lp-header">
         <Link href="/" className="lp-brand"><AuraMark size={26} title="AuraBook" /><span>AURA<span>BOOK</span></span></Link>
@@ -109,26 +146,30 @@ export default function Home() {
 
       <main>
         <section className="lp-hero">
-          <div className="lp-hero-text">
-            <p className="lp-eyebrow">Reservas online · Hecho en Chile</p>
-            <h1>Tu agenda llena, <span>sin perseguir mensajes.</span></h1>
-            <p className="lp-lead">
+          <Reveal onLoad className="lp-hero-text">
+            <RevealItem as="p" className="lp-eyebrow">Reservas online · Hecho en Chile</RevealItem>
+            <RevealItem as="h1">Tu agenda llena, <span>sin perseguir mensajes.</span></RevealItem>
+            <RevealItem as="p" className="lp-lead">
               Una página de reservas con tu marca. Tus clientes eligen servicio, profesional y hora desde el celular;
               tú lo ves todo en un panel simple.
-            </p>
-            <div className="lp-actions">
+            </RevealItem>
+            <RevealItem className="lp-actions">
               <Link href="/registro" className="btn-primary lp-btn">Crear mi página de reservas <ArrowRight size={17} /></Link>
               {DEMO_MODE
                 ? <Link href="/reservar/barber-studio" className="lp-link">Ver un ejemplo</Link>
                 : <a href="#como-funciona" className="lp-link">Ver cómo funciona</a>}
-            </div>
+            </RevealItem>
+            <RevealItem>
             <ul className="lp-assurances">
               <li><Check size={15} /> Sin instalar nada</li>
               <li><Check size={15} /> Listo en minutos</li>
               <li><Check size={15} /> Tus clientes no crean cuenta</li>
             </ul>
-          </div>
-          <PhonePreview />
+            </RevealItem>
+          </Reveal>
+          <HeroPhone toast={<><Mail size={15} /><span><b>Nueva reserva</b><small>Corte de pelo · mañana 11:30</small></span></>}>
+            <PhonePreview />
+          </HeroPhone>
         </section>
 
         <div className="lp-rubros" aria-label="Para quién es">
@@ -136,18 +177,22 @@ export default function Home() {
           {RUBROS.map((r) => <b key={r}>{r}</b>)}
         </div>
 
+        <ScrollZoom heading={<><p className="lp-eyebrow">Tu página de reservas</p><h2>Tu negocio, a un enlace de distancia.</h2></>}>
+          <BrowserPreview />
+        </ScrollZoom>
+
         <section className="lp-section" id="como-funciona">
           <p className="lp-eyebrow">Cómo funciona</p>
           <h2>De cero a recibir reservas, en tres pasos.</h2>
-          <ol className="lp-steps">
+          <Reveal as="ol" className="lp-steps">
             {STEPS.map((s, i) => (
-              <li key={s.title}>
+              <RevealItem as="li" key={s.title}>
                 <span className="lp-step-n">{String(i + 1).padStart(2, "0")}</span>
                 <h3>{s.title}</h3>
                 <p>{s.text}</p>
-              </li>
+              </RevealItem>
             ))}
-          </ol>
+          </Reveal>
         </section>
 
         <section className="lp-split">
@@ -167,14 +212,14 @@ export default function Home() {
         <section className="lp-section">
           <p className="lp-eyebrow">Lo esencial, bien hecho</p>
           <h2>Simple para ti. Más simple para tus clientes.</h2>
-          <div className="lp-features">
+          <Reveal className="lp-features">
             {FEATURES.map(({ icon: Icon, title, text }) => (
-              <div key={title} className="lp-feature">
+              <RevealItem key={title} className="lp-feature">
                 <Icon size={20} strokeWidth={1.8} />
                 <div><h3>{title}</h3><p>{text}</p></div>
-              </div>
+              </RevealItem>
             ))}
-          </div>
+          </Reveal>
         </section>
 
         <section className="lp-section lp-faq" id="preguntas">
@@ -191,11 +236,11 @@ export default function Home() {
         </section>
       </main>
 
-      <section className="lp-final">
-        <h2>Empieza hoy con tu negocio.</h2>
-        <p>Configúralo tú mismo en minutos. Sin instalaciones ni contratos.</p>
-        <Link href="/registro" className="lp-final-btn">Crear cuenta <ArrowRight size={17} /></Link>
-      </section>
+      <Reveal as="section" className="lp-final">
+        <RevealItem as="h2">Empieza hoy con tu negocio.</RevealItem>
+        <RevealItem as="p">Configúralo tú mismo en minutos. Sin instalaciones ni contratos.</RevealItem>
+        <RevealItem><Link href="/registro" className="lp-final-btn">Crear cuenta <ArrowRight size={17} /></Link></RevealItem>
+      </Reveal>
 
       <footer className="lp-footer">
         <span className="lp-brand"><AuraMark size={22} /><span>AURA<span>BOOK</span></span></span>
@@ -208,5 +253,6 @@ export default function Home() {
         <small>© {new Date().getFullYear()} AuraBook · Un producto de Clikium</small>
       </footer>
     </div>
+    </LandingMotion>
   );
 }
