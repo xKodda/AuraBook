@@ -6,7 +6,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { freshDb } from "./supabase-harness.mjs";
 
-const RERUNNABLE = ["20261101000000_overbooking_and_revenue.sql", "20261102000000_plan_entitlements.sql"];
+const RERUNNABLE = [
+  "20261101000000_overbooking_and_revenue.sql", "20261102000000_plan_entitlements.sql", "20261103000000_premium_price.sql",
+];
 
 test("las migraciones de sobrecupos y planes se pueden ejecutar de nuevo", async () => {
   const db = await freshDb();

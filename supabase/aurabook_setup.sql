@@ -1,4 +1,4 @@
--- AuraBook · Instalación completa (11 migraciones). Pegar en Supabase > SQL Editor y ejecutar UNA vez.
+-- AuraBook · Instalación completa (12 migraciones). Pegar en Supabase > SQL Editor y ejecutar UNA vez.
 -- Todo corre en una transacción: si algo falla, no queda nada a medias.
 -- Archivo GENERADO a partir de supabase/migrations/ (no editar a mano). Úsalo solo para instalar en un proyecto vacío.
 begin;
@@ -2764,6 +2764,16 @@ grant execute on function public.public_plans() to anon, authenticated;
 
 revoke all on function public.panel_revenue(uuid, date, date) from public, anon;
 grant execute on function public.panel_revenue(uuid, date, date) to authenticated;
+
+-- ════════ 20261103000000_premium_price.sql ════════
+-- ═════════════════════════════════════════════════════════════
+-- Precio de lanzamiento de Premium: $15.990 al mes o $159.900 al año (2 meses gratis), IVA incluido.
+-- ═════════════════════════════════════════════════════════════
+-- Solo cambia el plan Premium si sigue con el precio inicial (no pisa un precio editado desde /admin).
+-- Los pagos ya registrados conservan su monto. Se puede volver a ejecutar sin efecto.
+update public.plans
+set price_clp = 15990, price_yearly_clp = 159900
+where code = 'premium' and price_clp = 12990;
 
 commit;
 

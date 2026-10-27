@@ -27,7 +27,7 @@ describe("planes publicados", () => {
   test("Free y Premium quedan visibles para /precios, con 30 días de prueba", async () => {
     const data = await as(db, "anon", null, async (tx) => (await tx.query("select public.public_plans() p")).rows[0].p);
     assert.equal(data.trialDays, 30);
-    assert.deepEqual(data.plans.map((p) => [p.code, p.priceClp, p.maxStaff]), [["free", 0, 1], ["premium", 12990, 3]]);
+    assert.deepEqual(data.plans.map((p) => [p.code, p.priceClp, p.maxStaff]), [["free", 0, 1], ["premium", 15990, 3]]);
     assert.deepEqual(data.plans[1].features, ["client_reminders", "revenue_stats"]);
   });
 });

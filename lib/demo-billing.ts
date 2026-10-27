@@ -7,7 +7,7 @@ const day = (days: number) => at(days).slice(0, 10);
 
 const PLANS: AdminPlan[] = [
   { id: "d0000000-0000-4000-8000-000000000001", name: "Free", description: "Para quien atiende solo.", priceClp: 0, maxStaff: 1, isActive: true, subscribers: 0 },
-  { id: "d0000000-0000-4000-8000-000000000002", name: "Premium", description: "Para negocios con equipo que quieren menos inasistencias.", priceClp: 12990, maxStaff: 3, isActive: true, subscribers: 0 },
+  { id: "d0000000-0000-4000-8000-000000000002", name: "Premium", description: "Para negocios con equipo que quieren menos inasistencias.", priceClp: 15990, maxStaff: 3, isActive: true, subscribers: 0 },
 ];
 
 type Seed = [name: string, slug: string, category: AdminBusiness["category"], plan: number | null,

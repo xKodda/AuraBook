@@ -75,7 +75,7 @@ export const DEFAULT_PUBLIC_PLANS: PublicPlans = {
     { code: "free", name: "Free", description: "Para quien atiende solo.", priceClp: 0, priceYearlyClp: 0, maxStaff: 1, features: [] },
     {
       code: "premium", name: "Premium", description: "Para negocios con equipo que quieren menos inasistencias.",
-      priceClp: 12990, priceYearlyClp: 129900, maxStaff: 3, features: ["client_reminders", "revenue_stats"],
+      priceClp: 15990, priceYearlyClp: 159900, maxStaff: 3, features: ["client_reminders", "revenue_stats"],
     },
   ],
 };

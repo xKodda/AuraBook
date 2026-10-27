@@ -99,7 +99,7 @@ export default async function MyPlanPage() {
               );
             })}
           </div>
-          {premium && <p className="adm-muted plan-fine">Precios en pesos chilenos, IVA incluido. Sin renovación automática: pagas solo cuando decides seguir.</p>}
+          {premium && <p className="adm-muted plan-fine">Precios en pesos chilenos, IVA incluido. Emitimos boleta o factura (Clikium SpA). Sin renovación automática: pagas solo cuando decides seguir.</p>}
         </section>
 
         <section className="adm-card">

@@ -42,6 +42,10 @@ export default async function PricingPage() {
       a: "Sí. Los precios están en pesos chilenos e incluyen IVA.",
     },
     {
+      q: "¿Me entregan boleta o factura?",
+      a: "Sí. AuraBook es un producto de Clikium SpA: emitimos boleta o factura, como la necesites. Si quieres factura, indícanos los datos de tu empresa al pagar.",
+    },
+    {
       q: `¿Y si mi equipo tiene más de ${premium?.maxStaff ?? 3} personas?`,
       a: "Escríbenos a contacto@clikium.cl y lo vemos según tu negocio.",
     },
