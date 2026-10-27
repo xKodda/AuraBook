@@ -435,6 +435,23 @@ export function demoDeleteTimeOff(businessId: string, ids: string[]): number {
   return before - s.timeOff.length;
 }
 
+/** Todas las reservas de un negocio demo, en el formato de la exportación (lib/account.ts). */
+export function demoExportRows(businessId: string) {
+  const business = DEMO_BUSINESSES.find((x) => x.id === businessId);
+  if (!business) return [];
+  return state().bookings.filter((b) => b.businessId === businessId).map((b) => {
+    const start = zonedTimeToUtc(b.date, formatMinutes(b.start), business.timezone);
+    return {
+      start_at: start.toISOString(),
+      end_at: new Date(start.getTime() + (b.end - b.start) * 60_000).toISOString(),
+      client_name: b.clientName, client_phone: b.clientPhone, client_email: null as string | null,
+      price_clp: b.priceClp, status: b.status, source: b.source, is_overbook: b.overbook ?? false, notes: null as string | null,
+      services: { name: business.services.find((x) => x.id === b.serviceId)?.name ?? "—" },
+      staff: { name: business.staff.find((x) => x.id === b.staffId)?.name ?? "—" },
+    };
+  });
+}
+
 /** Estado de gestión de un negocio demo (para ver las secciones del panel sin Supabase). */
 export function demoOnboardingState(businessId: string): OnboardingState {
   const b = DEMO_BUSINESSES.find((x) => x.id === businessId) ?? DEMO_BUSINESSES[0];

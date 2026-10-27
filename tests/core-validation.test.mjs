@@ -146,3 +146,17 @@ test("rangos de ingresos: meses con su último día real y semanas de lunes a do
   assert.equal(daysInRange("2027-02-01", "2027-02-28"), 28);
   assert.equal(daysInRange("2026-10-01", "2026-10-31"), 31);
 });
+
+test("CSV de exportación: separador chileno, comillas y sin inyección de fórmulas", async () => {
+  const { csvCell, csvPhone, toCsv } = await import("../lib/csv.ts");
+  assert.equal(csvCell("Ana"), "Ana");
+  assert.equal(csvCell('Dice "hola"; chao'), '"Dice ""hola""; chao"');
+  assert.equal(csvCell("=HYPERLINK(\"x\")"), "\"'=HYPERLINK(\"\"x\"\")\"");
+  assert.equal(csvCell("@SUM(1)"), "'@SUM(1)");
+  assert.equal(csvCell(12990), "12990");
+  assert.equal(csvCell(true), "Sí");
+  assert.equal(csvCell(null), "");
+  assert.equal(csvPhone("+56 9 1234 5678"), "56 9 1234 5678");
+  const out = toCsv(["A", "B"], [["1", "2"]]);
+  assert.ok(out.startsWith("﻿A;B\r\n1;2\r\n"));
+});

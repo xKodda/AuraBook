@@ -21,7 +21,7 @@ los primeros 6 meses. Migraciones hasta `20261104000000`.
 
 **Siguiente trabajo sugerido, en orden:**
 1. ~~Bloqueos de agenda y aviso de cancelación~~ y ~~agenda semanal~~ (hecho 2026-10-27).
-2. «Mi cuenta»: cambiar contraseña, descargar reservas y clientes (CSV) y eliminar la cuenta (hoy se piden por correo).
+2. ~~«Mi cuenta»~~ (hecho 2026-10-27). Opcional: mencionar en los Términos §16 que también se puede hacer desde «Mi cuenta».
 3. `/admin`: editar el precio anual y ver el plan efectivo (Free/Premium) de cada negocio.
 4. Invitaciones al equipo (cada profesional con su acceso), que sería otra capacidad de Premium.
 
@@ -109,7 +109,7 @@ Regla para decidir qué construir: *si una función no ayuda a llenar la agenda 
 | A5 | ~~Gestión desde el panel~~ | Hecho: Equipo, Servicios, Horarios y Datos y marca |
 | A6 | ~~Bloqueos de agenda~~ | Hecho: «Bloqueos» en el panel (días completos o algunas horas, por persona o todo el equipo) y aviso en la agenda |
 | A7 | ~~**Reserva manual** desde el panel~~ | Hecho: «Nueva reserva» en la agenda, con sobrecupo opcional |
-| A8 | Eliminar cuenta y negocio, y exportar datos (CSV) | Hoy se piden por correo (así lo dicen los Términos); falta hacerlo desde «Mi cuenta» |
+| A8 | ~~Eliminar cuenta y negocio, y exportar datos (CSV)~~ | Hecho: «Mi cuenta» con cambio de contraseña, descarga de reservas y clientes, y eliminación (la facturación se conserva anonimizada) |
 | A9 | Monitoreo de errores (por ejemplo, Sentry) y correo de soporte visible | Enterarse de un problema antes que el cliente |
 | A10 | Página de ayuda corta (preguntas frecuentes) | Parcial: preguntas en la portada y en `/precios`; falta ayuda dentro del panel |
 
