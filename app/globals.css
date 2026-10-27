@@ -1406,6 +1406,90 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ══════════════════════════════════════════════════════════
+   Agenda semanal (components/panel-week.tsx)
+   ══════════════════════════════════════════════════════════ */
+.panel-view { flex-shrink: 0; }
+.wk { transition: opacity .15s ease; }
+.wk.loading { opacity: .55; }
+.wk-legend { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--ink-secondary); }
+.wk-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.wk-legend span { width: 10px; height: 10px; border-radius: 3px; }
+/* overflow: clip (no hidden) para que el encabezado de días quede fijo al bajar por la página. */
+.wk-grid { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: clip; }
+.wk-head, .wk-body { display: grid; grid-template-columns: 56px repeat(7, minmax(0, 1fr)); }
+.wk-head { border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 2; background: var(--white); }
+.wk-day-head {
+  display: grid; justify-items: center; gap: 1px; padding: 10px 4px; border: 0; border-left: 1px solid var(--line-subtle);
+  background: none; cursor: pointer; font: inherit; color: var(--ink);
+}
+.wk-day-head:hover { background: var(--warm); }
+.wk-day-head span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.wk-day-head strong { font-size: 20px; font-weight: 800; line-height: 1.1; }
+.wk-day-head small { font-size: 11px; color: var(--ink-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.wk-day-head.today strong {
+  display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--brand); color: var(--brand-contrast); font-size: 16px;
+}
+.wk-body { position: relative; }
+.wk-hours { position: relative; }
+.wk-hours span { position: absolute; right: 8px; transform: translateY(-50%); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.wk-hours span:first-child { transform: none; }
+.wk-col { position: relative; border-left: 1px solid var(--line-subtle); }
+.wk-col.today { background: color-mix(in srgb, var(--brand) 3%, #fff); }
+.wk-line { position: absolute; left: 0; right: 0; border-top: 1px solid var(--line-subtle); }
+.wk-off {
+  position: absolute; left: 0; right: 0; z-index: 0; overflow: hidden; padding: 4px 6px; box-sizing: border-box;
+  background: repeating-linear-gradient(135deg, #f1eef8 0 6px, #f8f6fc 6px 12px); border-block: 1px solid #e2d8f5;
+}
+.wk-off span { font-size: 10px; font-weight: 700; color: #5b3f97; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wk-ev {
+  position: absolute; z-index: 1; box-sizing: border-box; padding: 3px 6px; border: 0; border-radius: 6px; cursor: pointer;
+  display: grid; align-content: start; gap: 1px; overflow: hidden; text-align: left; font: inherit; color: #fff;
+  box-shadow: 0 1px 2px rgba(24, 25, 28, .18); transition: filter .12s ease;
+}
+.wk-ev:hover { filter: brightness(1.12); }
+.wk-ev strong, .wk-ev span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wk-ev strong { font-size: 11px; font-weight: 700; }
+.wk-ev span { font-size: 10px; opacity: .88; }
+.wk-ev.short { padding-block: 2px; align-content: center; }
+.wk-ev.short span { display: none; }
+.wk-ev.status-completed { opacity: .6; }
+.wk-ev.status-no_show { opacity: .45; text-decoration: line-through; }
+.wk-ev.status-cancelled { opacity: .35; text-decoration: line-through; }
+.wk-ev.overbook { outline: 2px dashed #fff; outline-offset: -3px; }
+.wk-now { position: absolute; left: -1px; right: 0; z-index: 3; border-top: 2px solid #c2410c; pointer-events: none; }
+.wk-now::before { content: ""; position: absolute; left: -4px; top: -5px; width: 8px; height: 8px; border-radius: 50%; background: #c2410c; }
+.wk-list { display: none; }
+
+@media (max-width: 860px) {
+  .wk-grid { display: none; }
+  .wk-list { display: grid; gap: 10px; list-style: none; margin: 0; padding: 0; }
+  .wk-list > li { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+  .wk-list > li.today { border-color: var(--brand); }
+  .wk-list-head {
+    width: 100%; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 12px 14px;
+    border: 0; background: var(--warm-card); cursor: pointer; font: inherit; color: var(--ink); text-align: left;
+  }
+  .wk-list-head b { text-transform: capitalize; }
+  .wk-list-head small { font-size: 12px; color: var(--muted); }
+  .wk-list-off { display: flex; align-items: center; gap: 6px; margin: 0; padding: 8px 14px; font-size: 12px; color: #5b3f97; background: #f6f2fd; }
+  .wk-list-ev {
+    width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 0; border-top: 1px solid var(--line-subtle);
+    background: none; cursor: pointer; font: inherit; color: var(--ink); text-align: left;
+  }
+  .wk-list-ev b { font-size: 14px; font-variant-numeric: tabular-nums; }
+  .wk-list-ev.status-cancelled, .wk-list-ev.status-no_show { opacity: .5; }
+  .wk-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .wk-list-main { flex: 1; min-width: 0; display: grid; font-size: 14px; font-weight: 600; }
+  .wk-list-main small { font-size: 12px; font-weight: 500; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wk-list-tag { font-size: 10px; font-weight: 800; padding: 3px 7px; border-radius: 999px; background: #f3eefc; color: #5b3f97; }
+}
+@media (max-width: 580px) {
+  .panel-view { display: flex; }
+  .panel-view button { flex: 1; }
+}
+
+/* ══════════════════════════════════════════════════════════
    Panel del negocio y onboarding en celular
    ══════════════════════════════════════════════════════════ */
 @media (max-width: 580px) {

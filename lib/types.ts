@@ -96,6 +96,8 @@ export type CancelResult = "CANCELLED" | "NOT_FOUND" | "NOT_CANCELLABLE" | "TOO_
 /** Fila de la agenda en el panel. */
 export type PanelBooking = {
   id: string;
+  /** Fecha local del negocio (YYYY-MM-DD). */
+  date: string;
   staffId: string;
   staffName: string;
   serviceName: string;

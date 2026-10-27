@@ -335,6 +335,7 @@ export function demoListBookings(businessId: string, date: string): PanelBooking
     .sort((a, b) => a.start - b.start)
     .map((b) => ({
       id: b.id,
+      date: b.date,
       staffId: b.staffId,
       staffName: business.staff.find((x) => x.id === b.staffId)?.name ?? "—",
       serviceName: business.services.find((x) => x.id === b.serviceId)?.name ?? "—",

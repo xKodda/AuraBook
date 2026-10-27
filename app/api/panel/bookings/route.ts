@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createPanelBooking, getPanelSession, listPanelBookings, listPanelStaff } from "@/lib/panel";
-import { listDayTimeOff } from "@/lib/time-off";
-import { isIsoDate } from "@/lib/dates";
+import { createPanelBooking, getPanelSession, listPanelBookingsRange, listPanelStaff } from "@/lib/panel";
+import { listRangeTimeOff } from "@/lib/time-off";
+import { daysInRange, isIsoDate } from "@/lib/dates";
 import { panelBookingSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -15,8 +15,10 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const businessId = searchParams.get("businessId") || "";
   const date = searchParams.get("date") || "";
+  // `to` opcional: la vista semanal pide 7 días de una vez (máximo 31).
+  const to = searchParams.get("to") || date;
 
-  if (!isIsoDate(date)) {
+  if (!isIsoDate(date) || !isIsoDate(to) || to < date || daysInRange(date, to) > 31) {
     return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
   }
 
@@ -27,9 +29,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const [bookings, staff, timeOff] = await Promise.all([
-      listPanelBookings(business, date),
+      listPanelBookingsRange(business, date, to),
       listPanelStaff(business.id),
-      listDayTimeOff(business, date),
+      listRangeTimeOff(business, date, to),
     ]);
 
     return NextResponse.json({ bookings, staff, timeOff });

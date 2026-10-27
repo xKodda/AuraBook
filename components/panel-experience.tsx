@@ -6,7 +6,8 @@ import {
   CalendarDays, CalendarOff, Check, ChevronLeft, ChevronRight, ExternalLink, MessageSquare, Plus, RefreshCw, UserX, XCircle,
 } from "lucide-react";
 import { PanelNewBooking } from "@/components/panel-new-booking";
-import { addCalendarDays, dateInTimeZone, formatDate, formatPrice } from "@/lib/dates";
+import { PanelWeek } from "@/components/panel-week";
+import { addCalendarDays, dateInTimeZone, formatDate, formatDateRange, formatPrice, weekRange } from "@/lib/dates";
 import type { BookingStatus, PanelBooking, PanelBusiness, PanelCatalog, TimeOffBlock } from "@/lib/types";
 
 type Props = {
@@ -18,7 +19,10 @@ type Props = {
   initialTimeOff: TimeOffBlock[];
 };
 
-/** Agenda del día. La estructura (menú, selector de negocio, avisos) la pone el layout del panel. */
+type View = "day" | "week";
+const VIEW_KEY = "aurabook-agenda-vista";
+
+/** Agenda del día o de la semana. La estructura (menú, selector de negocio, avisos) la pone el layout del panel. */
 export function PanelExperience({ business: currentBusiness, initialStaff, initialBookings, initialDate, catalog, initialTimeOff }: Props) {
   const [date, setDate] = useState(initialDate);
   const [staffList, setStaffList] = useState(initialStaff);
@@ -32,6 +36,25 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
   // Se incrementa para volver a cargar la agenda (por ejemplo, después de agendar desde el panel).
   const [reloadKey, setReloadKey] = useState(0);
   const firstLoad = useRef(true);
+  const [view, setView] = useState<View>("day");
+  const week = weekRange(date);
+
+  // Recordar la última vista elegida en este navegador (si no se puede leer, queda la diaria).
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(VIEW_KEY) === "week") setView("week");
+    } catch {}
+  }, []);
+
+  function chooseView(next: View) {
+    setView(next);
+    try { window.localStorage.setItem(VIEW_KEY, next); } catch {}
+  }
+
+  function openDay(day: string) {
+    chooseView("day");
+    setDate(day);
+  }
 
   // Carga de reservas cuando cambia fecha o negocio
   useEffect(() => {
@@ -40,10 +63,9 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
     if (firstLoad.current) { firstLoad.current = false; return; }
     const controller = new AbortController();
     setLoading(true);
-    const query = new URLSearchParams({
-      businessId: currentBusiness.id,
-      date,
-    });
+    const query = new URLSearchParams(view === "week"
+      ? { businessId: currentBusiness.id, date: week.from, to: week.to }
+      : { businessId: currentBusiness.id, date });
 
     fetch(`/api/panel/bookings?${query.toString()}`, {
       signal: controller.signal,
@@ -71,11 +93,12 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
       });
 
     return () => controller.abort();
-  }, [currentBusiness, date, reloadKey]);
+    // `week` se deriva de `date`; basta con view y date.
+  }, [currentBusiness, date, reloadKey, view]);
 
   // Navegación de fechas
   function changeDate(daysDelta: number) {
-    setDate((prev) => addCalendarDays(prev, daysDelta));
+    setDate((prev) => addCalendarDays(prev, view === "week" ? daysDelta * 7 : daysDelta));
   }
 
   function goToToday() {
@@ -143,17 +166,17 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
             <button
               type="button"
               onClick={() => changeDate(-1)}
-              title="Día anterior"
-              aria-label="Día anterior"
+              title={view === "week" ? "Semana anterior" : "Día anterior"}
+              aria-label={view === "week" ? "Semana anterior" : "Día anterior"}
             >
               <ChevronLeft size={18} />
             </button>
-            <span className="panel-date-label">{formatDate(date)}</span>
+            <span className="panel-date-label">{view === "week" ? formatDateRange(week.from, week.to) : formatDate(date)}</span>
             <button
               type="button"
               onClick={() => changeDate(1)}
-              title="Día siguiente"
-              aria-label="Día siguiente"
+              title={view === "week" ? "Semana siguiente" : "Día siguiente"}
+              aria-label={view === "week" ? "Semana siguiente" : "Día siguiente"}
             >
               <ChevronRight size={18} />
             </button>
@@ -169,6 +192,15 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
               }}
             >
               Hoy
+            </button>
+          </div>
+
+          <div className="rev-seg panel-view" role="tablist" aria-label="Vista de la agenda">
+            <button type="button" role="tab" aria-selected={view === "day"} className={view === "day" ? "active" : undefined} onClick={() => chooseView("day")}>
+              Día
+            </button>
+            <button type="button" role="tab" aria-selected={view === "week"} className={view === "week" ? "active" : undefined} onClick={() => chooseView("week")}>
+              Semana
             </button>
           </div>
 
@@ -207,6 +239,22 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
           </div>
         </div>
 
+        {view === "week" && (
+          <PanelWeek
+            weekStart={week.from}
+            today={dateInTimeZone(new Date(), currentBusiness.timezone)}
+            timezone={currentBusiness.timezone}
+            bookings={bookings}
+            timeOff={timeOff}
+            staffList={staffList}
+            selectedStaffId={selectedStaffId}
+            statusFilter={statusFilter}
+            loading={loading}
+            onOpenDay={openDay}
+          />
+        )}
+
+        {view === "day" && <>
         {/* Bloqueos del día (vacaciones, feriados, imprevistos) */}
         {timeOff.length > 0 && (
           <div className="panel-timeoff" role="note">
@@ -378,6 +426,8 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
             })}
           </div>
         )}
+
+        </>}
 
         {creating && (
           <PanelNewBooking

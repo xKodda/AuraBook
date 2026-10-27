@@ -20,7 +20,7 @@ los primeros 6 meses. Migraciones hasta `20261104000000`.
    de la portada (la cortina de entrada es lo que más pesa en el LCP).
 
 **Siguiente trabajo sugerido, en orden:**
-1. ~~Bloqueos de agenda y aviso de cancelación~~ (hecho 2026-10-27). Agenda por semana y en columnas por profesional.
+1. ~~Bloqueos de agenda y aviso de cancelación~~ y ~~agenda semanal~~ (hecho 2026-10-27).
 2. «Mi cuenta»: cambiar contraseña, descargar reservas y clientes (CSV) y eliminar la cuenta (hoy se piden por correo).
 3. `/admin`: editar el precio anual y ver el plan efectivo (Free/Premium) de cada negocio.
 4. Invitaciones al equipo (cada profesional con su acceso), que sería otra capacidad de Premium.
@@ -120,7 +120,7 @@ Regla para decidir qué construir: *si una función no ayuda a llenar la agenda 
 | # | Tarea |
 |---|---|
 | C1 | **Invitar al equipo**: cada profesional entra con su correo y ve solo su agenda (los roles ya existen en BD) |
-| C2 | Agenda **semanal** en el panel, además de la diaria |
+| C2 | ~~Agenda semanal~~ Hecho: grilla por hora con color por profesional y bloqueos (lista por día en celular) |
 | C3 | **Ficha de cliente**: historial de visitas, inasistencias y notas, reconocida por teléfono |
 | C4 | ~~Botón de WhatsApp prellenado~~ Hecho en cada cita de la agenda |
 | C5 | **PWA**: instalar el panel en el teléfono como una app |

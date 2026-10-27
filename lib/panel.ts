@@ -4,7 +4,7 @@ import {
 } from "./demo";
 import { myEntitlements, mySubscriptions } from "./billing-server";
 import { FREE_ENTITLEMENTS, type Entitlements } from "./plans";
-import { addCalendarDays, timeInTimeZone, zonedTimeToUtc } from "./dates";
+import { addCalendarDays, dateInTimeZone, timeInTimeZone, zonedTimeToUtc } from "./dates";
 import { sessionDb } from "./supabase";
 import type {
   BookingStatus, BusinessCategory, BusinessRole, PanelBooking, PanelBookingInput, PanelBusiness, PanelCatalog, RevenueDay,
@@ -90,10 +90,19 @@ type DbPanelBooking = {
 };
 
 /** Agenda del día en la zona horaria del negocio. RLS limita lo que ve cada rol. */
-export async function listPanelBookings(business: PanelBusiness, date: string): Promise<PanelBooking[]> {
-  if (DEMO_MODE) return demoListBookings(business.id, date);
-  const from = zonedTimeToUtc(date, "00:00", business.timezone).toISOString();
-  const to = zonedTimeToUtc(addCalendarDays(date, 1), "00:00", business.timezone).toISOString();
+export function listPanelBookings(business: PanelBusiness, date: string): Promise<PanelBooking[]> {
+  return listPanelBookingsRange(business, date, date);
+}
+
+/** Reservas entre dos fechas locales (ambas incluidas), para la vista semanal. Máximo 31 días. */
+export async function listPanelBookingsRange(business: PanelBusiness, fromDate: string, toDate: string): Promise<PanelBooking[]> {
+  if (DEMO_MODE) {
+    const days: PanelBooking[] = [];
+    for (let d = fromDate; d <= toDate; d = addCalendarDays(d, 1)) days.push(...demoListBookings(business.id, d));
+    return days;
+  }
+  const from = zonedTimeToUtc(fromDate, "00:00", business.timezone).toISOString();
+  const to = zonedTimeToUtc(addCalendarDays(toDate, 1), "00:00", business.timezone).toISOString();
   const db = await sessionDb();
   const { data, error } = await db
     .from("bookings")
@@ -105,6 +114,7 @@ export async function listPanelBookings(business: PanelBusiness, date: string): 
   if (error) throw new Error(`No se pudo cargar la agenda: ${error.message}`);
   return ((data ?? []) as unknown as DbPanelBooking[]).map((b) => ({
     id: b.id,
+    date: dateInTimeZone(new Date(b.start_at), business.timezone),
     staffId: b.staff_id,
     staffName: b.staff?.name ?? "—",
     serviceName: b.services?.name ?? "—",

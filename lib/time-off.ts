@@ -60,9 +60,14 @@ export async function listUpcomingTimeOff(business: PanelBusiness): Promise<Time
 }
 
 /** Bloqueos que tocan un día de la agenda. */
-export async function listDayTimeOff(business: PanelBusiness, date: string): Promise<TimeOffBlock[]> {
-  const from = zonedTimeToUtc(date, "00:00", business.timezone);
-  const to = zonedTimeToUtc(addCalendarDays(date, 1), "00:00", business.timezone);
+export function listDayTimeOff(business: PanelBusiness, date: string): Promise<TimeOffBlock[]> {
+  return listRangeTimeOff(business, date, date);
+}
+
+/** Bloqueos que tocan alguna fecha entre `fromDate` y `toDate` (ambas incluidas). */
+export async function listRangeTimeOff(business: PanelBusiness, fromDate: string, toDate: string): Promise<TimeOffBlock[]> {
+  const from = zonedTimeToUtc(fromDate, "00:00", business.timezone);
+  const to = zonedTimeToUtc(addCalendarDays(toDate, 1), "00:00", business.timezone);
   const [list, names] = await Promise.all([rows(business, from, to), staffNames(business)]);
   return group(list, names, business.timezone);
 }
