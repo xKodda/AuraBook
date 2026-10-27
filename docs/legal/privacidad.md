@@ -1,7 +1,7 @@
 # Política de Privacidad de AuraBook
 
-**Versión:** 1.0
-**Última actualización:** 25 de octubre de 2026
+**Versión:** 1.1
+**Última actualización:** 27 de octubre de 2026
 **Responsable de la plataforma:** Clikium SpA
 **RUT:** 78.399.278-7
 **Contacto de privacidad:** contacto@clikium.cl
@@ -136,7 +136,7 @@ Cuando una solicitud se refiera a datos gestionados por un Negocio, AuraBook pod
 
 Las solicitudes podrán presentarse escribiendo a contacto@clikium.cl.
 
-Quien reservó puede cancelar su cita en cualquier momento desde el enlace privado que recibe al reservar, dentro del plazo informado por el Negocio. Los Negocios pueden solicitar una copia de sus datos o la eliminación de su cuenta escribiendo a contacto@clikium.cl.
+Quien reservó puede cancelar su cita en cualquier momento desde el enlace privado que recibe al reservar, dentro del plazo informado por el Negocio. Los Negocios pueden descargar una copia de sus datos y eliminar su cuenta directamente desde la sección «Mi cuenta» del panel, o solicitarlo escribiendo a contacto@clikium.cl.
 
 ## 11. Transferencias internacionales
 

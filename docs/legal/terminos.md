@@ -1,7 +1,7 @@
 # Términos y Condiciones de Uso de AuraBook
 
-**Versión:** 1.0
-**Última actualización:** 25 de octubre de 2026
+**Versión:** 1.1
+**Última actualización:** 27 de octubre de 2026
 **Operador:** Clikium SpA
 **RUT:** 78.399.278-7
 **Nombre comercial:** AuraBook
@@ -203,7 +203,12 @@ Al terminar la relación, el Negocio podrá solicitar la exportación o recupera
 
 La eliminación, devolución o conservación posterior de información se realizará de conformidad con la legislación aplicable, la Política de Privacidad y el Acuerdo de Tratamiento de Datos.
 
-El Negocio puede solicitar en cualquier momento, escribiendo a contacto@clikium.cl desde el correo de su cuenta, una copia de sus reservas y clientes en formato CSV, que se entregará sin costo dentro de 10 días hábiles. Del mismo modo puede solicitar la eliminación de su cuenta. Al eliminarla, la página de reservas deja de estar disponible de inmediato y la información se elimina dentro de 30 días, salvo aquella que deba conservarse por obligación legal.
+El Negocio puede obtener en cualquier momento, sin costo, una copia de sus reservas y clientes en formato CSV, y eliminar su cuenta, por cualquiera de estas dos vías:
+
+- **Desde el panel**, en la sección «Mi cuenta»: la descarga es inmediata y la eliminación la realiza la persona propietaria del negocio, confirmándola expresamente.
+- **Por correo**, escribiendo a contacto@clikium.cl desde el correo de su cuenta: la copia se entrega dentro de 10 días hábiles y la eliminación se realiza dentro de 30 días.
+
+Al eliminar la cuenta, la página de reservas deja de estar disponible de inmediato y la información se elimina, salvo aquella que deba conservarse por obligación legal, como los registros de pago del plan.
 
 ## 17. Responsabilidad
 

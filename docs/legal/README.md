@@ -1,6 +1,7 @@
 # Documentos legales de AuraBook
 
-Versión oficial **1.0**, publicada el 25 de octubre de 2026 (revisada por el titular). Se muestran en
+Versión oficial **1.1**, del 27 de octubre de 2026 (revisada por el titular). La 1.1 agrega que la descarga de
+datos y la eliminación de la cuenta también se pueden hacer desde «Mi cuenta», además de por correo. Se muestran en
 `/terminos`, `/privacidad`, `/tratamiento-datos` y `/seguridad`, generadas a partir de estos archivos.
 La versión aceptada al registrarse se guarda con `LEGAL_VERSION` (lib/legal.ts).
 

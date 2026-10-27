@@ -21,7 +21,7 @@ los primeros 6 meses. Migraciones hasta `20261104000000`.
 
 **Siguiente trabajo sugerido, en orden:**
 1. ~~Bloqueos de agenda y aviso de cancelación~~ y ~~agenda semanal~~ (hecho 2026-10-27).
-2. ~~«Mi cuenta»~~ (hecho 2026-10-27). Opcional: mencionar en los Términos §16 que también se puede hacer desde «Mi cuenta».
+2. ~~«Mi cuenta»~~ (hecho 2026-10-27; Términos y Privacidad 1.1 mencionan ambas vías: panel y correo).
 3. `/admin`: editar el precio anual y ver el plan efectivo (Free/Premium) de cada negocio.
 4. Invitaciones al equipo (cada profesional con su acceso), que sería otra capacidad de Premium.
 
