@@ -43,7 +43,7 @@ const clp = (n: number) => new Intl.NumberFormat("es-CL", { style: "currency", c
 function layout(title: string, intro: string, rows: [string, string][], button?: { label: string; href: string }, foot?: string): string {
   const rowsHtml = rows.map(([k, v]) => `
     <tr>
-      <td style="padding:9px 0;border-bottom:1px solid #eeece5;font-size:13px;color:#71767f;">${escapeHtml(k)}</td>
+      <td style="padding:9px 0;border-bottom:1px solid #eeece5;font-size:13px;color:#656972;">${escapeHtml(k)}</td>
       <td style="padding:9px 0;border-bottom:1px solid #eeece5;font-size:13px;font-weight:700;color:#18191c;text-align:right;">${escapeHtml(v)}</td>
     </tr>`).join("");
   const buttonHtml = button ? `
@@ -60,9 +60,9 @@ function layout(title: string, intro: string, rows: [string, string][], button?:
     <p style="margin:0 0 18px;font-size:14px;line-height:1.6;color:#4a4d52;">${intro}</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml}</table>
     ${buttonHtml}
-    ${foot ? `<p style="margin:22px 0 0;font-size:12px;line-height:1.5;color:#71767f;">${foot}</p>` : ""}
+    ${foot ? `<p style="margin:22px 0 0;font-size:12px;line-height:1.5;color:#656972;">${foot}</p>` : ""}
   </td></tr></table>
-  <p style="margin:14px 0 0;font-size:11px;color:#71767f;">Reservas con AuraBook · Clikium</p>
+  <p style="margin:14px 0 0;font-size:11px;color:#656972;">Reservas con AuraBook · Clikium</p>
 </td></tr></table></body></html>`;
 }
 

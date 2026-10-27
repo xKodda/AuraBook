@@ -1,7 +1,7 @@
 :root {
   --ink: #18191c;
   --ink-secondary: #4a4d52;
-  --muted: #71767f;
+  --muted: #656972; /* 5,1:1 sobre marfil (mínimo WCAG AA 4,5:1) */
   --line: #e3e1da;
   --line-subtle: #eeece5;
   --warm: #f7f6f2;
@@ -1904,7 +1904,7 @@ a { color: inherit; text-decoration: none; }
 .lp-intro {
   position: fixed; inset: 0; z-index: 1000; display: none; place-items: center; padding: 24px;
   background: var(--warm); color: var(--ink); text-align: center; cursor: pointer;
-  box-shadow: 0 1px 0 var(--line), 0 30px 60px rgba(24, 25, 28, .08);
+  box-shadow: 0 1px 0 var(--line); /* sin sombra grande: se redibujaría en cada cuadro al subir */
   animation: lp-curtain .8s cubic-bezier(.76, 0, .24, 1) 1.8s forwards;
 }
 html[data-intro="play"] .lp-intro, html[data-intro="skip"] .lp-intro { display: grid; }

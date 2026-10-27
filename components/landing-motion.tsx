@@ -14,8 +14,8 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 // Mientras se ve la pantalla de entrada (components/landing-intro.tsx), la portada espera para animarse.
 const IntroReady = createContext(true);
 
-/** Momento en que la cortina de entrada empieza a subir (debe calzar con el CSS de .lp-intro). */
-const INTRO_MS = 1850;
+/** Momento en que el contenido de la cortina empieza a retirarse (.lp-intro-inner, 1,65 s en el CSS). */
+const INTRO_MS = 1650;
 const INTRO_REDUCED_MS = 1000;
 
 export function LandingMotion({ children }: { children: ReactNode }) {
@@ -54,6 +54,13 @@ const item: Variants = {
   hidden: { opacity: 0, y: 22 },
   show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } },
 };
+// Portada (al cargar): solo sube, sin desvanecerse. La cortina ya la tapa, y un texto con opacidad 0 no cuenta
+// como pintado para Google (LCP): así el título y la bajada se pintan desde el primer momento.
+const itemOnLoad: Variants = {
+  hidden: { y: 22 },
+  show: { y: 0, transition: { duration: 0.7, ease: EASE } },
+};
+const OnLoadReveal = createContext(false);
 
 /** Contenedor que anima a sus `RevealItem` en cascada: al cargar (`onLoad`) o al entrar en pantalla. */
 export function Reveal({ children, className, as = "div", onLoad = false }: {
@@ -66,7 +73,7 @@ export function Reveal({ children, className, as = "div", onLoad = false }: {
     : { whileInView: "show", viewport: { once: true, margin: "0px 0px -12% 0px" } };
   return (
     <Tag className={className} variants={container} initial="hidden" {...trigger}>
-      {children}
+      <OnLoadReveal.Provider value={onLoad}>{children}</OnLoadReveal.Provider>
     </Tag>
   );
 }
@@ -75,7 +82,8 @@ export function RevealItem({ children, className, as = "div" }: {
   children: ReactNode; className?: string; as?: "div" | "li" | "ul" | "p" | "h1" | "h2" | "span";
 }) {
   const Tag = m[as];
-  return <Tag className={className} variants={item}>{children}</Tag>;
+  const onLoad = useContext(OnLoadReveal);
+  return <Tag className={className} variants={onLoad ? itemOnLoad : item}>{children}</Tag>;
 }
 
 // ─── Portada: teléfono con leve parallax y aviso que aparece después ───

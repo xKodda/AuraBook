@@ -9,12 +9,14 @@
 textos legales oficiales v1.0 y panel optimizado para celular. Migraciones aplicadas hasta `20261102000000`.
 
 **Pendientes de configuración (no son código):**
-1. Supabase → Authentication → URL Configuration: *Site URL* = `https://aurabook.clikium.cl` y *Redirect URLs* con
+1. ~~Hecho~~ Supabase → Authentication → URL Configuration: *Site URL* = `https://aurabook.clikium.cl` y *Redirect URLs* con
    `https://aurabook.clikium.cl/**`. Es la causa de que el enlace de confirmación lleve a localhost.
-2. Vercel → `NEXT_PUBLIC_SITE_URL=https://aurabook.clikium.cl` en Production y redeploy (también lo usan el sitemap y
+2. ~~Hecho~~ Vercel → `NEXT_PUBLIC_SITE_URL=https://aurabook.clikium.cl` en Production y redeploy (también lo usan el sitemap y
    las imágenes para compartir).
 3. Confirmar con el contador que los precios se publiquen «IVA incluido».
-4. Medir Core Web Vitals con el sitio publicado (PageSpeed Insights o Vercel Speed Insights).
+4. ~~Medir Core Web Vitals~~ Hecho 2026-10-26 con Lighthouse (celular): portada 96–99, `/precios` 97–99, `/demo` 98–99;
+   accesibilidad 100 y en computador 100 en rendimiento. Volver a medir en PageSpeed Insights tras cada cambio grande
+   de la portada (la cortina de entrada es lo que más pesa en el LCP).
 
 **Siguiente trabajo sugerido, en orden:**
 1. Agenda por semana y en columnas por profesional; bloqueos de agenda (vacaciones, feriados) con `time_off`.
