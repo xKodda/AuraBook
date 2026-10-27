@@ -1,12 +1,13 @@
 # AuraBook · Producto, planes y hoja de ruta
 
-Última revisión: 2026-10-25. Documento vivo: actualizar al cerrar cada etapa.
+Última revisión: 2026-10-27. Documento vivo: actualizar al cerrar cada etapa.
 
-## 0. Estado y próxima sesión (actualizado 2026-10-26)
+## 0. Estado y próxima sesión (actualizado 2026-10-27)
 
 **En producción con el último push:** planes Free/Premium con límites aplicados en la base de datos, `/precios`,
 `/demo`, SEO (robots, sitemap, Open Graph), ingresos por semana/mes/rango, reservas manuales con sobrecupo,
-textos legales oficiales v1.0 y panel optimizado para celular. Migraciones aplicadas hasta `20261102000000`.
+textos legales oficiales v1.0, panel optimizado para celular y Premium a $15.990 con precio de lanzamiento de $12.990
+los primeros 6 meses. Migraciones hasta `20261104000000`.
 
 **Pendientes de configuración (no son código):**
 1. ~~Hecho~~ Supabase → Authentication → URL Configuration: *Site URL* = `https://aurabook.clikium.cl` y *Redirect URLs* con
@@ -87,13 +88,13 @@ Regla para decidir qué construir: *si una función no ayuda a llenar la agenda 
 
 | # | Tarea | Estado |
 |---|---|---|
-| P1 | Plan **Gratis** por defecto para todo negocio nuevo (hoy nacen en «prueba gratis» sin plan) | Pendiente |
-| P2 | Prueba de **Emprende** por 14 días al registrarse; al terminar, vuelve a Gratis sin perder datos | Pendiente |
-| P3 | Funciones por plan en la BD (`plans.features`: recordatorios, accesos de equipo, estadísticas, ocultar marca) y validación en servidor | Pendiente |
-| P4 | Límite de profesionales activos según el plan (hoy solo se informa) | Pendiente |
-| P5 | Pantalla «Mejorar plan» clara desde el panel y avisos al acercarse a un límite | Pendiente |
+| P1 | Plan **Gratis** por defecto para todo negocio nuevo | Hecho: al terminar la prueba o el pago, pasa a Free |
+| P2 | Prueba de Premium al registrarse; al terminar, vuelve a Free sin perder datos | Hecho: 30 días, sin tarjeta |
+| P3 | Funciones por plan en la BD (`plans.features`) y validación en servidor | Hecho para recordatorios e ingresos; accesos de equipo y ocultar marca, cuando existan |
+| P4 | Límite de profesionales activos según el plan | Hecho: no se pueden agregar más y la página pública ofrece solo a los que caben |
+| P5 | Pantalla «Mejorar plan» clara desde el panel y avisos al acercarse a un límite | Hecho: «Mi plan», avisos de fin de prueba y de límite de equipo |
 | P6 | Cobro automático con pasarela chilena (Flow, Mercado Pago o Webpay Oneclick) | Después de validar el precio |
-| P7 | **Boleta o factura electrónica** por cada cobro (obligación tributaria de Clikium ante el SII) | Antes del primer cobro |
+| P7 | **Boleta o factura electrónica** por cada cobro (obligación tributaria de Clikium ante el SII) | Manual por ahora (Clikium SpA la emite); automatizar junto con P6 |
 
 ## 3. Hoja de ruta
 
@@ -101,16 +102,16 @@ Regla para decidir qué construir: *si una función no ayuda a llenar la agenda 
 
 | # | Tarea | Por qué |
 |---|---|---|
-| A1 | **Términos y condiciones, política de privacidad y acuerdo de tratamiento de datos** publicados y aceptados al registrarse (borradores en `docs/legal/`) | Requisito legal; la Ley 21.719 entra en vigencia en diciembre de 2026 |
+| A1 | ~~Términos, privacidad y tratamiento de datos~~ | Hecho: versión oficial 1.0, aceptada al registrarse |
 | A2 | **Vercel Pro** (o equivalente) | El plan Hobby de Vercel es solo para uso personal no comercial |
 | A3 | **Supabase Pro** para producción | Respaldos diarios y sin pausa por inactividad |
 | A4 | Aviso al dueño cuando un cliente **cancela** | Hoy solo se ve en el panel |
-| A5 | **Gestión desde el panel** (Fase 3): editar equipo, servicios y horarios sin volver al onboarding | Hoy el único camino es `/onboarding` |
+| A5 | ~~Gestión desde el panel~~ | Hecho: Equipo, Servicios, Horarios y Datos y marca |
 | A6 | **Bloqueos de agenda**: vacaciones, feriados, horas tomadas por fuera | La tabla `time_off` existe, falta la pantalla |
 | A7 | ~~**Reserva manual** desde el panel~~ | Hecho: «Nueva reserva» en la agenda, con sobrecupo opcional |
-| A8 | Eliminar cuenta y negocio, y exportar datos (CSV) | Derechos de los titulares de datos |
+| A8 | Eliminar cuenta y negocio, y exportar datos (CSV) | Hoy se piden por correo (así lo dicen los Términos); falta hacerlo desde «Mi cuenta» |
 | A9 | Monitoreo de errores (por ejemplo, Sentry) y correo de soporte visible | Enterarse de un problema antes que el cliente |
-| A10 | Página de ayuda corta (preguntas frecuentes) | Bajar las consultas de soporte |
+| A10 | Página de ayuda corta (preguntas frecuentes) | Parcial: preguntas en la portada y en `/precios`; falta ayuda dentro del panel |
 
 ### Etapa B — Planes y cobro (P1 a P7 de la sección 2)
 
@@ -121,10 +122,10 @@ Regla para decidir qué construir: *si una función no ayuda a llenar la agenda 
 | C1 | **Invitar al equipo**: cada profesional entra con su correo y ve solo su agenda (los roles ya existen en BD) |
 | C2 | Agenda **semanal** en el panel, además de la diaria |
 | C3 | **Ficha de cliente**: historial de visitas, inasistencias y notas, reconocida por teléfono |
-| C4 | Botón de **WhatsApp** prellenado para confirmar o recordar una cita (sin costo de API) |
+| C4 | ~~Botón de WhatsApp prellenado~~ Hecho en cada cita de la agenda |
 | C5 | **PWA**: instalar el panel en el teléfono como una app |
 | C6 | Código QR imprimible con el enlace de reservas, para el local |
-| C7 | Estadísticas simples: reservas por semana, horas más pedidas, ingresos estimados, inasistencias |
+| C7 | Estadísticas simples: ~~ingresos por semana, mes o rango~~ (hecho); faltan horas más pedidas e inasistencias |
 | C8 | Programa de referidos: un mes gratis por cada negocio que se suscriba recomendado |
 
 ### Más adelante (solo si los pilotos lo piden)
