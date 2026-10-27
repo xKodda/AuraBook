@@ -64,7 +64,16 @@ export type PublicPlan = {
   priceYearlyClp: number | null;
   maxStaff: number | null;
   features: FeatureKey[];
+  /** Precio de lanzamiento mensual durante los primeros `promoMonths` meses (null = sin promoción). */
+  promoPriceClp?: number | null;
+  promoMonths?: number | null;
 };
+
+/** Promoción mensual vigente de un plan, si la hay. */
+export function launchPromo(plan: PublicPlan): { priceClp: number; months: number } | null {
+  if (plan.promoPriceClp == null || !plan.promoMonths || plan.promoPriceClp >= plan.priceClp) return null;
+  return { priceClp: plan.promoPriceClp, months: plan.promoMonths };
+}
 
 export type PublicPlans = { trialDays: number; plans: PublicPlan[] };
 
@@ -76,6 +85,7 @@ export const DEFAULT_PUBLIC_PLANS: PublicPlans = {
     {
       code: "premium", name: "Premium", description: "Para negocios con equipo que quieren menos inasistencias.",
       priceClp: 15990, priceYearlyClp: 159900, maxStaff: 3, features: ["client_reminders", "revenue_stats"],
+      promoPriceClp: 12990, promoMonths: 6,
     },
   ],
 };

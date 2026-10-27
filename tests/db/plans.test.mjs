@@ -29,6 +29,7 @@ describe("planes publicados", () => {
     assert.equal(data.trialDays, 30);
     assert.deepEqual(data.plans.map((p) => [p.code, p.priceClp, p.maxStaff]), [["free", 0, 1], ["premium", 15990, 3]]);
     assert.deepEqual(data.plans[1].features, ["client_reminders", "revenue_stats"]);
+    assert.deepEqual([data.plans[1].promoPriceClp, data.plans[1].promoMonths], [12990, 6]);
   });
 });
 

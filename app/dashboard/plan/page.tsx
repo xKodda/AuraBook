@@ -6,7 +6,7 @@ import { getBusinessSubscription, getPublicPlans } from "@/lib/billing-server";
 import { formatPrice } from "@/lib/dates";
 import { BILLING_CONTACT_EMAIL, BILLING_CONTACT_WHATSAPP } from "@/lib/env";
 import { requireManager } from "@/lib/dashboard";
-import { FEATURES, TIER_LABEL, staffLimitLabel } from "@/lib/plans";
+import { FEATURES, TIER_LABEL, launchPromo, staffLimitLabel } from "@/lib/plans";
 
 export const metadata: Metadata = {
   title: "Mi plan | AuraBook",
@@ -81,13 +81,19 @@ export default async function MyPlanPage() {
           <div className="adm-plans">
             {published.plans.map((p) => {
               const current = p.code === plan.tier;
+              const promo = launchPromo(p);
               return (
                 <article key={p.code} className={`adm-plan${current ? " current" : ""}`}>
                   <div className="adm-plan-head">
                     <strong>{p.name}</strong>
                     {current && <span className="sub-badge sub-active">{sub.status === "trial" ? "En prueba" : "Tu plan"}</span>}
                   </div>
-                  <span className="adm-plan-price">{formatPrice(p.priceClp)}<small>/mes</small></span>
+                  {promo ? (
+                    <>
+                      <span className="adm-plan-price">{formatPrice(promo.priceClp)}<small>/mes</small></span>
+                      <small className="adm-muted">Los primeros {promo.months} meses · luego {formatPrice(p.priceClp)}</small>
+                    </>
+                  ) : <span className="adm-plan-price">{formatPrice(p.priceClp)}<small>/mes</small></span>}
                   {p.priceYearlyClp ? <small className="adm-muted">o {formatPrice(p.priceYearlyClp)} al año</small> : null}
                   {p.description && <p>{p.description}</p>}
                   <ul>

@@ -1340,6 +1340,8 @@ a { color: inherit; text-decoration: none; }
 .pr-price { display: flex; align-items: baseline; gap: 8px; margin: 0; }
 .pr-price strong { font-size: 44px; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
 .pr-price span { font-size: 15px; color: var(--muted); font-weight: 600; }
+.pr-price s { font-size: 18px; font-weight: 700; color: var(--muted); align-self: center; }
+.pr-tag-promo { background: #eaf4ed; color: #216a3c; }
 .pr-equiv { margin: 4px 0 20px; font-size: 13px; color: var(--muted); min-height: 1.4em; }
 .pr-cta { width: 100%; box-sizing: border-box; height: 50px; font-size: 15px; }
 .pr-list { list-style: none; margin: 22px 0 0; padding: 20px 0 0; border-top: 1px solid var(--line-subtle); display: grid; gap: 12px; font-size: 14px; }

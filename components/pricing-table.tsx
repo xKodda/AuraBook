@@ -6,7 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { formatPrice } from "@/lib/dates";
-import { FEATURES, INCLUDED_IN_ALL, staffLimitLabel, type PublicPlans } from "@/lib/plans";
+import { FEATURES, INCLUDED_IN_ALL, launchPromo, staffLimitLabel, type PublicPlans } from "@/lib/plans";
 
 export function PricingTable({ data }: { data: PublicPlans }) {
   const [yearly, setYearly] = useState(false);
@@ -27,19 +27,25 @@ export function PricingTable({ data }: { data: PublicPlans }) {
       <div className="pr-plans">
         {data.plans.map((p) => {
           const isPremium = p.code === "premium";
-          const price = yearly && p.priceYearlyClp !== null ? p.priceYearlyClp : p.priceClp;
+          // El precio de lanzamiento aplica al pago mensual; el anual ya tiene su propio descuento.
+          const promo = yearly ? null : launchPromo(p);
+          const price = yearly && p.priceYearlyClp !== null ? p.priceYearlyClp : promo?.priceClp ?? p.priceClp;
           return (
             <article key={p.code} className={`pr-plan${isPremium ? " featured" : ""}`}>
               <div className="pr-plan-head">
                 <h2>{p.name}</h2>
-                {isPremium && data.trialDays > 0 && <span className="pr-tag">{data.trialDays} días gratis</span>}
+                {promo ? <span className="pr-tag pr-tag-promo">Precio de lanzamiento</span>
+                  : isPremium && data.trialDays > 0 && <span className="pr-tag">{data.trialDays} días gratis</span>}
               </div>
               <p className="pr-desc">{p.description}</p>
               <p className="pr-price">
+                {promo && <s aria-label={`Antes ${formatPrice(p.priceClp)}`}>{formatPrice(p.priceClp)}</s>}
                 <strong>{price === 0 ? "$0" : formatPrice(price)}</strong>
                 <span>{price === 0 ? "para siempre" : yearly ? "al año" : "al mes"}</span>
               </p>
-              {isPremium && yearly && p.priceYearlyClp ? (
+              {promo ? (
+                <p className="pr-equiv">Los primeros {promo.months} meses · luego {formatPrice(p.priceClp)} al mes</p>
+              ) : isPremium && yearly && p.priceYearlyClp ? (
                 <p className="pr-equiv">Equivale a {formatPrice(Math.round(p.priceYearlyClp / 12))} al mes</p>
               ) : <p className="pr-equiv">{isPremium ? "Sin renovación automática" : "Sin tarjeta, sin plazo"}</p>}
               <Link href="/registro" className={isPremium ? "btn-primary pr-cta" : "btn-secondary pr-cta"}>

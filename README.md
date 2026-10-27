@@ -83,7 +83,8 @@ Abre `http://localhost:3000/dashboard` o cualquiera de las páginas de reserva p
    - `20261031000000_legal_acceptances.sql` (aceptación de documentos legales).
    - `20261101000000_overbooking_and_revenue.sql` (sobrecupos e ingresos por rango).
    - `20261102000000_plan_entitlements.sql` (planes Free y Premium y sus límites).
-   - `20261103000000_premium_price.sql` (precio de lanzamiento de Premium: $15.990 IVA incluido).
+   - `20261103000000_premium_price.sql` (precio de Premium: $15.990 IVA incluido).
+   - `20261104000000_premium_launch_promo.sql` (precio de lanzamiento: $12.990 los primeros 6 meses).
    - Opcional: `supabase/002_demo_seed.sql` (datos de prueba multi-rubro; no usar en producción).
    - `supabase/legacy/` es histórico: **no ejecutar**.
 3. Configurar `.env.local`:

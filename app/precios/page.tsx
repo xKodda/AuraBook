@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { PricingTable } from "@/components/pricing-table";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { getPublicPlans } from "@/lib/billing-server";
+import { formatPrice } from "@/lib/dates";
+import { launchPromo } from "@/lib/plans";
 
 // Los precios se editan en /admin; la página se regenera cada hora.
 export const revalidate = 3600;
@@ -20,7 +22,12 @@ export const metadata: Metadata = {
 export default async function PricingPage() {
   const data = await getPublicPlans();
   const premium = data.plans.find((p) => p.code === "premium");
+  const promo = premium ? launchPromo(premium) : null;
   const faq = [
+    ...(promo && premium ? [{
+      q: "¿Qué es el precio de lanzamiento?",
+      a: `Si te suscribes a Premium con pago mensual durante el lanzamiento, pagas ${formatPrice(promo.priceClp)} al mes los primeros ${promo.months} meses. Después, el precio es ${formatPrice(premium.priceClp)} al mes. Sin renovación automática.`,
+    }] : []),
     {
       q: "¿Necesito tarjeta para la prueba?",
       a: `No. Al crear tu cuenta tienes Premium por ${data.trialDays} días, sin ingresar datos de pago.`,

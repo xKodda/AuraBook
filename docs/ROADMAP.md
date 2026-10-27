@@ -36,7 +36,8 @@ Regla para decidir qué construir: *si una función no ayuda a llenar la agenda 
 
 ## 2. Planes: gratis y pagado
 
-> **Vigente desde 2026-10-26:** Free ($0, 1 profesional) y Premium ($15.990/mes o $159.900/año, IVA incluido; migración 20261103000000; hasta 3 profesionales,
+> **Vigente desde 2026-10-26:** Free ($0, 1 profesional) y Premium ($15.990/mes o $159.900/año, IVA incluido; precio de lanzamiento $12.990/mes los primeros 6 meses en pago
+> mensual, migraciones 20261103000000 y 20261104000000; hasta 3 profesionales,
 > recordatorio al cliente e ingresos por semana y mes). Prueba de Premium por 30 días sin tarjeta y sin cobro automático;
 > al terminar pasa a Free. Precios publicados en `/precios`; capacidades en `lib/plans.ts` y `public.business_limits`.
 > Un plan superior (más de 3 profesionales, $19.990–$24.990) queda en estudio, sin anunciar.
