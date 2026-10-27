@@ -1,7 +1,7 @@
 import "server-only";
 import { SITE_URL } from "./env";
 import {
-  clientConfirmationEmail, clientReminderEmail, ownerNewBookingEmail,
+  clientConfirmationEmail, clientReminderEmail, ownerCancellationEmail, ownerNewBookingEmail,
   type BookingEmailData, type EmailContent,
 } from "./email-templates";
 import { privilegedDb } from "./supabase";
@@ -59,6 +59,13 @@ export async function notifyNewBooking(bookingId: string): Promise<void> {
     sendEmail(n.ownerEmails, ownerNewBookingEmail(n, siteUrl()), n.clientEmail ?? undefined),
     n.clientEmail ? sendEmail(n.clientEmail, clientConfirmationEmail(n, siteUrl())) : Promise.resolve(false),
   ]);
+}
+
+/** El cliente canceló desde su enlace: aviso a los dueños para que sepan que la hora quedó libre. */
+export async function notifyClientCancellation(bookingId: string): Promise<void> {
+  const n = await loadNotification(bookingId);
+  if (!n) return;
+  await sendEmail(n.ownerEmails, ownerCancellationEmail(n, siteUrl()), n.clientEmail ?? undefined);
 }
 
 /** Envía los recordatorios de mañana. Cada uno se reclama antes de enviarlo (sin duplicados). */

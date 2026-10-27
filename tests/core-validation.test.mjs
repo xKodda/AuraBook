@@ -115,6 +115,11 @@ test("Correos de reserva: datos correctos y HTML del cliente escapado", async ()
     businessSlug: "barbershop", businessAddress: "Calle 1", businessPhone: "", timezone: "America/Santiago",
   };
   assert.equal(formatWhen(b.startAt, b.timezone), "martes 27 de octubre, 10:30 h");
+  const { ownerCancellationEmail } = await import("../lib/email-templates.ts");
+  const cancelled = ownerCancellationEmail(b, "https://aurabook.clikium.cl");
+  assert.match(cancelled.subject, /^Cancelación: /);
+  assert.ok(!cancelled.html.includes("<img src=x"));
+  assert.match(cancelled.text, /quedó libre/);
   const owner = ownerNewBookingEmail(b, "https://aurabook.clikium.cl");
   assert.ok(!owner.html.includes("<img src=x"));
   assert.ok(owner.html.includes("&lt;img"));

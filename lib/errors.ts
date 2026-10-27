@@ -19,6 +19,8 @@ const MESSAGES: Record<string, string> = {
   STAFF_NOT_FOUND: "No encontramos a ese profesional en tu negocio.",
   STAFF_LIMIT_REACHED: "Alcanzaste el máximo de profesionales para este negocio.",
   PLAN_STAFF_LIMIT: "Tu plan no permite más profesionales. Pásate a Premium en «Mi plan» para sumar a tu equipo.",
+  INVALID_TIME_OFF: "Revisa las fechas: el bloqueo debe terminar en el futuro, durar hasta un año y el motivo tener hasta 80 caracteres.",
+  TIME_OFF_NOT_FOUND: "Ese bloqueo ya no existe.",
   PLAN_FEATURE_REQUIRED: "Esta función es parte de Premium. Revisa «Mi plan».",
   STAFF_ALREADY_LINKED: "Ese profesional ya está vinculado a otra cuenta.",
   STAFF_HAS_UPCOMING_BOOKINGS: "Este profesional tiene reservas próximas. Reasígnalas o cancélalas antes de quitarlo.",

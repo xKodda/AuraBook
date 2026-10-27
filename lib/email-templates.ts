@@ -91,6 +91,26 @@ export function ownerNewBookingEmail(b: BookingEmailData, siteUrl: string): Emai
   };
 }
 
+/** Aviso al dueño: un cliente canceló su reserva desde su enlace. La hora vuelve a estar disponible. */
+export function ownerCancellationEmail(b: BookingEmailData, siteUrl: string): EmailContent {
+  const when = formatWhen(b.startAt, b.timezone);
+  const rows: [string, string][] = [
+    ["Cliente", b.clientName],
+    ["Teléfono", b.clientPhone],
+    ["Servicio", b.serviceName],
+    ["Profesional", b.staffName],
+    ["Fecha", when],
+  ];
+  const title = "Reserva cancelada";
+  const note = "La hora quedó libre otra vez en tu página de reservas.";
+  return {
+    subject: `Cancelación: ${b.clientName} · ${when}`,
+    html: layout(title, `${escapeHtml(b.clientName)} canceló su reserva en <strong>${escapeHtml(b.businessName)}</strong>.`, rows,
+      { label: "Ver mi agenda", href: `${siteUrl}/dashboard` }, escapeHtml(note)),
+    text: text(`${title} en ${b.businessName}`, rows, `${note}\nAgenda: ${siteUrl}/dashboard`),
+  };
+}
+
 /** Confirmación al cliente (solo si dejó su correo). */
 export function clientConfirmationEmail(b: BookingEmailData, siteUrl: string): EmailContent {
   const when = formatWhen(b.startAt, b.timezone);

@@ -4,7 +4,7 @@ import { useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  CalendarDays, Clock, CreditCard, ExternalLink, LayoutGrid, LogOut, Menu, Palette, Scissors, Shield, Users, X,
+  CalendarDays, CalendarOff, Clock, CreditCard, ExternalLink, LayoutGrid, LogOut, Menu, Palette, Scissors, Shield, Users, X,
 } from "lucide-react";
 import { selectBusinessAction } from "@/app/dashboard/actions";
 import { BusinessLogo } from "@/components/business-logo";
@@ -46,6 +46,7 @@ export function DashboardShell({ business, businesses, email, demo, pendingOnboa
         { href: "/dashboard/equipo", label: "Equipo", icon: Users },
         { href: "/dashboard/servicios", label: "Servicios", icon: Scissors },
         { href: "/dashboard/horarios", label: "Horarios", icon: Clock },
+        { href: "/dashboard/bloqueos", label: "Bloqueos", icon: CalendarOff },
         { href: "/dashboard/negocio", label: "Datos y marca", icon: Palette },
       ],
     }] : []),

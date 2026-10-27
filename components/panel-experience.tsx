@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, MessageSquare, Plus, RefreshCw, UserX, XCircle,
+  CalendarDays, CalendarOff, Check, ChevronLeft, ChevronRight, ExternalLink, MessageSquare, Plus, RefreshCw, UserX, XCircle,
 } from "lucide-react";
 import { PanelNewBooking } from "@/components/panel-new-booking";
 import { addCalendarDays, dateInTimeZone, formatDate, formatPrice } from "@/lib/dates";
-import type { BookingStatus, PanelBooking, PanelBusiness, PanelCatalog } from "@/lib/types";
+import type { BookingStatus, PanelBooking, PanelBusiness, PanelCatalog, TimeOffBlock } from "@/lib/types";
 
 type Props = {
   business: PanelBusiness;
@@ -15,15 +15,17 @@ type Props = {
   initialBookings: PanelBooking[];
   initialDate: string;
   catalog: PanelCatalog;
+  initialTimeOff: TimeOffBlock[];
 };
 
 /** Agenda del día. La estructura (menú, selector de negocio, avisos) la pone el layout del panel. */
-export function PanelExperience({ business: currentBusiness, initialStaff, initialBookings, initialDate, catalog }: Props) {
+export function PanelExperience({ business: currentBusiness, initialStaff, initialBookings, initialDate, catalog, initialTimeOff }: Props) {
   const [date, setDate] = useState(initialDate);
   const [staffList, setStaffList] = useState(initialStaff);
   const [selectedStaffId, setSelectedStaffId] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [bookings, setBookings] = useState<PanelBooking[]>(initialBookings);
+  const [timeOff, setTimeOff] = useState<TimeOffBlock[]>(initialTimeOff);
   const [loading, setLoading] = useState(false);
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -50,11 +52,12 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
       .then(async (res) => {
         if (!res.ok) throw new Error("Error al cargar reservas.");
         const data = await res.json();
-        return data as { bookings: PanelBooking[]; staff: { id: string; name: string }[] };
+        return data as { bookings: PanelBooking[]; staff: { id: string; name: string }[]; timeOff?: TimeOffBlock[] };
       })
       .then((data) => {
         if (!controller.signal.aborted) {
           setBookings(data.bookings);
+          setTimeOff(data.timeOff ?? []);
           if (data.staff) setStaffList(data.staff);
         }
       })
@@ -203,6 +206,26 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
             </select>
           </div>
         </div>
+
+        {/* Bloqueos del día (vacaciones, feriados, imprevistos) */}
+        {timeOff.length > 0 && (
+          <div className="panel-timeoff" role="note">
+            <CalendarOff size={16} />
+            <div>
+              {timeOff.map((t) => {
+                const allStaff = t.staffIds.length === staffList.length && staffList.length > 1;
+                const hours = t.allDay || (t.fromDate < date && t.toDate > date) ? "todo el día"
+                  : `${t.fromDate < date ? "00:00" : t.fromTime} a ${t.toDate > date ? "24:00" : t.toTime}`;
+                return (
+                  <p key={t.ids.join()}>
+                    <b>{allStaff ? "Todo el equipo" : t.staffNames.join(", ")}</b> · bloqueado {hours}{t.reason ? ` · ${t.reason}` : ""}
+                  </p>
+                );
+              })}
+            </div>
+            {currentBusiness.role !== "staff" && <Link href="/dashboard/bloqueos">Ver bloqueos</Link>}
+          </div>
+        )}
 
         {/* Métricas clave del día */}
         <div className="panel-metrics-row">

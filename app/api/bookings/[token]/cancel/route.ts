@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { cancelManagedBooking, getManagedBooking } from "@/lib/bookings";
+import { DEMO_MODE } from "@/lib/demo";
+import { notifyClientCancellation } from "@/lib/email";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { manageTokenSchema } from "@/lib/validation";
 
@@ -27,6 +29,8 @@ export async function POST(
 
     const result = await cancelManagedBooking(token);
     if (result === "CANCELLED") {
+      // El correo al dueño se envía después de responder: el cliente no espera por él.
+      if (!DEMO_MODE) after(() => notifyClientCancellation(existing.bookingId));
       return NextResponse.json({ ok: true, status: "cancelled" });
     }
     if (result === "TOO_LATE") {

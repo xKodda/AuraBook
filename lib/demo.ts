@@ -146,14 +146,18 @@ type DemoBooking = {
   overbook?: boolean;
 };
 
-type DemoState = { bookings: DemoBooking[]; seededFor: string | null };
+/** Bloqueo de agenda en demo (instantes UTC, como time_off). */
+export type DemoTimeOff = { id: string; businessId: string; staffId: string; startsAt: string; endsAt: string; reason: string | null };
+
+type DemoState = { bookings: DemoBooking[]; timeOff: DemoTimeOff[]; seededFor: string | null };
 
 declare global {
   var __clikiumDemoState: DemoState | undefined;
 }
 
 function state(): DemoState {
-  const s = (globalThis.__clikiumDemoState ??= { bookings: [], seededFor: null });
+  const s = (globalThis.__clikiumDemoState ??= { bookings: [], timeOff: [], seededFor: null });
+  s.timeOff ??= [];
   seedIfNeeded(s);
   return s;
 }
@@ -240,6 +244,7 @@ export function demoAvailability(business: Business, serviceId: string, date: st
       if (!fitsSchedule(sched, start, end)) continue;
       if (date === nowDate && start < nowMin + MIN_NOTICE_MIN) continue;
       if (collides(bookings, member.id, date, start, end)) continue;
+      if (blocked(member.id, date, start, end, business.timezone)) continue;
       result.push({ staffId: member.id, staffName: member.name, time: formatMinutes(start) });
     }
   }
@@ -397,6 +402,36 @@ export function demoCreatePanelBooking(
     status: "confirmed", source: "panel", overbook: input.overbook,
   });
   return "OK";
+}
+
+function blocked(staffId: string, date: string, start: number, end: number, tz: string): boolean {
+  const from = zonedTimeToUtc(date, formatMinutes(start), tz).getTime();
+  const to = from + (end - start) * 60_000;
+  return state().timeOff.some((t) => t.staffId === staffId && from < Date.parse(t.endsAt) && to > Date.parse(t.startsAt));
+}
+
+export function demoListTimeOff(businessId: string): DemoTimeOff[] {
+  return state().timeOff.filter((t) => t.businessId === businessId);
+}
+
+export function demoSaveTimeOff(businessId: string, staffIds: string[], startsAt: string, endsAt: string, reason: string | null): number {
+  const s = state();
+  for (const staffId of staffIds) {
+    s.timeOff.push({ id: crypto.randomUUID(), businessId, staffId, startsAt, endsAt, reason });
+  }
+  const tz = DEMO_BUSINESSES.find((b) => b.id === businessId)?.timezone ?? TZ;
+  return s.bookings.filter((b) => {
+    if (b.businessId !== businessId || b.status !== "confirmed" || !staffIds.includes(b.staffId)) return false;
+    const from = zonedTimeToUtc(b.date, formatMinutes(b.start), tz).getTime();
+    return from < Date.parse(endsAt) && from + (b.end - b.start) * 60_000 > Date.parse(startsAt);
+  }).length;
+}
+
+export function demoDeleteTimeOff(businessId: string, ids: string[]): number {
+  const s = state();
+  const before = s.timeOff.length;
+  s.timeOff = s.timeOff.filter((t) => t.businessId !== businessId || !ids.includes(t.id));
+  return before - s.timeOff.length;
 }
 
 /** Estado de gestión de un negocio demo (para ver las secciones del panel sin Supabase). */

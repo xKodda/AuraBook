@@ -1382,6 +1382,30 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ══════════════════════════════════════════════════════════
+   Bloqueos de agenda (components/manage/time-off-manager.tsx) y aviso en la agenda del día
+   ══════════════════════════════════════════════════════════ */
+.to-seg { align-self: start; }
+.to-hours { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)); gap: 12px; }
+.to-empty { display: flex; align-items: center; gap: 10px; }
+.to-warning { display: flex; align-items: flex-start; gap: 8px; }
+.to-warning svg { flex-shrink: 0; margin-top: 2px; }
+.panel-timeoff {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; padding: 12px 14px;
+  border-radius: var(--radius-md); background: #f3eefc; border: 1px solid #e2d8f5; color: #4a3480; font-size: 13px;
+}
+.panel-timeoff svg { flex-shrink: 0; margin-top: 1px; }
+.panel-timeoff div { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.panel-timeoff p { margin: 0; line-height: 1.45; }
+.panel-timeoff a { flex-shrink: 0; font-weight: 700; color: inherit; text-decoration: underline; }
+@media (max-width: 580px) {
+  .to-hours { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .to-hours > :first-child { grid-column: 1 / -1; }
+  .to-seg { align-self: stretch; display: flex; }
+  .to-seg button { flex: 1; }
+  .panel-timeoff { flex-wrap: wrap; }
+}
+
+/* ══════════════════════════════════════════════════════════
    Panel del negocio y onboarding en celular
    ══════════════════════════════════════════════════════════ */
 @media (max-width: 580px) {

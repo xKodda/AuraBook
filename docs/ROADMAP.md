@@ -20,7 +20,7 @@ los primeros 6 meses. Migraciones hasta `20261104000000`.
    de la portada (la cortina de entrada es lo que más pesa en el LCP).
 
 **Siguiente trabajo sugerido, en orden:**
-1. Agenda por semana y en columnas por profesional; bloqueos de agenda (vacaciones, feriados) con `time_off`.
+1. ~~Bloqueos de agenda y aviso de cancelación~~ (hecho 2026-10-27). Agenda por semana y en columnas por profesional.
 2. «Mi cuenta»: cambiar contraseña, descargar reservas y clientes (CSV) y eliminar la cuenta (hoy se piden por correo).
 3. `/admin`: editar el precio anual y ver el plan efectivo (Free/Premium) de cada negocio.
 4. Invitaciones al equipo (cada profesional con su acceso), que sería otra capacidad de Premium.
@@ -105,9 +105,9 @@ Regla para decidir qué construir: *si una función no ayuda a llenar la agenda 
 | A1 | ~~Términos, privacidad y tratamiento de datos~~ | Hecho: versión oficial 1.0, aceptada al registrarse |
 | A2 | **Vercel Pro** (o equivalente) | El plan Hobby de Vercel es solo para uso personal no comercial |
 | A3 | **Supabase Pro** para producción | Respaldos diarios y sin pausa por inactividad |
-| A4 | Aviso al dueño cuando un cliente **cancela** | Hoy solo se ve en el panel |
+| A4 | ~~Aviso al dueño cuando un cliente cancela~~ | Hecho: correo a los dueños cuando el cliente cancela desde su enlace |
 | A5 | ~~Gestión desde el panel~~ | Hecho: Equipo, Servicios, Horarios y Datos y marca |
-| A6 | **Bloqueos de agenda**: vacaciones, feriados, horas tomadas por fuera | La tabla `time_off` existe, falta la pantalla |
+| A6 | ~~Bloqueos de agenda~~ | Hecho: «Bloqueos» en el panel (días completos o algunas horas, por persona o todo el equipo) y aviso en la agenda |
 | A7 | ~~**Reserva manual** desde el panel~~ | Hecho: «Nueva reserva» en la agenda, con sobrecupo opcional |
 | A8 | Eliminar cuenta y negocio, y exportar datos (CSV) | Hoy se piden por correo (así lo dicen los Términos); falta hacerlo desde «Mi cuenta» |
 | A9 | Monitoreo de errores (por ejemplo, Sentry) y correo de soporte visible | Enterarse de un problema antes que el cliente |

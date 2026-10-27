@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPanelBooking, getPanelSession, listPanelBookings, listPanelStaff } from "@/lib/panel";
+import { listDayTimeOff } from "@/lib/time-off";
 import { isIsoDate } from "@/lib/dates";
 import { panelBookingSchema } from "@/lib/validation";
 
@@ -25,12 +26,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [bookings, staff] = await Promise.all([
+    const [bookings, staff, timeOff] = await Promise.all([
       listPanelBookings(business, date),
       listPanelStaff(business.id),
+      listDayTimeOff(business, date),
     ]);
 
-    return NextResponse.json({ bookings, staff });
+    return NextResponse.json({ bookings, staff, timeOff });
   } catch (error) {
     console.error("GET panel bookings error:", error);
     return NextResponse.json({ error: "Error al cargar la agenda" }, { status: 500 });

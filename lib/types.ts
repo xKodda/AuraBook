@@ -110,6 +110,22 @@ export type PanelBooking = {
   overbook: boolean;
 };
 
+/**
+ * Bloqueo de agenda (vacaciones, feriado, imprevisto). Un bloqueo de «todo el equipo» agrupa una fila por profesional.
+ * Fechas y horas en la zona del negocio; `toDate`/`toTime` es el fin (exclusivo: 00:00 del día siguiente en días completos).
+ */
+export type TimeOffBlock = {
+  ids: string[];
+  staffIds: string[];
+  staffNames: string[];
+  reason: string;
+  allDay: boolean;
+  fromDate: string;
+  fromTime: string;
+  toDate: string;
+  toTime: string;
+};
+
 /** Ingresos de un día (fecha local del negocio): reservas confirmadas y completadas. */
 export type RevenueDay = { day: string; totalClp: number; bookings: number };
 
