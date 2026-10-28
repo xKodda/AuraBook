@@ -39,6 +39,8 @@ export type Business = {
   staff: StaffMember[];
   /** Capacidades del plan vigente (por ejemplo, si se ofrece el recordatorio). */
   features: FeatureKey[];
+  /** Plan Free que ya usó sus reservas nuevas del mes: la página no toma reservas online. */
+  quotaReached?: boolean;
 };
 
 export type AvailableSlot = {

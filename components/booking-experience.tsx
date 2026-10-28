@@ -267,7 +267,21 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
         <aside className="bk-aside">{BusinessCard}</aside>
 
         <section className="bk-main">
-          {confirmed ? (
+          {business.quotaReached && !confirmed ? (
+            // Plan Free con las reservas del mes agotadas: no se ofrecen horas, se invita a contactar al negocio.
+            <div className="bk-card bk-confirm">
+              <span className="success-icon"><Phone size={28} /></span>
+              <h2>Reservas online no disponibles este mes</h2>
+              <p className="bk-muted">
+                {business.name} no está tomando más reservas por esta página este mes. Contáctalo directamente para agendar tu hora.
+              </p>
+              {business.phone && (
+                <a className="btn-primary" href={`https://wa.me/${business.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
+                  Escribir por WhatsApp
+                </a>
+              )}
+            </div>
+          ) : confirmed ? (
             <div className="bk-card bk-confirm" aria-live="polite">
               <span className="success-icon"><CheckCircle2 size={30} /></span>
               <h2>{demo ? "¡Prueba completada!" : "¡Tu hora está reservada!"}</h2>

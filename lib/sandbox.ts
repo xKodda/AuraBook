@@ -20,7 +20,7 @@ export const SANDBOX_BUSINESS: Business = {
   logoUrl: null,
   maxDaysAhead: 14,
   cancelNoticeMin: 120,
-  features: ["client_reminders", "revenue_stats"],
+  features: ["client_reminders", "revenue_stats", "custom_branding"],
   services: [
     { id: "d3e00000-0000-4000-8000-000000000001", name: "Corte clásico", description: "Corte y terminaciones de precisión", durationMin: 30, priceClp: 12000 },
     { id: "d3e00000-0000-4000-8000-000000000002", name: "Corte + barba", description: "Experiencia completa para tu estilo", durationMin: 45, priceClp: 17000 },

@@ -111,7 +111,7 @@ export const DEMO_BUSINESSES: Omit<Business, "features">[] = [
 export const DEMO_BUSINESS = DEMO_BUSINESSES[0];
 
 // En demo, los negocios tienen Premium (lo que se ve en una prueba recién creada).
-const DEMO_FEATURES: FeatureKey[] = ["client_reminders", "revenue_stats"];
+const DEMO_FEATURES: FeatureKey[] = ["client_reminders", "revenue_stats", "custom_branding"];
 
 export function demoBusinessBySlug(slug: string): Business | null {
   const business = DEMO_BUSINESSES.find((b) => b.slug === slug);
@@ -122,7 +122,10 @@ export function demoPanelBusinesses(): PanelBusiness[] {
   return DEMO_BUSINESSES.map((b) => ({
     id: b.id, slug: b.slug, name: b.name, category: b.category,
     brandColor: b.brandColor, timezone: b.timezone, role: "owner" as const, published: true,
-    entitlements: { tier: "premium" as const, maxStaff: 3, features: DEMO_FEATURES, staffCount: b.staff.length },
+    entitlements: {
+      tier: "premium" as const, maxStaff: 3, maxServices: null, maxMonthlyBookings: null, features: DEMO_FEATURES,
+      staffCount: b.staff.length, servicesCount: b.services.length, bookingsThisMonth: 0,
+    },
   }));
 }
 

@@ -7,8 +7,9 @@ import { privilegedDb } from "@/lib/supabase";
 export const dynamic = "force-dynamic";
 
 // Vercel Cron llama a esta ruta una vez al día (vercel.json) con `Authorization: Bearer <CRON_SECRET>`.
-// Además de los recordatorios, borra los registros de limitación de intentos (contienen IP) de más de 1 día:
-// la Política de Privacidad compromete eliminarlos dentro de 48 horas.
+// Además de los recordatorios, borra los registros de limitación de intentos (contienen IP) de más de 1 día
+// (la Política de Privacidad compromete eliminarlos dentro de 48 horas) y registra las pruebas y planes vencidos
+// (subscription_events), sin depender de que el negocio abra la app.
 function authorized(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
@@ -24,9 +25,11 @@ export async function GET(request: NextRequest) {
     const cutoff = new Date(Date.now() - 86_400_000).toISOString();
     const { error: purgeError } = await privilegedDb().from("rate_limits").delete().lt("window_start", cutoff);
     if (purgeError) console.error("purge rate_limits:", purgeError.message);
+    const { data: expirations, error: expError } = await privilegedDb().rpc("record_subscription_expirations");
+    if (expError) console.error("record_subscription_expirations:", expError.message);
     const result = await sendDueReminders();
-    console.log("Recordatorios:", result);
-    return NextResponse.json(result);
+    console.log("Recordatorios:", result, "· vencimientos registrados:", expirations ?? 0);
+    return NextResponse.json({ ...result, expirations: expirations ?? 0 });
   } catch (error) {
     console.error("cron reminders:", error);
     return NextResponse.json({ error: "Error al enviar recordatorios" }, { status: 500 });

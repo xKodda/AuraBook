@@ -180,7 +180,8 @@ export async function getPanelCatalog(businessId: string): Promise<PanelCatalog>
 }
 
 export type CreatePanelBookingResult =
-  | "OK" | "FORBIDDEN" | "SLOT_TAKEN" | "INVALID_PHONE" | "INVALID_NAME" | "SERVICE_NOT_FOUND" | "STAFF_NOT_FOUND" | "ERROR";
+  | "OK" | "FORBIDDEN" | "SLOT_TAKEN" | "INVALID_PHONE" | "INVALID_NAME" | "SERVICE_NOT_FOUND" | "STAFF_NOT_FOUND"
+  | "MONTHLY_LIMIT_REACHED" | "ERROR";
 
 /** Reserva agregada por el equipo. Con `overbook`, se guarda aunque choque con otra (queda marcada). */
 export async function createPanelBooking(business: PanelBusiness, input: PanelBookingInput): Promise<CreatePanelBookingResult> {
@@ -197,7 +198,7 @@ export async function createPanelBooking(business: PanelBusiness, input: PanelBo
     p_overbook: input.overbook,
   });
   if (!error) return "OK";
-  const known = ["FORBIDDEN", "SLOT_TAKEN", "INVALID_PHONE", "INVALID_NAME", "SERVICE_NOT_FOUND", "STAFF_NOT_FOUND"] as const;
+  const known = ["FORBIDDEN", "SLOT_TAKEN", "INVALID_PHONE", "INVALID_NAME", "SERVICE_NOT_FOUND", "STAFF_NOT_FOUND", "MONTHLY_LIMIT_REACHED"] as const;
   const code = known.find((k) => error.message.includes(k));
   if (code) return code;
   console.error("createPanelBooking:", error.message);

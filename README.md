@@ -87,6 +87,7 @@ Abre `http://localhost:3000/dashboard` o cualquiera de las páginas de reserva p
    - `20261104000000_premium_launch_promo.sql` (precio de lanzamiento: $12.990 los primeros 6 meses).
    - `20261105000000_time_off_management.sql` (bloqueos de agenda: crear y quitar).
    - `20261106000000_business_deletion.sql` (eliminar un negocio desde «Mi cuenta»).
+   - `20261107000000_plans_v2.sql` (planes v2: límites de Free, adicionales, prueba al publicar e historial).
    - Opcional: `supabase/002_demo_seed.sql` (datos de prueba multi-rubro; no usar en producción).
    - `supabase/legacy/` es histórico: **no ejecutar**.
 3. Configurar `.env.local`:

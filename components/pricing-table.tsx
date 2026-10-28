@@ -6,7 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { formatPrice } from "@/lib/dates";
-import { FEATURES, INCLUDED_IN_ALL, launchPromo, staffLimitLabel, type PublicPlans } from "@/lib/plans";
+import { FEATURES, INCLUDED_IN_ALL, launchPromo, planLimitLines, type PublicPlans } from "@/lib/plans";
 
 export function PricingTable({ data }: { data: PublicPlans }) {
   const [yearly, setYearly] = useState(false);
@@ -52,10 +52,10 @@ export function PricingTable({ data }: { data: PublicPlans }) {
                 {isPremium ? `Probar Premium ${data.trialDays} días` : "Empezar gratis"} <ArrowRight size={16} />
               </Link>
               <ul className="pr-list">
-                <li><Check size={16} /> <b>{staffLimitLabel(p.maxStaff)}</b></li>
+                {planLimitLines(p, formatPrice).map((line) => <li key={line}><Check size={16} /> <b>{line}</b></li>)}
                 {isPremium
                   ? p.features.map((f) => <li key={f}><Check size={16} /> <span><b>{FEATURES[f].label}</b><small>{FEATURES[f].description}</small></span></li>)
-                  : <li><Check size={16} /> Todo lo esencial para recibir reservas</li>}
+                  : <li><Check size={16} /> Todo lo esencial para recibir reservas, con la marca AuraBook</li>}
               </ul>
             </article>
           );

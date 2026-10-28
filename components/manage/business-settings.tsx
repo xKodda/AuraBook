@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { Check, Copy, ExternalLink } from "lucide-react";
 import {
   removeLogoAction, setBrandColorAction, updateBookingRulesAction, updateBusinessAction, uploadLogoAction,
@@ -26,7 +27,11 @@ const MIN_NOTICE = [0, 15, 30, 60, 120, 240, 720, 1440];
 const MAX_DAYS = [7, 14, 30, 45, 60, 90, 180];
 const CANCEL = [0, 60, 120, 240, 720, 1440, 2880];
 
-export function BusinessSettings({ initial, isOwner, siteUrl }: { initial: OnboardingState; isOwner: boolean; siteUrl: string }) {
+export function BusinessSettings({ initial, isOwner, siteUrl, branding }: {
+  initial: OnboardingState; isOwner: boolean; siteUrl: string;
+  /** El plan incluye logo y color propios (custom_branding). Sin él, la página pública usa la marca de AuraBook. */
+  branding: boolean;
+}) {
   const { state, run, pending, error } = useBusinessState(initial);
   const b = state.business!;
   const [saved, setSaved] = useState<string | null>(null);
@@ -107,6 +112,13 @@ export function BusinessSettings({ initial, isOwner, siteUrl }: { initial: Onboa
         <div className="dash-stack">
           <section className="dash-card dash-form">
             <h2>Marca</h2>
+            {!branding && (
+              <p className="plan-note">
+                Tu logo y tu color se muestran en tu página con Premium. Hoy tu página usa el diseño de AuraBook; lo que
+                guardaste aquí se conserva. <Link href="/dashboard/plan">Ver Premium</Link>
+              </p>
+            )}
+            <fieldset className="dash-fieldset" disabled={!branding}>
             <div className="onb-brand">
               <LogoPicker name={name || b.name} brandColor={color} currentUrl={previewLogo} file={logoFile}
                 onFile={(f) => { setLogoFile(f); setRemoveLogo(false); }}
@@ -127,6 +139,7 @@ export function BusinessSettings({ initial, isOwner, siteUrl }: { initial: Onboa
                 {pending ? "Guardando…" : "Guardar marca"}
               </button>
             </div>
+            </fieldset>
           </section>
 
           {isOwner && (

@@ -37,8 +37,9 @@ Regla para decidir qué construir: *si una función no ayuda a llenar la agenda 
 
 ## 2. Planes: gratis y pagado
 
-> **Vigente desde 2026-10-26:** Free ($0, 1 profesional) y Premium ($15.990/mes o $159.900/año, IVA incluido; precio de lanzamiento $12.990/mes los primeros 6 meses en pago
-> mensual, migraciones 20261103000000 y 20261104000000; hasta 3 profesionales,
+> **Vigente desde 2026-10-27 (planes v2, migración 20261107000000):** Free ($0: 2 profesionales, 8 servicios,
+> 100 reservas nuevas al mes, marca AuraBook) y Premium ($12.990/mes o $129.900/año, IVA incluido; 3 profesionales
+> + $2.990 por adicional hasta 8; ilimitado en servicios y reservas; logo y color; antes: hasta 3 profesionales,
 > recordatorio al cliente e ingresos por semana y mes). Prueba de Premium por 30 días sin tarjeta y sin cobro automático;
 > al terminar pasa a Free. Precios publicados en `/precios`; capacidades en `lib/plans.ts` y `public.business_limits`.
 > Un plan superior (más de 3 profesionales, $19.990–$24.990) queda en estudio, sin anunciar.

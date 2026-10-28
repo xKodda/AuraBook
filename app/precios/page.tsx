@@ -10,11 +10,11 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Precios | AuraBook",
-  description: "Free para quien atiende solo y Premium para negocios con equipo. Prueba Premium 30 días sin tarjeta y sin cobro automático.",
+  description: "Free gratis para siempre y Premium para negocios con equipo. Prueba Premium 30 días sin tarjeta y sin cobro automático.",
   alternates: { canonical: "/precios" },
   openGraph: {
     title: "Precios de AuraBook",
-    description: "Free para quien atiende solo. Premium para negocios con equipo, con 30 días de prueba sin tarjeta.",
+    description: "Free gratis para siempre. Premium para negocios con equipo, con 30 días de prueba sin tarjeta.",
     url: "/precios",
   },
 };
@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 export default async function PricingPage() {
   const data = await getPublicPlans();
   const premium = data.plans.find((p) => p.code === "premium");
+  const free = data.plans.find((p) => p.code === "free");
   const promo = premium ? launchPromo(premium) : null;
   const faq = [
     ...(promo && premium ? [{
@@ -34,7 +35,7 @@ export default async function PricingPage() {
     },
     {
       q: `¿Qué pasa al terminar los ${data.trialDays} días?`,
-      a: "Pasas a Free automáticamente y sin cobros. Tus reservas se mantienen. Si tienes más de un profesional, en tu página de reservas aparece solo el primero hasta que te pases a Premium.",
+      a: `Pasas a Free automáticamente y sin cobros. No se borra nada: tus reservas, clientes, profesionales y servicios se mantienen. En Free tu página ofrece hasta ${free?.maxStaff ?? 2} profesionales, usa el diseño de AuraBook y puede recibir ${free?.maxMonthlyBookings ?? 100} reservas nuevas al mes; lo que supere esos límites se recupera al volver a Premium.`,
     },
     {
       q: "¿Cómo pago Premium?",
@@ -54,7 +55,9 @@ export default async function PricingPage() {
     },
     {
       q: `¿Y si mi equipo tiene más de ${premium?.maxStaff ?? 3} personas?`,
-      a: "Escríbenos a contacto@clikium.cl y lo vemos según tu negocio.",
+      a: premium?.extraStaffPriceClp && premium.maxStaff !== null
+        ? `Premium incluye ${premium.maxStaff} profesionales y puedes sumar más por ${formatPrice(premium.extraStaffPriceClp)} al mes cada uno, hasta ${premium.maxStaff + (premium.maxExtraStaff ?? 0)}. Si necesitas más, escríbenos a contacto@clikium.cl.`
+        : "Escríbenos a contacto@clikium.cl y lo vemos según tu negocio.",
     },
   ];
 
@@ -65,7 +68,7 @@ export default async function PricingPage() {
         <header className="pr-head">
           <p className="lp-eyebrow">Precios</p>
           <h1>Empieza gratis. Paga cuando tu equipo crezca.</h1>
-          <p>Free sirve de verdad a quien atiende solo. Premium suma a tu equipo y te ayuda a reducir las inasistencias.</p>
+          <p>Free sirve de verdad para empezar, sin plazo. Premium suma a tu equipo, tu marca y te ayuda a reducir las inasistencias.</p>
         </header>
         <PricingTable data={data} />
         <section className="lp-section lp-faq pr-faq" aria-labelledby="pr-faq-title">

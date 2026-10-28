@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { Check, Pencil, Plus } from "lucide-react";
 import { archiveServiceAction, saveServiceAction } from "@/app/onboarding/actions";
 import { ChoiceField, DURATIONS, formatDuration, useBusinessState } from "@/components/business-editors";
 import { formatPrice } from "@/lib/dates";
+import { canAddService, type Entitlements } from "@/lib/plans";
 import { SERVICE_PRESETS } from "@/lib/presets";
 import type { OnboardingService, OnboardingState } from "@/lib/types";
 import { PageHead, Saved } from "./common";
 
-export function ServicesManager({ initial }: { initial: OnboardingState }) {
+export function ServicesManager({ initial, entitlements }: { initial: OnboardingState; entitlements: Entitlements }) {
   const { state, run, pending, error } = useBusinessState(initial);
   const business = state.business!;
   const [editing, setEditing] = useState<OnboardingService | "new" | null>(null);
@@ -21,6 +23,8 @@ export function ServicesManager({ initial }: { initial: OnboardingState }) {
   const [saved, setSaved] = useState<string | null>(null);
 
   const current = editing && editing !== "new" ? editing : null;
+  // El límite se evalúa con los servicios actuales (cambian al agregar o quitar sin recargar).
+  const atLimit = !canAddService({ ...entitlements, servicesCount: state.services.length });
   const priceClp = Number(price.replace(/\D/g, "") || "NaN");
   const staffName = (id: string) => state.staff.find((s) => s.id === id)?.name ?? "";
   const presets = SERVICE_PRESETS[business.category]
@@ -57,8 +61,15 @@ export function ServicesManager({ initial }: { initial: OnboardingState }) {
   return (
     <main className="dash-page">
       <PageHead title="Servicios" subtitle="Lo que tus clientes pueden reservar, en este orden.">
-        <button type="button" className="btn-primary dash-btn" onClick={() => open("new")}><Plus size={16} /> Agregar servicio</button>
+        <button type="button" className="btn-primary dash-btn" onClick={() => open("new")} disabled={atLimit}>
+          <Plus size={16} /> Agregar servicio
+        </button>
       </PageHead>
+      {atLimit && (
+        <p className="plan-note">
+          Tu plan incluye hasta {entitlements.maxServices} servicios. <Link href="/dashboard/plan">Pásate a Premium</Link> para tener servicios ilimitados.
+        </p>
+      )}
       <Saved message={saved} />
       {error && <div className="form-error" role="alert">{error}</div>}
 

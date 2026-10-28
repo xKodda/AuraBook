@@ -80,6 +80,21 @@ Un perfil profesional (`staff`) se vincula como máximo a un usuario.
   Se aplica en la base de datos: `save_staff` (no agregar por sobre el límite), `available_slots` (la página pública solo
   ofrece a los primeros profesionales que caben en el plan), `due_reminders` y `panel_revenue`. Nunca se cancela una
   reserva ni se archiva a nadie por bajar de plan.
+- **Planes v2** (migración 20261107000000): Free = 2 profesionales, 8 servicios y 100 reservas nuevas al mes, marca
+  AuraBook; Premium = $12.990/mes o $129.900/año (IVA incluido), 3 profesionales + adicionales a $2.990 (hasta 8),
+  servicios y reservas ilimitados, logo y color (`custom_branding`), recordatorios e ingresos. Los límites se aplican con
+  **triggers** (valen para la página, el panel y cualquier RPC): cuota mensual en `bookings` (con bloqueo por negocio
+  para solicitudes simultáneas), servicios activos y cambios de marca. La cuota cuenta reservas **creadas** en el mes
+  calendario del negocio (página y panel, incluidos sobrecupos; una cancelada sigue contando; reprogramar no cuenta).
+  La prueba de 30 días empieza al publicar el negocio y es una sola (`subscriptions.trial_started_at`). Todo cambio
+  queda en `subscription_events` (prueba, pagos, plan, adicionales, cancelación y vencimientos; estos últimos los
+  registra el cron diario con `record_subscription_expirations`). Al bajar a Free nada se borra.
+- **Pagos:** no hay pasarela. Los pagos se registran a mano en `/admin` (`admin_record_payment`) y la periodicidad
+  se deduce del pago (12 meses o más = anual). Para cobro recurrente (Flow, Mercado Pago o Webpay Oneclick): un módulo
+  `lib/payments/<proveedor>.ts` con la misma interfaz (crear suscripción, cancelar), y un webhook
+  `/api/payments/webhook` que verifique la firma del proveedor, sea idempotente (id del evento del proveedor guardado
+  con restricción única) y llame a una función de base de datos tipo `admin_record_payment` con `service_role`.
+  Nunca activar un plan con datos enviados desde el navegador.
 - **Ingresos** (`panel_revenue`): suma por día de las reservas confirmadas y completadas, en fechas locales del negocio y
   con ambos extremos incluidos. Es `security invoker`, así que un profesional solo suma sus propias reservas. El panel
   muestra la semana (lunes a domingo) y el mes en curso (del día 1 al último día real del mes), y un rango libre de

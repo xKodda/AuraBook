@@ -70,9 +70,13 @@ export async function myEntitlements(): Promise<Map<string, Entitlements>> {
     return result;
   }
   for (const row of (data ?? []) as {
-    business_id: string; tier: PlanTier; max_staff: number | null; features: FeatureKey[]; staff_count: number;
+    business_id: string; tier: PlanTier; max_staff: number | null; max_services: number | null; max_monthly_bookings: number | null;
+    features: FeatureKey[]; staff_count: number; services_count: number; bookings_this_month: number;
   }[]) {
-    result.set(row.business_id, { tier: row.tier, maxStaff: row.max_staff, features: row.features ?? [], staffCount: row.staff_count });
+    result.set(row.business_id, {
+      tier: row.tier, maxStaff: row.max_staff, maxServices: row.max_services, maxMonthlyBookings: row.max_monthly_bookings,
+      features: row.features ?? [], staffCount: row.staff_count, servicesCount: row.services_count, bookingsThisMonth: row.bookings_this_month,
+    });
   }
   return result;
 }

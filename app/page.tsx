@@ -57,7 +57,7 @@ const FEATURES = [
   { icon: Mail, title: "Aviso de cada reserva", text: "Te llega un correo con los datos del cliente apenas reserva." },
   { icon: BellRing, title: "Recordatorio el día antes", text: "El cliente puede pedir un recordatorio por correo. Menos inasistencias." },
   { icon: CalendarX2, title: "Cancelación autogestionada", text: "Cada cliente cancela desde su enlace, dentro del plazo que tú defines." },
-  { icon: Palette, title: "Con tu marca", text: "Tu logo y tu color en la página que ven tus clientes." },
+  { icon: Palette, title: "Con tu marca", text: "Con Premium, tu logo y tu color en la página que ven tus clientes." },
   { icon: Users, title: "Tu equipo ordenado", text: "Cada profesional con sus servicios y su horario." },
 ];
 
@@ -65,7 +65,7 @@ const FAQ = [
   { q: "¿Mis clientes tienen que crear una cuenta?", a: "No. Eligen servicio, profesional y hora, y dejan su nombre y teléfono. Reciben un enlace para ver o cancelar su cita." },
   { q: "¿Qué pasa si dos personas intentan reservar la misma hora?", a: "Solo una lo consigue. La disponibilidad se vuelve a verificar al confirmar y la base de datos impide horas solapadas." },
   { q: "¿Necesito instalar algo?", a: "No. Funciona en el navegador del computador y del celular, tanto para ti como para tus clientes." },
-  { q: "¿Puedo usar mi logo y mis colores?", a: "Sí. Subes tu logo y eliges el color de tu marca; así se ve tu página de reservas." },
+  { q: "¿Puedo usar mi logo y mis colores?", a: "Sí, con Premium y durante tus 30 días de prueba: subes tu logo y eliges el color de tu marca. En el plan Free tu página usa el diseño de AuraBook, y tu logo y color quedan guardados para cuando vuelvas a Premium." },
   { q: "¿Mis datos y los de mis clientes están seguros?", a: "Cada negocio está separado del resto a nivel de base de datos, y nadie más que tu equipo ve tus reservas ni los datos de tus clientes." },
 ];
 

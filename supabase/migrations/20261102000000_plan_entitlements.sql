@@ -41,7 +41,11 @@ update public.platform_settings set trial_days = 30, updated_at = now() where id
 -- 2. Capacidades efectivas de un negocio (interna)
 -- ─────────────────────────────────────────────────────────────
 -- max_staff null = sin límite.
-create or replace function public.business_limits(p_business_id uuid)
+-- Se borran antes de crearlas para poder re-ejecutar este archivo aunque 20261107000000 ya las haya ampliado
+-- (en ese caso, ejecutar después también 20261107000000).
+drop function if exists public.my_entitlements();
+drop function if exists public.business_limits(uuid);
+create function public.business_limits(p_business_id uuid)
 returns table(tier text, status text, max_staff integer, features text[])
 language sql stable security definer set search_path = '' as $$
   with sub as (
@@ -98,7 +102,7 @@ end;
 $$;
 
 -- Capacidades de los negocios del usuario (cualquier rol), para mostrar u ocultar funciones en el panel.
-create or replace function public.my_entitlements()
+create function public.my_entitlements()
 returns table(business_id uuid, tier text, status text, max_staff integer, features text[], staff_count integer)
 language sql stable security definer set search_path = '' as $$
   select m.business_id, l.tier, l.status, l.max_staff, l.features,

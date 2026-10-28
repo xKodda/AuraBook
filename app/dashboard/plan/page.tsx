@@ -6,7 +6,7 @@ import { getBusinessSubscription, getPublicPlans } from "@/lib/billing-server";
 import { formatPrice } from "@/lib/dates";
 import { BILLING_CONTACT_EMAIL, BILLING_CONTACT_WHATSAPP } from "@/lib/env";
 import { requireManager } from "@/lib/dashboard";
-import { FEATURES, TIER_LABEL, launchPromo, staffLimitLabel } from "@/lib/plans";
+import { FEATURES, TIER_LABEL, launchPromo, planLimitLines } from "@/lib/plans";
 
 export const metadata: Metadata = {
   title: "Mi plan | AuraBook",
@@ -49,6 +49,16 @@ export default async function MyPlanPage() {
               <dd className={overLimit ? "adm-warn" : undefined}>
                 {sub.staffCount}{plan.maxStaff !== null ? ` de ${plan.maxStaff}` : ""}
                 {overLimit && " · los demás no aparecen en tu página"}
+              </dd>
+            </div>
+            <div>
+              <dt>Servicios</dt>
+              <dd>{plan.servicesCount}{plan.maxServices !== null ? ` de ${plan.maxServices}` : " · ilimitados"}</dd>
+            </div>
+            <div>
+              <dt>Reservas nuevas este mes</dt>
+              <dd className={plan.maxMonthlyBookings !== null && plan.bookingsThisMonth >= plan.maxMonthlyBookings ? "adm-warn" : undefined}>
+                {plan.bookingsThisMonth}{plan.maxMonthlyBookings !== null ? ` de ${plan.maxMonthlyBookings}` : " · ilimitadas"}
               </dd>
             </div>
             <div><dt>Negocio</dt><dd>{business.name}</dd></div>
@@ -97,9 +107,9 @@ export default async function MyPlanPage() {
                   {p.priceYearlyClp ? <small className="adm-muted">o {formatPrice(p.priceYearlyClp)} al año</small> : null}
                   {p.description && <p>{p.description}</p>}
                   <ul>
-                    <li><Check size={13} /> {staffLimitLabel(p.maxStaff)}</li>
+                    {planLimitLines(p, formatPrice).map((line) => <li key={line}><Check size={13} /> {line}</li>)}
                     {p.features.map((f) => <li key={f}><Check size={13} /> {FEATURES[f].label}</li>)}
-                    {p.code === "free" && <li><Check size={13} /> Página de reservas y panel</li>}
+                    {p.code === "free" && <li><Check size={13} /> Página de reservas y panel, con la marca AuraBook</li>}
                   </ul>
                 </article>
               );

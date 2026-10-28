@@ -3,6 +3,9 @@ import { cache } from "react";
 import { DEMO_MODE, demoBusinessBySlug } from "./demo";
 import { publicDb } from "./supabase";
 import type { FeatureKey } from "./plans";
+
+/** Color de AuraBook (docs/MARCA.md), para páginas sin marca propia. */
+const DEFAULT_BRAND_COLOR = "#2F3A56";
 import type { Business, BusinessCategory, Service, StaffMember } from "./types";
 
 type DbBusiness = {
@@ -58,7 +61,9 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
   if (servicesResponse.error || staffResponse.error || eligibilityResponse.error || planResponse.error) {
     throw new Error("No se pudo obtener el catálogo público del negocio.");
   }
-  const plan = planResponse.data as { features: FeatureKey[]; staffIds: string[] };
+  const plan = planResponse.data as { features: FeatureKey[]; staffIds: string[]; quotaReached?: boolean };
+  // Sin «custom_branding» (Free), la página usa la marca de AuraBook; el logo y el color quedan guardados.
+  const branded = plan.features.includes("custom_branding");
   const bookable = new Set(plan.staffIds);
   const services: Service[] = ((servicesResponse.data ?? []) as DbService[]).map((s) => ({
     id: s.id,
@@ -85,13 +90,14 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
     address: business.address ?? "",
     phone: business.phone ?? "",
     timezone: business.timezone,
-    brandColor: business.brand_color,
-    logoUrl: business.logo_url,
+    brandColor: branded ? business.brand_color : DEFAULT_BRAND_COLOR,
+    logoUrl: branded ? business.logo_url : null,
     maxDaysAhead: business.max_days_ahead,
     cancelNoticeMin: business.cancel_notice_min,
     // Un servicio que nadie del plan puede atender no se ofrece.
     services: services.filter((sv) => staff.some((m) => m.serviceIds.includes(sv.id))),
     staff,
     features: plan.features ?? [],
+    quotaReached: plan.quotaReached ?? false,
   };
 });
