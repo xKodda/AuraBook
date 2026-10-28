@@ -10,13 +10,14 @@ import {
   extendTrialAction, recordPaymentAction, savePlanAction, setBusinessPlanAction, setCancelledAction,
   updateSettingsAction, type AdminResult,
 } from "@/app/admin/actions";
+import { AdminPaymentRequests, type AdminPaymentRequest } from "@/components/admin-payment-requests";
 import { BrandMark } from "@/components/brand";
 import { METHOD_LABEL, STATUS_LABEL, daysUntil, formatShortDate, monthLabel } from "@/lib/billing";
 import { dateInTimeZone, formatPrice } from "@/lib/dates";
 import { CATEGORY_LABEL } from "@/lib/theme";
 import type { AdminBusiness, AdminPlan, AdminSnapshot, PaymentMethod, SubscriptionStatus } from "@/lib/types";
 
-type Props = { data: AdminSnapshot; demo: boolean; email: string };
+type Props = { data: AdminSnapshot; demo: boolean; email: string; requests: AdminPaymentRequest[] };
 type Tab = "resumen" | "negocios" | "planes" | "pagos" | "ajustes";
 
 const TABS: { id: Tab; label: string; icon: typeof LayoutGrid }[] = [
@@ -57,7 +58,7 @@ function dueText(b: AdminBusiness): string {
 }
 
 // ─────────────────────────────────────────────────────────────
-export function AdminConsole({ data, demo, email }: Props) {
+export function AdminConsole({ data, demo, email, requests }: Props) {
   const [tab, setTab] = useState<Tab>("resumen");
   const [focusId, setFocusId] = useState<string | null>(null);
 
@@ -100,6 +101,9 @@ export function AdminConsole({ data, demo, email }: Props) {
           ))}
         </nav>
 
+        {/* Transferencias por revisar: siempre visibles arriba; el historial completo, en «Pagos». */}
+        {tab !== "pagos" && <AdminPaymentRequests requests={requests} onlyPending />}
+        {tab === "pagos" && <AdminPaymentRequests requests={requests} />}
         {tab === "resumen" && <Overview data={data} onManage={manage} />}
         {tab === "negocios" && <Businesses data={data} focusId={focusId} onFocus={setFocusId} />}
         {tab === "planes" && <Plans plans={data.plans} />}

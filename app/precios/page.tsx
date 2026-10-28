@@ -43,7 +43,7 @@ export default async function PricingPage() {
     },
     {
       q: "¿Cómo pago Premium?",
-      a: "Por transferencia bancaria. Escríbenos desde «Mi plan» en tu panel y te enviamos los datos. Puedes pagar mes a mes o un año completo.",
+      a: "Desde «Mi plan» en tu panel, con «Contratar Premium»: eliges mensual o anual y cuántos profesionales adicionales necesitas, transfieres a Clikium SpA y nos avisas. Activamos Premium al confirmar el pago, normalmente dentro de 1 día hábil. Pronto también podrás pagar con tarjeta.",
     },
     {
       q: "¿Se renueva solo?",

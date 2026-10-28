@@ -111,6 +111,28 @@ export function ownerCancellationEmail(b: BookingEmailData, siteUrl: string): Em
   };
 }
 
+/** Aviso interno a Clikium: un negocio informó que transfirió para contratar Premium. */
+export function paymentRequestEmail(r: {
+  businessName: string; businessSlug: string; ownerEmail: string; period: "monthly" | "yearly"; extraStaff: number;
+  amountClp: number; reference: string;
+}, siteUrl: string): EmailContent {
+  const rows: [string, string][] = [
+    ["Negocio", `${r.businessName} (/${r.businessSlug})`],
+    ["Correo", r.ownerEmail || "—"],
+    ["Plan", `Premium ${r.period === "yearly" ? "anual" : "mensual"}`],
+    ["Profesionales adicionales", String(r.extraStaff)],
+    ["Monto", clp(r.amountClp)],
+    ["N° de operación", r.reference || "—"],
+  ];
+  const title = "Transferencia por revisar";
+  return {
+    subject: `Premium por transferencia: ${r.businessName} · ${clp(r.amountClp)}`,
+    html: layout(title, "Un negocio informó que transfirió para contratar Premium. Revisa la cuenta y aprueba o rechaza la solicitud.",
+      rows, { label: "Revisar en /admin", href: `${siteUrl}/admin` }),
+    text: text(title, rows, `Revisar: ${siteUrl}/admin`),
+  };
+}
+
 /** Confirmación al cliente (solo si dejó su correo). */
 export function clientConfirmationEmail(b: BookingEmailData, siteUrl: string): EmailContent {
   const when = formatWhen(b.startAt, b.timezone);

@@ -89,6 +89,8 @@ Abre `http://localhost:3000/dashboard` o cualquiera de las páginas de reserva p
    - `20261106000000_business_deletion.sql` (eliminar un negocio desde «Mi cuenta»).
    - `20261107000000_plans_v2.sql` (planes v2: límites de Free, adicionales, prueba al publicar e historial).
    - `20261108000000_plans_v3.sql` (planes v3: logo en Free, colores y ocultar marca en Premium, cuota por mes de la cita).
+   - `20261109000000_insights_no_shows.sql` (estadísticas y control de ausencias).
+   - `20261110000000_payment_requests.sql` (contratar Premium por transferencia, con aprobación en /admin).
    - Opcional: `supabase/002_demo_seed.sql` (datos de prueba multi-rubro; no usar en producción).
    - `supabase/legacy/` es histórico: **no ejecutar**.
 3. Configurar `.env.local`:

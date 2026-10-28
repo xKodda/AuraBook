@@ -3,6 +3,7 @@ import { DEMO_MODE } from "./env";
 import { demoAdminSnapshot, demoBusinessSubscription } from "./demo-billing";
 import { DEFAULT_PUBLIC_PLANS, type Entitlements, type FeatureKey, type PlanTier, type PublicPlans } from "./plans";
 import { publicDb, sessionDb } from "./supabase";
+import type { AdminPaymentRequest } from "@/components/admin-payment-requests";
 import type { AdminSnapshot, BillingSummary, BusinessSubscription, SubscriptionStatus } from "./types";
 
 export async function isPlatformAdmin(): Promise<boolean> {
@@ -92,4 +93,32 @@ export async function getPublicPlans(): Promise<PublicPlans> {
   }
   const plans = data as PublicPlans;
   return plans.plans.length ? plans : DEFAULT_PUBLIC_PLANS;
+}
+
+/** Solicitud de pago en revisión del negocio («Contratar Premium»), si la hay. */
+export type PendingPaymentRequest = {
+  id: string; billingPeriod: "monthly" | "yearly"; extraStaff: number; amountClp: number; reference: string; createdAt: string;
+};
+
+export async function getPendingPaymentRequest(businessId: string): Promise<PendingPaymentRequest | null> {
+  if (DEMO_MODE) return null;
+  const db = await sessionDb();
+  const { data, error } = await db.from("payment_requests")
+    .select("id,billing_period,extra_staff,amount_clp,reference,created_at")
+    .eq("business_id", businessId).eq("status", "pending").maybeSingle();
+  if (error || !data) return null;
+  const r = data as { id: string; billing_period: "monthly" | "yearly"; extra_staff: number; amount_clp: number; reference: string | null; created_at: string };
+  return { id: r.id, billingPeriod: r.billing_period, extraStaff: r.extra_staff, amountClp: r.amount_clp, reference: r.reference ?? "", createdAt: r.created_at };
+}
+
+/** /admin: transferencias informadas (pendientes primero). */
+export async function getAdminPaymentRequests(): Promise<AdminPaymentRequest[]> {
+  if (DEMO_MODE) return [];
+  const db = await sessionDb();
+  const { data, error } = await db.rpc("admin_payment_requests");
+  if (error) {
+    console.error("admin_payment_requests:", error.message);
+    return [];
+  }
+  return (data ?? []) as AdminPaymentRequest[];
 }

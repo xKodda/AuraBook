@@ -92,6 +92,11 @@ Un perfil profesional (`staff`) se vincula como máximo a un usuario.
   La prueba de 30 días empieza al publicar el negocio y es una sola (`subscriptions.trial_started_at`). Todo cambio
   queda en `subscription_events` (prueba, pagos, plan, adicionales, cancelación y vencimientos; estos últimos los
   registra el cron diario con `record_subscription_expirations`). Al bajar a Free nada se borra.
+- **Contratar Premium** (20261110000000): «Mi plan» → `/dashboard/plan/contratar`. El dueño elige mensual/anual y
+  adicionales; `premium_quote` calcula el monto en la base de datos. Por transferencia queda una `payment_requests`
+  «pending» (no activa nada) y se avisa por correo a `BILLING_NOTIFY_EMAIL`; Clikium la aprueba en `/admin`
+  (`admin_resolve_payment_request` → `admin_record_payment` + adicionales). Datos bancarios por variables de entorno
+  `BILLING_BANK_*`. La opción con tarjeta queda visible como «Próximamente» hasta integrar la pasarela.
 - **Pagos:** no hay pasarela. Los pagos se registran a mano en `/admin` (`admin_record_payment`) y la periodicidad
   se deduce del pago (12 meses o más = anual). Para cobro recurrente (Flow, Mercado Pago o Webpay Oneclick): un módulo
   `lib/payments/<proveedor>.ts` con la misma interfaz (crear suscripción, cancelar), y un webhook

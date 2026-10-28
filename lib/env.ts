@@ -19,6 +19,22 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/,
 export const BILLING_CONTACT_EMAIL = process.env.NEXT_PUBLIC_BILLING_CONTACT_EMAIL ?? "";
 export const BILLING_CONTACT_WHATSAPP = (process.env.NEXT_PUBLIC_BILLING_CONTACT_WHATSAPP ?? "").replace(/\D/g, "");
 
+/**
+ * Datos para pagar Premium por transferencia («Contratar Premium»). Solo servidor. Sin banco ni número de cuenta,
+ * la página pide escribir a contacto para recibirlos.
+ */
+export const BANK_TRANSFER = {
+  holder: process.env.BILLING_BANK_HOLDER || "Clikium SpA",
+  rut: process.env.BILLING_BANK_RUT || "78.399.278-7",
+  bank: process.env.BILLING_BANK_NAME ?? "",
+  accountType: process.env.BILLING_BANK_ACCOUNT_TYPE ?? "",
+  accountNumber: process.env.BILLING_BANK_ACCOUNT_NUMBER ?? "",
+  email: process.env.BILLING_BANK_EMAIL || "contacto@clikium.cl",
+};
+
+/** A quién avisar cuando un negocio informa una transferencia. */
+export const BILLING_NOTIFY_EMAIL = process.env.BILLING_NOTIFY_EMAIL || "contacto@clikium.cl";
+
 
 /** Origen público para enlaces absolutos (sitemap, Open Graph). */
 export const PUBLIC_ORIGIN = SITE_URL || "https://aurabook.clikium.cl";

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdminConsole } from "@/components/admin-console";
 import { requireUser } from "@/lib/auth";
-import { getAdminSnapshot, isPlatformAdmin } from "@/lib/billing-server";
+import { getAdminPaymentRequests, getAdminSnapshot, isPlatformAdmin } from "@/lib/billing-server";
 import { DEMO_MODE } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +20,6 @@ export default async function AdminPage() {
     if (!(await isPlatformAdmin())) notFound();
     email = user.email ?? "";
   }
-  const data = await getAdminSnapshot();
-  return <AdminConsole data={data} demo={DEMO_MODE} email={email} />;
+  const [data, requests] = await Promise.all([getAdminSnapshot(), getAdminPaymentRequests()]);
+  return <AdminConsole data={data} demo={DEMO_MODE} email={email} requests={requests} />;
 }

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Check, Mail, MessageSquare } from "lucide-react";
+import Link from "next/link";
+import { Check, Mail, MessageSquare, Sparkles } from "lucide-react";
 import { METHOD_LABEL, daysUntil, formatShortDate } from "@/lib/billing";
-import { getBusinessSubscription, getPublicPlans } from "@/lib/billing-server";
+import { getBusinessSubscription, getPendingPaymentRequest, getPublicPlans } from "@/lib/billing-server";
 import { formatPrice } from "@/lib/dates";
 import { BILLING_CONTACT_EMAIL, BILLING_CONTACT_WHATSAPP } from "@/lib/env";
 import { requireManager } from "@/lib/dashboard";
@@ -15,7 +16,9 @@ export const metadata: Metadata = {
 
 export default async function MyPlanPage() {
   const { business } = await requireManager();
-  const [sub, published] = await Promise.all([getBusinessSubscription(business.id), getPublicPlans()]);
+  const [sub, published, pending] = await Promise.all([
+    getBusinessSubscription(business.id), getPublicPlans(), getPendingPaymentRequest(business.id),
+  ]);
   if (!sub) notFound();
 
   const plan = business.entitlements;
@@ -56,7 +59,7 @@ export default async function MyPlanPage() {
               <dd>{plan.servicesCount}{plan.maxServices !== null ? ` de ${plan.maxServices}` : " · ilimitados"}</dd>
             </div>
             <div>
-              <dt>Reservas nuevas este mes</dt>
+              <dt>Reservas este mes</dt>
               <dd className={plan.maxMonthlyBookings !== null && plan.bookingsThisMonth >= plan.maxMonthlyBookings ? "adm-warn" : undefined}>
                 {plan.bookingsThisMonth}{plan.maxMonthlyBookings !== null ? ` de ${plan.maxMonthlyBookings}` : " · ilimitadas"}
               </dd>
@@ -64,26 +67,30 @@ export default async function MyPlanPage() {
             <div><dt>Negocio</dt><dd>{business.name}</dd></div>
           </dl>
 
-          {plan.tier === "free" || sub.status === "trial" ? (
-            (BILLING_CONTACT_WHATSAPP || BILLING_CONTACT_EMAIL) ? (
-              <div className="plan-contact">
-                {BILLING_CONTACT_WHATSAPP && (
-                  <a className="btn-primary" target="_blank" rel="noreferrer"
-                    href={`https://wa.me/${BILLING_CONTACT_WHATSAPP}?text=${encodeURIComponent(message)}`}>
-                    <MessageSquare size={16} /> Pasar a Premium por WhatsApp
-                  </a>
-                )}
-                {BILLING_CONTACT_EMAIL && (
-                  <a className="btn-secondary"
-                    href={`mailto:${BILLING_CONTACT_EMAIL}?subject=${encodeURIComponent(`Premium AuraBook · ${business.name}`)}&body=${encodeURIComponent(message)}`}>
-                    <Mail size={16} /> Escribir por correo
-                  </a>
-                )}
-              </div>
-            ) : (
-              <p className="adm-note">Para pasarte a Premium, escríbenos a contacto@clikium.cl.</p>
-            )
-          ) : null}
+          {pending ? (
+            <p className="adm-note">
+              Tu transferencia de {formatPrice(pending.amountClp)} está en revisión. Activaremos Premium al confirmar el pago.{" "}
+              <Link href="/dashboard/plan/contratar">Ver solicitud</Link>
+            </p>
+          ) : (
+            <div className="plan-contact">
+              <Link className="btn-primary" href="/dashboard/plan/contratar">
+                <Sparkles size={16} /> {plan.tier === "premium" && sub.status === "active" ? "Renovar o sumar profesionales" : "Contratar Premium"}
+              </Link>
+              {BILLING_CONTACT_WHATSAPP && (
+                <a className="btn-secondary" target="_blank" rel="noreferrer"
+                  href={`https://wa.me/${BILLING_CONTACT_WHATSAPP}?text=${encodeURIComponent(message)}`}>
+                  <MessageSquare size={16} /> ¿Dudas? Escríbenos
+                </a>
+              )}
+              {!BILLING_CONTACT_WHATSAPP && BILLING_CONTACT_EMAIL && (
+                <a className="btn-secondary"
+                  href={`mailto:${BILLING_CONTACT_EMAIL}?subject=${encodeURIComponent(`Premium AuraBook · ${business.name}`)}&body=${encodeURIComponent(message)}`}>
+                  <Mail size={16} /> ¿Dudas? Escríbenos
+                </a>
+              )}
+            </div>
+          )}
         </section>
 
         <section className="adm-stack">

@@ -84,3 +84,9 @@ export async function updateSettingsAction(trialDays: number): Promise<AdminResu
   if (!Number.isInteger(trialDays) || trialDays < 0 || trialDays > 365) return INVALID;
   return call("admin_update_settings", { p_trial_days: trialDays });
 }
+
+/** Aprueba (registra el pago y activa Premium) o rechaza una transferencia informada desde «Contratar Premium». */
+export async function resolvePaymentRequestAction(requestId: string, approve: boolean): Promise<AdminResult> {
+  if (!id.safeParse(requestId).success || typeof approve !== "boolean") return INVALID;
+  return call("admin_resolve_payment_request", { p_request_id: requestId, p_approve: approve });
+}
