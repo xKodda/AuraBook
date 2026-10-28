@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import { LandingIntro } from "@/components/landing-intro";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { getPublicPlans } from "@/lib/billing-server";
+import { formatPrice } from "@/lib/dates";
 import {
   FinalHalo, HeroPhone, HorizontalGallery, LandingMotion, PopIn, Reveal, RevealImage, RevealItem, ScrollZoom,
 } from "@/components/landing-motion";
@@ -19,6 +21,9 @@ import fotoSpa from "@/public/photos/spa-velas.jpg";
 
 const DESCRIPTION =
   "Tu página de reservas con tu marca, lista en minutos. Tus clientes agendan desde el celular, sin descargar apps ni crear cuentas.";
+
+// Los precios vienen de la base de datos (se editan en /admin); la portada se regenera cada hora.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "AuraBook · Reservas online para barberías, peluquerías y salones",
@@ -57,7 +62,7 @@ const FEATURES = [
   { icon: Mail, title: "Aviso de cada reserva", text: "Te llega un correo con los datos del cliente apenas reserva." },
   { icon: BellRing, title: "Recordatorio el día antes", text: "El cliente puede pedir un recordatorio por correo. Menos inasistencias." },
   { icon: CalendarX2, title: "Cancelación autogestionada", text: "Cada cliente cancela desde su enlace, dentro del plazo que tú defines." },
-  { icon: Palette, title: "Con tu marca", text: "Con Premium, tu logo y tu color en la página que ven tus clientes." },
+  { icon: Palette, title: "Con tu marca", text: "Tu logo en la página que ven tus clientes; con Premium, también tus colores." },
   { icon: Users, title: "Tu equipo ordenado", text: "Cada profesional con sus servicios y su horario." },
 ];
 
@@ -65,7 +70,7 @@ const FAQ = [
   { q: "¿Mis clientes tienen que crear una cuenta?", a: "No. Eligen servicio, profesional y hora, y dejan su nombre y teléfono. Reciben un enlace para ver o cancelar su cita." },
   { q: "¿Qué pasa si dos personas intentan reservar la misma hora?", a: "Solo una lo consigue. La disponibilidad se vuelve a verificar al confirmar y la base de datos impide horas solapadas." },
   { q: "¿Necesito instalar algo?", a: "No. Funciona en el navegador del computador y del celular, tanto para ti como para tus clientes." },
-  { q: "¿Puedo usar mi logo y mis colores?", a: "Sí, con Premium y durante tus 30 días de prueba: subes tu logo y eliges el color de tu marca. En el plan Free tu página usa el diseño de AuraBook, y tu logo y color quedan guardados para cuando vuelvas a Premium." },
+  { q: "¿Puedo usar mi logo y mis colores?", a: "Tu logo se ve en tu página en todos los planes. Con Premium (y durante tus 30 días de prueba) también eliges el color de tu marca y puedes ocultar «Reservas con AuraBook»." },
   { q: "¿Mis datos y los de mis clientes están seguros?", a: "Cada negocio está separado del resto a nivel de base de datos, y nadie más que tu equipo ve tus reservas ni los datos de tus clientes." },
 ];
 
@@ -159,7 +164,10 @@ function AgendaPreview() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const plans = await getPublicPlans();
+  const free = plans.plans.find((p) => p.code === "free");
+  const premium = plans.plans.find((p) => p.code === "premium");
   return (
     <LandingMotion>
     <div className="lp">
@@ -270,6 +278,36 @@ export default function Home() {
             ))}
           </Reveal>
         </section>
+
+        {free && premium && (
+          <section className="lp-section lp-pricing" id="precios" aria-labelledby="lp-pricing-title">
+            <Reveal className="lp-heading">
+              <RevealItem as="p" className="lp-eyebrow">Planes y precios</RevealItem>
+              <RevealItem as="h2"><span id="lp-pricing-title">Empieza gratis. Crece a tu ritmo.</span></RevealItem>
+              <RevealItem as="p" className="lp-pricing-lead">
+                Una agenda para comenzar y herramientas para llevar tu negocio más lejos.
+              </RevealItem>
+            </Reveal>
+            <Reveal className="lp-pricing-cards">
+              <RevealItem className="lp-pricing-card">
+                <span>Free</span>
+                <strong>$0</strong>
+                <p>Tu agenda lista para recibir clientes.</p>
+                <small>{free.maxStaff} profesionales · {free.maxMonthlyBookings} reservas al mes · {free.maxServices} servicios</small>
+              </RevealItem>
+              <RevealItem className="lp-pricing-card featured">
+                <span>Premium</span>
+                <strong>{formatPrice(premium.priceClp)}<small> al mes</small></strong>
+                <p>Más control, automatización y crecimiento.</p>
+                <small>{premium.maxStaff} profesionales incluidos · reservas ilimitadas · tus colores y sin marca AuraBook</small>
+              </RevealItem>
+            </Reveal>
+            <p className="lp-pricing-note">
+              Prueba Premium {plans.trialDays} días gratis, sin tarjeta. Luego decides si continúas con Premium o usas Free.
+              Precios en pesos chilenos, IVA incluido. <Link href="/precios">Ver planes y comparación completa <ArrowRight size={14} /></Link>
+            </p>
+          </section>
+        )}
 
         <section className="lp-section lp-faq" id="preguntas">
           <SectionHeading eyebrow="Preguntas frecuentes" title="Lo que suelen preguntarnos." />

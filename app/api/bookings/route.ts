@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       }
       if (error.message.includes("TOO_MANY_BOOKINGS")) return errorJson(TOO_MANY, 409, "TOO_MANY_BOOKINGS");
       if (error.message.includes("MONTHLY_LIMIT_REACHED")) {
-        return errorJson("Este negocio no está recibiendo más reservas online este mes. Contáctalo directamente.", 409, "MONTHLY_LIMIT_REACHED");
+        return errorJson("Este negocio no está recibiendo más reservas online para ese mes. Contáctalo directamente.", 409, "MONTHLY_LIMIT_REACHED");
       }
       if (error.message.includes("INVALID_BOOKING")) return errorJson("Datos de reserva inválidos.", 400);
       throw new Error(error.message);

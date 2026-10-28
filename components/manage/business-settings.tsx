@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Check, Copy, ExternalLink } from "lucide-react";
 import {
-  removeLogoAction, setBrandColorAction, updateBookingRulesAction, updateBusinessAction, uploadLogoAction,
+  removeLogoAction, setBrandColorAction, setHideBrandingAction, updateBookingRulesAction, updateBusinessAction, uploadLogoAction,
 } from "@/app/onboarding/actions";
 import { ChoiceField, useBusinessState } from "@/components/business-editors";
 import { BusinessLogo } from "@/components/business-logo";
@@ -27,10 +27,12 @@ const MIN_NOTICE = [0, 15, 30, 60, 120, 240, 720, 1440];
 const MAX_DAYS = [7, 14, 30, 45, 60, 90, 180];
 const CANCEL = [0, 60, 120, 240, 720, 1440, 2880];
 
-export function BusinessSettings({ initial, isOwner, siteUrl, branding }: {
+export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBranding }: {
   initial: OnboardingState; isOwner: boolean; siteUrl: string;
-  /** El plan incluye logo y color propios (custom_branding). Sin él, la página pública usa la marca de AuraBook. */
-  branding: boolean;
+  /** Color propio (custom_branding). Sin él, la página pública usa el color de AuraBook; el logo es de todos los planes. */
+  colors: boolean;
+  /** Ocultar «Reservas con AuraBook» (hide_branding). */
+  canHideBranding: boolean;
 }) {
   const { state, run, pending, error } = useBusinessState(initial);
   const b = state.business!;
@@ -42,6 +44,7 @@ export function BusinessSettings({ initial, isOwner, siteUrl, branding }: {
   const [color, setColor] = useState(b.brandColor.toUpperCase());
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [removeLogo, setRemoveLogo] = useState(false);
+  const [hideBranding, setHideBranding] = useState(b.hideBranding);
   // Datos
   const [name, setName] = useState(b.name);
   const [category, setCategory] = useState<BusinessCategory>(b.category);
@@ -71,6 +74,10 @@ export function BusinessSettings({ initial, isOwner, siteUrl, branding }: {
     run(async () => {
       let result = color !== b.brandColor.toUpperCase() ? await setBrandColorAction(b.id, color) : null;
       if (result && !result.ok) return result;
+      if (hideBranding !== b.hideBranding) {
+        result = await setHideBrandingAction(b.id, hideBranding);
+        if (!result.ok) return result;
+      }
       if (logoFile) {
         const form = new FormData();
         form.append("logo", logoFile);
@@ -94,7 +101,7 @@ export function BusinessSettings({ initial, isOwner, siteUrl, branding }: {
       () => setSaved("Reglas de reserva guardadas."));
   }
 
-  const brandDirty = logoFile !== null || removeLogo || color !== b.brandColor.toUpperCase();
+  const brandDirty = logoFile !== null || removeLogo || color !== b.brandColor.toUpperCase() || hideBranding !== b.hideBranding;
   const previewLogo = removeLogo ? null : b.logoUrl;
 
   return (
@@ -112,34 +119,39 @@ export function BusinessSettings({ initial, isOwner, siteUrl, branding }: {
         <div className="dash-stack">
           <section className="dash-card dash-form">
             <h2>Marca</h2>
-            {!branding && (
-              <p className="plan-note">
-                Tu logo y tu color se muestran en tu página con Premium. Hoy tu página usa el diseño de AuraBook; lo que
-                guardaste aquí se conserva. <Link href="/dashboard/plan">Ver Premium</Link>
-              </p>
-            )}
-            <fieldset className="dash-fieldset" disabled={!branding}>
             <div className="onb-brand">
-              <LogoPicker name={name || b.name} brandColor={color} currentUrl={previewLogo} file={logoFile}
+              <LogoPicker name={name || b.name} brandColor={colors ? color : "#2F3A56"} currentUrl={previewLogo} file={logoFile}
                 onFile={(f) => { setLogoFile(f); setRemoveLogo(false); }}
                 onRemove={() => { setLogoFile(null); setRemoveLogo(true); }} />
-              <div className="onb-swatches" role="radiogroup" aria-label="Color de marca">
-                {BRAND_COLORS.map((c) => (
-                  <button key={c.hex} type="button" role="radio" aria-checked={color === c.hex}
-                    className={`onb-swatch${color === c.hex ? " selected" : ""}`} style={{ background: c.hex }}
-                    title={c.name} aria-label={c.name} onClick={() => setColor(c.hex)}>
-                    {color === c.hex && <Check size={14} />}
-                  </button>
-                ))}
-              </div>
+              {/* El color y ocultar la marca son de Premium; el logo, de todos los planes. */}
+              <fieldset className="dash-fieldset" disabled={!colors}>
+                <div className="onb-swatches" role="radiogroup" aria-label="Color de marca">
+                  {BRAND_COLORS.map((c) => (
+                    <button key={c.hex} type="button" role="radio" aria-checked={color === c.hex}
+                      className={`onb-swatch${color === c.hex ? " selected" : ""}`} style={{ background: c.hex }}
+                      title={c.name} aria-label={c.name} onClick={() => setColor(c.hex)}>
+                      {color === c.hex && <Check size={14} />}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
             </div>
+            <label className={`onb-check small${canHideBranding ? "" : " is-disabled"}`}>
+              <input type="checkbox" checked={hideBranding} disabled={!canHideBranding} onChange={(e) => setHideBranding(e.target.checked)} />
+              <span>Ocultar «Reservas con AuraBook» al pie de mi página</span>
+            </label>
+            {(!colors || !canHideBranding) && (
+              <p className="plan-note">
+                Tus colores y ocultar la marca AuraBook son parte de Premium. Tu logo se muestra en todos los planes.{" "}
+                <Link href="/dashboard/plan">Ver Premium</Link>
+              </p>
+            )}
             <div className="dash-form-foot">
               <span />
               <button type="button" className="btn-primary dash-btn" disabled={pending || !brandDirty} onClick={saveBrand}>
                 {pending ? "Guardando…" : "Guardar marca"}
               </button>
             </div>
-            </fieldset>
           </section>
 
           {isOwner && (

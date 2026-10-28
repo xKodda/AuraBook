@@ -53,6 +53,8 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
   const [availabilityState, setAvailabilityState] = useState<AvailabilityState>("idle");
   const [retry, setRetry] = useState(0);
+  // Plan Free con el mes de esa fecha completo (100 reservas activas): se explica en vez de «no quedan horas».
+  const [monthFull, setMonthFull] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -127,6 +129,7 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
         if (!body || typeof body !== "object" || !("slots" in body) || !Array.isArray(body.slots)) {
           throw new Error("Respuesta inesperada del servidor.");
         }
+        setMonthFull("monthFull" in body && body.monthFull === true);
         return body.slots as AvailableSlot[];
       })
       .then((available) => {
@@ -267,21 +270,7 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
         <aside className="bk-aside">{BusinessCard}</aside>
 
         <section className="bk-main">
-          {business.quotaReached && !confirmed ? (
-            // Plan Free con las reservas del mes agotadas: no se ofrecen horas, se invita a contactar al negocio.
-            <div className="bk-card bk-confirm">
-              <span className="success-icon"><Phone size={28} /></span>
-              <h2>Reservas online no disponibles este mes</h2>
-              <p className="bk-muted">
-                {business.name} no está tomando más reservas por esta página este mes. Contáctalo directamente para agendar tu hora.
-              </p>
-              {business.phone && (
-                <a className="btn-primary" href={`https://wa.me/${business.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
-                  Escribir por WhatsApp
-                </a>
-              )}
-            </div>
-          ) : confirmed ? (
+          {confirmed ? (
             <div className="bk-card bk-confirm" aria-live="polite">
               <span className="success-icon"><CheckCircle2 size={30} /></span>
               <h2>{demo ? "¡Prueba completada!" : "¡Tu hora está reservada!"}</h2>
@@ -400,7 +389,13 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
                       <button type="button" className="onb-link-btn" onClick={() => setRetry((n) => n + 1)}>Reintentar</button>
                     </div>
                   )}
-                  {availabilityState === "success" && uniqueSlots.length === 0 && (
+                  {availabilityState === "success" && uniqueSlots.length === 0 && monthFull && (
+                    <div className="bk-empty">
+                      <CalendarDays size={18} />
+                      <span>Este mes ya no quedan reservas online. Prueba con una fecha del mes siguiente o contacta al local.</span>
+                    </div>
+                  )}
+                  {availabilityState === "success" && uniqueSlots.length === 0 && !monthFull && (
                     <div className="bk-empty">
                       <CalendarDays size={18} />
                       <span>No quedan horas el {formatDate(date).split(",")[0]}.</span>
@@ -491,7 +486,8 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
       </main>
 
       <footer className="bk-footer">
-        Reservas con <Link href="/" className="bk-footer-brand"><AuraMark size={16} /><span>AURA<b>BOOK</b></span></Link>
+        {/* Premium puede ocultar la marca; los enlaces legales se mantienen siempre. */}
+        {!business.hideBranding && <>Reservas con <Link href="/" className="bk-footer-brand"><AuraMark size={16} /><span>AURA<b>BOOK</b></span></Link></>}
         <span className="bk-footer-links">
           <Link href="/privacidad">Privacidad</Link>
           <Link href="/terminos">Términos</Link>

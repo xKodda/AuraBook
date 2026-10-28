@@ -300,7 +300,7 @@ function BusinessStep({ state, run, pending, error, goTo, origin }: StepProps & 
               ))}
             </div>
           </div>
-          <small className="field-hint">Tu logo y color se ven en tu página con Premium (incluido en tu prueba de 30 días). PNG, JPG o WebP.</small>
+          <small className="field-hint">Tu logo se ve en tu página en todos los planes; el color, con Premium (incluido en tu prueba de 30 días). PNG, JPG o WebP.</small>
         </div>
 
         <label className="onb-field">

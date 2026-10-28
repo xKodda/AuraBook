@@ -24,7 +24,7 @@ const MESSAGES: Record<string, string> = {
   INVALID_TIME_OFF: "Revisa las fechas: el bloqueo debe terminar en el futuro, durar hasta un año y el motivo tener hasta 80 caracteres.",
   TIME_OFF_NOT_FOUND: "Ese bloqueo ya no existe.",
   PLAN_SERVICE_LIMIT: "Tu plan permite hasta 8 servicios. Pásate a Premium en «Mi plan» para agregar más.",
-  MONTHLY_LIMIT_REACHED: "Este mes ya se alcanzó el máximo de reservas nuevas del plan Free. Pásate a Premium para tener reservas ilimitadas.",
+  MONTHLY_LIMIT_REACHED: "Ese mes ya tiene las 100 reservas del plan Free (las canceladas no cuentan). Pásate a Premium para tener reservas ilimitadas.",
   INVALID_EXTRA_STAFF: "La cantidad de profesionales adicionales no es válida.",
   PLAN_FEATURE_REQUIRED: "Esta función es parte de Premium. Revisa «Mi plan».",
   STAFF_ALREADY_LINKED: "Ese profesional ya está vinculado a otra cuenta.",

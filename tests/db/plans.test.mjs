@@ -31,12 +31,12 @@ describe("planes publicados", () => {
     const data = await as(db, "anon", null, async (tx) => (await tx.query("select public.public_plans() p")).rows[0].p);
     assert.equal(data.trialDays, 30);
     const [free, premium] = data.plans;
-    assert.deepEqual([free.code, free.priceClp, free.maxStaff, free.maxServices, free.maxMonthlyBookings, free.features], ["free", 0, 2, 8, 100, []]);
+    assert.deepEqual([free.code, free.priceClp, free.maxStaff, free.maxServices, free.maxMonthlyBookings, free.features], ["free", 0, 2, 8, 100, ["client_reminders"]]);
     assert.deepEqual(
       [premium.code, premium.priceClp, premium.priceYearlyClp, premium.maxStaff, premium.extraStaffPriceClp, premium.maxExtraStaff,
         premium.maxServices, premium.maxMonthlyBookings, premium.promoPriceClp],
       ["premium", 12990, 129900, 3, 2990, 5, null, null, null]);
-    assert.deepEqual(premium.features, ["client_reminders", "revenue_stats", "custom_branding"]);
+    assert.deepEqual(premium.features, ["client_reminders", "revenue_stats", "custom_branding", "hide_branding"]);
   });
 });
 
@@ -44,7 +44,7 @@ describe("capacidades efectivas", () => {
   test("en prueba, el negocio tiene Premium sin límites de servicios ni reservas", async () => {
     assert.deepEqual(await limits(IDS.barber), {
       tier: "premium", status: "trial", max_staff: 3, max_services: null, max_monthly_bookings: null,
-      features: ["client_reminders", "revenue_stats", "custom_branding"],
+      features: ["client_reminders", "revenue_stats", "custom_branding", "hide_branding"],
     });
   });
 
@@ -84,7 +84,7 @@ describe("al vencer la prueba pasa a Free", () => {
 
   test("las capacidades son las de Free", async () => {
     assert.deepEqual(await limits(IDS.barber), {
-      tier: "free", status: "past_due", max_staff: 2, max_services: 8, max_monthly_bookings: 100, features: [],
+      tier: "free", status: "past_due", max_staff: 2, max_services: 8, max_monthly_bookings: 100, features: ["client_reminders"],
     });
   });
 
@@ -104,35 +104,47 @@ describe("al vencer la prueba pasa a Free", () => {
     }), /PLAN_SERVICE_LIMIT/);
   });
 
-  test("cuota mensual de reservas: al llegar al límite se rechazan las nuevas y la página lo sabe", async () => {
-    const used = (await db.query("select public.business_bookings_this_month($1) n", [IDS.barber])).rows[0].n;
+  test("cuota mensual por mes de atención: cancelar libera el cupo y otros meses siguen disponibles", async () => {
+    const day = `${tuesday}`;
+    const used = (await db.query("select public.business_active_bookings_in_month($1, $2::date) n", [IDS.barber, day])).rows[0].n;
     await db.query("update public.plans set max_monthly_bookings = $1 where code = 'free'", [used + 1]);
     await assert.rejects(as(db, "authenticated", barberOwner, async (tx) => {
       await manual(tx, "12:00");
       await manual(tx, "13:00");
     }), /MONTHLY_LIMIT_REACHED/);
-    await commitAs(db, "authenticated", barberOwner, (tx) => manual(tx, "12:00"));
-    const plan = await as(db, "anon", null, async (tx) => (await tx.query("select public.public_business_plan('barber-studio') p")).rows[0].p);
-    assert.equal(plan.quotaReached, true);
-    // Una reserva cancelada sigue contando para la cuota del mes.
-    await db.query("update public.bookings set status = 'cancelled' where business_id = $1", [IDS.barber]);
-    assert.equal((await db.query("select public.business_bookings_this_month($1) n", [IDS.barber])).rows[0].n, used + 1);
+    const created = await commitAs(db, "authenticated", barberOwner, async (tx) => (await manual(tx, "12:00")).rows[0].booking_id);
+    const full = await as(db, "anon", null, async (tx) => (await tx.query("select public.public_month_full('barber-studio', $1::date) f", [day])).rows[0].f);
+    assert.equal(full, true);
+    const nextMonth = await as(db, "anon", null, async (tx) =>
+      (await tx.query("select public.public_month_full('barber-studio', ($1::date + interval '1 month')::date) f", [day])).rows[0].f);
+    assert.equal(nextMonth, false, "el mes siguiente sigue disponible");
+    const slots = await as(db, "anon", null, async (tx) =>
+      (await tx.query("select count(*)::int n from public.available_slots('barber-studio', $1, $2::date)", [IDS.barberCut, day])).rows[0].n);
+    assert.equal(slots, 0, "con el mes completo no se ofrecen horas");
+    // Cancelar libera el cupo; reactivarla lo vuelve a ocupar (y se valida).
+    await db.query("update public.bookings set status = 'cancelled' where id = $1", [created]);
+    assert.equal((await db.query("select public.business_active_bookings_in_month($1, $2::date) n", [IDS.barber, day])).rows[0].n, used);
+    await commitAs(db, "authenticated", barberOwner, (tx) => manual(tx, "13:00"));
+    await assert.rejects(db.query("update public.bookings set status = 'confirmed' where id = $1", [created]), /MONTHLY_LIMIT_REACHED/);
     await db.query("update public.plans set max_monthly_bookings = 100 where code = 'free'");
   });
 
-  test("logo y color propios requieren Premium; quitar el logo siempre se puede", async () => {
+  test("logo propio en Free; color y ocultar la marca requieren Premium", async () => {
     await assert.rejects(
       as(db, "authenticated", barberOwner, (tx) => tx.query("select public.set_business_brand_color($1, '#123456')", [IDS.barber])),
+      /PLAN_FEATURE_REQUIRED/);
+    await assert.rejects(
+      as(db, "authenticated", barberOwner, (tx) => tx.query("select public.set_business_hide_branding($1, true)", [IDS.barber])),
       /PLAN_FEATURE_REQUIRED/);
     await as(db, "authenticated", barberOwner, (tx) => tx.query("select public.set_business_logo($1, null)", [IDS.barber]));
   });
 
-  test("ingresos y recordatorios requieren Premium", async () => {
+  test("ingresos requieren Premium; el recordatorio al cliente está en Free", async () => {
     await assert.rejects(
       as(db, "authenticated", barberOwner, (tx) => tx.query("select * from public.panel_revenue($1, $2::date, $2::date)", [IDS.barber, tuesday])),
       /PLAN_FEATURE_REQUIRED/);
     const { rows } = await db.query("select public.business_has_feature($1, 'client_reminders') ok", [IDS.barber]);
-    assert.equal(rows[0].ok, false);
+    assert.equal(rows[0].ok, true);
   });
 
   test("el vencimiento queda registrado una sola vez, sin que nadie abra la app", async () => {

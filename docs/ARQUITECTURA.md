@@ -86,6 +86,9 @@ Un perfil profesional (`staff`) se vincula como máximo a un usuario.
   **triggers** (valen para la página, el panel y cualquier RPC): cuota mensual en `bookings` (con bloqueo por negocio
   para solicitudes simultáneas), servicios activos y cambios de marca. La cuota cuenta reservas **creadas** en el mes
   calendario del negocio (página y panel, incluidos sobrecupos; una cancelada sigue contando; reprogramar no cuenta).
+  **Planes v3** (20261108000000) cambia esa regla: cuenta reservas **activas** cuya **cita** cae en el mes (las
+  canceladas liberan el cupo; reactivar o mover de mes se valida) y `available_slots` no ofrece horas de un mes
+  completo. El logo es de todos; `custom_branding` = colores y `hide_branding` = ocultar «Reservas con AuraBook».
   La prueba de 30 días empieza al publicar el negocio y es una sola (`subscriptions.trial_started_at`). Todo cambio
   queda en `subscription_events` (prueba, pagos, plan, adicionales, cancelación y vencimientos; estos últimos los
   registra el cron diario con `record_subscription_expirations`). Al bajar a Free nada se borra.

@@ -48,7 +48,7 @@ const CREATE_ERRORS: Record<string, [string, number]> = {
   INVALID_NAME: ["Revisa el nombre del cliente.", 400],
   SERVICE_NOT_FOUND: ["Ese servicio ya no está disponible.", 400],
   STAFF_NOT_FOUND: ["Ese profesional no ofrece el servicio elegido.", 400],
-  MONTHLY_LIMIT_REACHED: ["Este mes ya llegaste a las reservas nuevas del plan Free. Pásate a Premium en «Mi plan» para tener reservas ilimitadas.", 409],
+  MONTHLY_LIMIT_REACHED: ["Ese mes ya tiene las reservas del plan Free completas (las canceladas no cuentan). Pásate a Premium en «Mi plan» para tener reservas ilimitadas.", 409],
 };
 
 /** Reserva agregada desde el panel (cliente por teléfono, en persona o sobrecupo). */

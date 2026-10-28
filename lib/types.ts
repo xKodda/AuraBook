@@ -39,8 +39,8 @@ export type Business = {
   staff: StaffMember[];
   /** Capacidades del plan vigente (por ejemplo, si se ofrece el recordatorio). */
   features: FeatureKey[];
-  /** Plan Free que ya usó sus reservas nuevas del mes: la página no toma reservas online. */
-  quotaReached?: boolean;
+  /** Plan Premium con «ocultar marca» activado: sin «Reservas con AuraBook» al pie. */
+  hideBranding?: boolean;
 };
 
 export type AvailableSlot = {
@@ -189,6 +189,8 @@ export type OnboardingBusiness = {
   phone: string;
   brandColor: string;
   logoUrl: string | null;
+  /** Ocultar «Reservas con AuraBook» (solo se aplica con Premium). */
+  hideBranding: boolean;
   published: boolean;
   /** Reglas de reserva (minutos / días). */
   minNoticeMin: number;

@@ -47,7 +47,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
   const db = await sessionDb();
   const { data: b, error } = await db
     .from("businesses")
-    .select("id,slug,name,category,tagline,description,address,phone,brand_color,logo_url,is_active,min_notice_min,max_days_ahead,cancel_notice_min")
+    .select("id,slug,name,category,tagline,description,address,phone,brand_color,logo_url,hide_branding,is_active,min_notice_min,max_days_ahead,cancel_notice_min")
     .eq("id", businessId)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -89,7 +89,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
   const row = b as {
     id: string; slug: string; name: string; category: BusinessCategory; tagline: string | null;
     description: string | null; address: string | null; phone: string | null; is_active: boolean;
-    brand_color: string; logo_url: string | null;
+    brand_color: string; logo_url: string | null; hide_branding: boolean | null;
     min_notice_min: number; max_days_ahead: number; cancel_notice_min: number;
   };
   return {
@@ -104,6 +104,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
       phone: row.phone ?? "",
       brandColor: row.brand_color,
       logoUrl: row.logo_url,
+      hideBranding: row.hide_branding ?? false,
       published: row.is_active,
       minNoticeMin: row.min_notice_min,
       maxDaysAhead: row.max_days_ahead,

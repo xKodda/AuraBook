@@ -61,8 +61,8 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
   if (servicesResponse.error || staffResponse.error || eligibilityResponse.error || planResponse.error) {
     throw new Error("No se pudo obtener el catálogo público del negocio.");
   }
-  const plan = planResponse.data as { features: FeatureKey[]; staffIds: string[]; quotaReached?: boolean };
-  // Sin «custom_branding» (Free), la página usa la marca de AuraBook; el logo y el color quedan guardados.
+  const plan = planResponse.data as { features: FeatureKey[]; staffIds: string[]; hideBranding?: boolean };
+  // El logo se muestra en todos los planes; el color propio solo con «custom_branding» (Premium), si no, el de AuraBook.
   const branded = plan.features.includes("custom_branding");
   const bookable = new Set(plan.staffIds);
   const services: Service[] = ((servicesResponse.data ?? []) as DbService[]).map((s) => ({
@@ -91,13 +91,13 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
     phone: business.phone ?? "",
     timezone: business.timezone,
     brandColor: branded ? business.brand_color : DEFAULT_BRAND_COLOR,
-    logoUrl: branded ? business.logo_url : null,
+    logoUrl: business.logo_url,
     maxDaysAhead: business.max_days_ahead,
     cancelNoticeMin: business.cancel_notice_min,
     // Un servicio que nadie del plan puede atender no se ofrece.
     services: services.filter((sv) => staff.some((m) => m.serviceIds.includes(sv.id))),
     staff,
     features: plan.features ?? [],
-    quotaReached: plan.quotaReached ?? false,
+    hideBranding: plan.hideBranding ?? false,
   };
 });

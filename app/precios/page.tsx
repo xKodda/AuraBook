@@ -35,7 +35,11 @@ export default async function PricingPage() {
     },
     {
       q: `¿Qué pasa al terminar los ${data.trialDays} días?`,
-      a: `Pasas a Free automáticamente y sin cobros. No se borra nada: tus reservas, clientes, profesionales y servicios se mantienen. En Free tu página ofrece hasta ${free?.maxStaff ?? 2} profesionales, usa el diseño de AuraBook y puede recibir ${free?.maxMonthlyBookings ?? 100} reservas nuevas al mes; lo que supere esos límites se recupera al volver a Premium.`,
+      a: `Pasas a Free automáticamente y sin cobros. No se borra nada: tus reservas, clientes, profesionales y servicios se mantienen. En Free tu página ofrece hasta ${free?.maxStaff ?? 2} profesionales, usa los colores de AuraBook (tu logo se mantiene) y recibe hasta ${free?.maxMonthlyBookings ?? 100} reservas al mes; lo que supere esos límites vuelve al pasar a Premium.`,
+    },
+    {
+      q: `¿Cómo se cuentan las ${free?.maxMonthlyBookings ?? 100} reservas del plan Free?`,
+      a: "Cuentan las reservas activas cuya cita cae en ese mes, según la hora de Chile. Las canceladas no cuentan y una cita reprogramada no se cuenta dos veces. Si un mes se completa, tus clientes pueden seguir reservando para el mes siguiente.",
     },
     {
       q: "¿Cómo pago Premium?",
@@ -67,8 +71,8 @@ export default async function PricingPage() {
       <main className="pr-main">
         <header className="pr-head">
           <p className="lp-eyebrow">Precios</p>
-          <h1>Empieza gratis. Paga cuando tu equipo crezca.</h1>
-          <p>Free sirve de verdad para empezar, sin plazo. Premium suma a tu equipo, tu marca y te ayuda a reducir las inasistencias.</p>
+          <h1>Empieza gratis. Crece a tu ritmo.</h1>
+          <p>Free organiza tus reservas. Premium te ayuda a aprovecharlas mejor: más equipo, tu marca y herramientas para crecer.</p>
         </header>
         <PricingTable data={data} />
         <section className="lp-section lp-faq pr-faq" aria-labelledby="pr-faq-title">

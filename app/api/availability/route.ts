@@ -46,7 +46,10 @@ export async function GET(request: NextRequest) {
     const slots: AvailableSlot[] = (data ?? []).map((item: {
       staff_id: string; staff_name: string; slot_time: string;
     }) => ({ staffId: item.staff_id, staffName: item.staff_name, time: item.slot_time }));
-    return json({ slots, demo: false });
+    // Sin horas: avisar si es porque el mes ya tiene completa la cuota del plan Free.
+    const monthFull = slots.length === 0
+      && (await publicDb().rpc("public_month_full", { p_slug: slug, p_day: date })).data === true;
+    return json({ slots, monthFull, demo: false });
   } catch (error) {
     console.error("GET availability:", error);
     return json({ error: "No se pudieron consultar los horarios. Intenta nuevamente." }, 503);

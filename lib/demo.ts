@@ -111,7 +111,7 @@ export const DEMO_BUSINESSES: Omit<Business, "features">[] = [
 export const DEMO_BUSINESS = DEMO_BUSINESSES[0];
 
 // En demo, los negocios tienen Premium (lo que se ve en una prueba recién creada).
-const DEMO_FEATURES: FeatureKey[] = ["client_reminders", "revenue_stats", "custom_branding"];
+const DEMO_FEATURES: FeatureKey[] = ["client_reminders", "revenue_stats", "custom_branding", "hide_branding"];
 
 export function demoBusinessBySlug(slug: string): Business | null {
   const business = DEMO_BUSINESSES.find((b) => b.slug === slug);
@@ -471,7 +471,7 @@ export function demoOnboardingState(businessId: string): OnboardingState {
     business: {
       id: b.id, slug: b.slug, name: b.name, category: b.category, tagline: b.tagline,
       description: b.description ?? "", address: b.address, phone: b.phone, brandColor: b.brandColor,
-      logoUrl: b.logoUrl, published: true, minNoticeMin: MIN_NOTICE_MIN, maxDaysAhead: b.maxDaysAhead,
+      logoUrl: b.logoUrl, hideBranding: false, published: true, minNoticeMin: MIN_NOTICE_MIN, maxDaysAhead: b.maxDaysAhead,
       cancelNoticeMin: b.cancelNoticeMin,
     },
     staff: b.staff.map((m, i) => ({ id: m.id, name: m.name, roleTitle: m.roleTitle ?? "", linkedToMe: i === 0 })),

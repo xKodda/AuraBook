@@ -235,6 +235,11 @@ export async function setBrandColorAction(businessId: string, color: string): Pr
   return mutate(businessId, (db) => db.rpc("set_business_brand_color", { p_business_id: businessId, p_brand_color: color }));
 }
 
+export async function setHideBrandingAction(businessId: string, hide: boolean): Promise<OnboardingResult> {
+  if (!id.safeParse(businessId).success || typeof hide !== "boolean") return INVALID;
+  return mutate(businessId, (db) => db.rpc("set_business_hide_branding", { p_business_id: businessId, p_hide: hide }));
+}
+
 const rulesSchema = z.object({
   minNoticeMin: z.number().int().min(0).max(2880),
   maxDaysAhead: z.number().int().min(1).max(180),

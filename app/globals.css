@@ -1358,6 +1358,66 @@ a { color: inherit; text-decoration: none; }
 .pr-included li { display: flex; gap: 8px; align-items: flex-start; }
 .pr-included svg { flex-shrink: 0; margin-top: 2px; color: var(--brand); }
 .pr-faq { padding-left: 0; padding-right: 0; }
+.pr-for { margin: auto 0 0; padding-top: 18px; font-size: 12px; font-weight: 700; color: var(--muted); text-align: center; }
+.pr-list li.soon { color: var(--ink-secondary); }
+.pr-list li.soon svg { color: var(--muted); }
+.pr-list li small { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--line-subtle); font-size: 11px; font-weight: 700; color: var(--ink-secondary); }
+
+/* Comparación completa (desplegable) */
+.pr-compare { max-width: 880px; margin: 24px auto 0; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--white); }
+.pr-compare > summary {
+  list-style: none; cursor: pointer; padding: 18px 22px; font-size: 15px; font-weight: 800; display: flex; justify-content: space-between; align-items: center;
+}
+.pr-compare > summary::-webkit-details-marker { display: none; }
+.pr-compare > summary::after { content: "+"; font-size: 22px; font-weight: 400; color: var(--muted); }
+.pr-compare[open] > summary::after { content: "−"; }
+.pr-compare-scroll { overflow-x: auto; border-top: 1px solid var(--line-subtle); }
+.pr-compare table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.pr-compare th, .pr-compare td { padding: 11px 16px; border-bottom: 1px solid var(--line-subtle); text-align: left; vertical-align: top; }
+.pr-compare thead th { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.pr-compare td, .pr-compare thead th:not(:first-child) { text-align: center; width: 28%; }
+.pr-compare tbody th { font-weight: 600; }
+.pr-compare tbody th small { display: block; margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--muted); }
+.pr-compare .pr-section th { background: var(--warm-card); font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
+.pr-yes { color: #216a3c; }
+.pr-no { color: var(--muted); }
+.pr-soon { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--line-subtle); font-size: 11px; font-weight: 700; color: var(--ink-secondary); }
+.pr-compare-note { margin: 0; padding: 14px 22px 18px; font-size: 12px; color: var(--muted); }
+
+/* Calculadora de profesionales */
+.pr-calc {
+  max-width: 880px; margin: 20px auto 0; padding: 22px 24px; box-sizing: border-box; border-radius: var(--radius-lg);
+  border: 1px solid var(--line); background: var(--white); display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 20px; align-items: center;
+}
+.pr-calc h2 { margin: 0 0 4px; font-size: 17px; font-weight: 800; }
+.pr-calc p { margin: 0; font-size: 13px; color: var(--muted); }
+.pr-calc-input { display: grid; gap: 8px; font-size: 14px; font-weight: 700; }
+.pr-calc-input input { width: 100%; accent-color: var(--brand); }
+.pr-calc-result { display: grid; gap: 2px; }
+.pr-calc-result strong { font-size: 28px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.pr-calc-result strong small { font-size: 14px; font-weight: 600; color: var(--muted); }
+.pr-calc-result span { font-size: 13px; color: var(--ink-secondary); }
+
+/* Sección de precios en la portada */
+.lp-pricing .lp-heading { text-align: center; }
+.lp-section.lp-pricing h2 { margin-left: auto; margin-right: auto; }
+.lp-pricing-lead { margin: -18px auto 28px; max-width: 34em; font-size: 17px; color: var(--ink-secondary); }
+.lp-pricing-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 820px; margin: 0 auto; }
+.lp-pricing-card { display: grid; gap: 6px; padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--line); background: var(--white); }
+.lp-pricing-card.featured { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand) inset; }
+.lp-pricing-card > span { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.lp-pricing-card strong { font-size: 34px; font-weight: 800; letter-spacing: -.02em; }
+.lp-pricing-card strong small { font-size: 14px; font-weight: 600; color: var(--muted); }
+.lp-pricing-card p { margin: 0; font-size: 15px; color: var(--ink-secondary); }
+.lp-pricing-card > small { font-size: 13px; color: var(--muted); }
+.lp-pricing-note { max-width: 820px; margin: 18px auto 0; text-align: center; font-size: 14px; color: var(--ink-secondary); line-height: 1.6; }
+.lp-pricing-note a { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; color: var(--brand); text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 720px) {
+  .pr-calc { grid-template-columns: 1fr; }
+  .lp-pricing-cards { grid-template-columns: 1fr; }
+  .pr-compare th, .pr-compare td { padding: 10px; font-size: 13px; }
+}
 
 .plan-upsell {
   max-width: 1040px; box-sizing: border-box; display: flex; align-items: center; gap: 14px; margin: 0 0 24px; padding: 16px 18px;
