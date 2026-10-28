@@ -79,6 +79,9 @@ export async function POST(request: Request) {
         return errorJson("Ese horario ya no está disponible. Elige otro.", 409, "SLOT_UNAVAILABLE");
       }
       if (error.message.includes("TOO_MANY_BOOKINGS")) return errorJson(TOO_MANY, 409, "TOO_MANY_BOOKINGS");
+      if (error.message.includes("CLIENT_BLOCKED")) {
+        return errorJson("No es posible reservar online con este teléfono. Comunícate directamente con el local para agendar.", 403, "CLIENT_BLOCKED");
+      }
       if (error.message.includes("MONTHLY_LIMIT_REACHED")) {
         return errorJson("Este negocio no está recibiendo más reservas online para ese mes. Contáctalo directamente.", 409, "MONTHLY_LIMIT_REACHED");
       }

@@ -1157,6 +1157,58 @@ a { color: inherit; text-decoration: none; }
 
 .dash-form { padding: 20px; display: grid; gap: 16px; }
 .dash-form h2 { margin: 0; font-size: 16px; font-weight: 800; }
+/* Historial del cliente en la agenda (control de ausencias). */
+.client-flag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #eaf4ed; color: #216a3c; }
+.client-flag.warn { background: #fdf6ea; color: #8a5a12; }
+.client-flag.new { background: var(--line-subtle); color: var(--ink-secondary); }
+
+/* Texto solo para lectores de pantalla. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* Estadísticas (components/insights-view.tsx) */
+.ins { display: grid; gap: 16px; transition: opacity .15s ease; }
+.ins.loading { opacity: .55; }
+.ins-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.ins-range { font-size: 13px; font-weight: 700; color: var(--ink-secondary); }
+.ins-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.ins-tile { display: grid; gap: 2px; padding: 16px 18px; border-radius: var(--radius-md); background: var(--white); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+.ins-tile span { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ins-tile strong { font-size: 28px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.ins-tile small { font-size: 12px; color: var(--ink-secondary); }
+.ins-card { padding: 18px 20px; display: grid; gap: 12px; align-content: start; }
+.ins-card h2 { margin: 0; font-size: 15px; font-weight: 800; }
+.ins-note { margin: 0; font-size: 13px; color: var(--ink-secondary); }
+.ins-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ins-stack { display: flex; gap: 2px; height: 14px; border-radius: 4px; overflow: hidden; }
+.ins-stack span { min-width: 4px; }
+.ins-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-secondary); }
+.ins-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.ins-legend i { width: 10px; height: 10px; border-radius: 3px; }
+.ins-legend b { color: var(--ink); }
+.ins-legend small { color: var(--muted); }
+.ins-heat-scroll { overflow-x: auto; }
+.ins-heat { border-collapse: separate; border-spacing: 2px; font-size: 10px; color: var(--muted); }
+.ins-heat th { font-weight: 700; padding: 0 2px; text-align: center; }
+.ins-heat tbody th { text-align: left; padding-right: 6px; font-size: 11px; color: var(--ink-secondary); }
+.ins-heat td { width: 22px; height: 20px; border-radius: 4px; background: var(--line-subtle); }
+.ins-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ins-bars li { display: grid; grid-template-columns: minmax(70px, 30%) 1fr auto; align-items: center; gap: 10px; font-size: 13px; }
+.ins-bar-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.ins-bar-track { height: 10px; border-radius: 4px; background: var(--line-subtle); overflow: hidden; }
+.ins-bar-track span { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--brand); }
+.ins-bar-value { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ins-bar-value small { font-weight: 500; color: var(--muted); }
+.ins-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.ins-list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line-subtle); font-size: 14px; }
+.ins-list li:first-child { border-top: 0; }
+.ins-list span { display: grid; font-weight: 600; }
+.ins-list small { font-size: 12px; font-weight: 500; color: var(--muted); }
+.ins-footnote { margin: 0; font-size: 12px; color: var(--muted); }
+@media (max-width: 860px) {
+  .ins-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ins-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* Grupo de campos que se desactiva entero (por ejemplo, la marca sin Premium). */
 .dash-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 16px; }
 .dash-fieldset:disabled { opacity: .55; }

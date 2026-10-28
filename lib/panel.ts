@@ -1,13 +1,13 @@
 import "server-only";
 import {
-  DEMO_MODE, DEMO_BUSINESSES, demoCatalog, demoCreatePanelBooking, demoListBookings, demoPanelBusinesses, demoRevenue, demoSetStatus,
+  DEMO_MODE, DEMO_BUSINESSES, demoCatalog, demoExportRows, demoCreatePanelBooking, demoListBookings, demoPanelBusinesses, demoRevenue, demoSetStatus,
 } from "./demo";
 import { myEntitlements, mySubscriptions } from "./billing-server";
 import { FREE_ENTITLEMENTS, type Entitlements } from "./plans";
 import { addCalendarDays, dateInTimeZone, timeInTimeZone, zonedTimeToUtc } from "./dates";
 import { sessionDb } from "./supabase";
 import type {
-  BookingStatus, BusinessCategory, BusinessRole, PanelBooking, PanelBookingInput, PanelBusiness, PanelCatalog, RevenueDay,
+  BookingStatus, BusinessCategory, BusinessRole, ClientHistory, PanelBooking, PanelBookingInput, PanelBusiness, PanelCatalog, RevenueDay,
 } from "./types";
 
 export type PanelSession = {
@@ -127,6 +127,39 @@ export async function listPanelBookingsRange(business: PanelBusiness, fromDate: 
     source: b.source,
     overbook: b.is_overbook,
   }));
+}
+
+/**
+ * Agrega a cada reserva el historial de su cliente en el negocio (control de ausencias, Premium).
+ * Sin la capacidad devuelve las reservas tal cual.
+ */
+export async function withClientHistory(business: PanelBusiness, bookings: PanelBooking[]): Promise<PanelBooking[]> {
+  if (!bookings.length || !business.entitlements.features.includes("no_show_control")) return bookings;
+  const digits = (p: string) => p.replace(/\D/g, "");
+  const history = new Map<string, ClientHistory>();
+  if (DEMO_MODE) {
+    for (const r of demoExportRows(business.id)) {
+      const h = history.get(digits(r.client_phone)) ?? { total: 0, completed: 0, noShows: 0, cancelled: 0 };
+      h.total += 1;
+      if (r.status === "completed") h.completed += 1;
+      if (r.status === "no_show") h.noShows += 1;
+      if (r.status === "cancelled") h.cancelled += 1;
+      history.set(digits(r.client_phone), h);
+    }
+  } else {
+    const db = await sessionDb();
+    const { data, error } = await db.rpc("panel_client_history", {
+      p_business_id: business.id, p_phones: [...new Set(bookings.map((b) => b.clientPhone))],
+    });
+    if (error) {
+      console.error("panel_client_history:", error.message);
+      return bookings;
+    }
+    for (const r of (data ?? []) as { phone: string; total: number; completed: number; no_shows: number; cancelled: number }[]) {
+      history.set(r.phone, { total: r.total, completed: r.completed, noShows: r.no_shows, cancelled: r.cancelled });
+    }
+  }
+  return bookings.map((b) => ({ ...b, history: history.get(digits(b.clientPhone)) }));
 }
 
 export type SetStatusResult = "OK" | "FORBIDDEN" | "SLOT_TAKEN" | "ERROR";

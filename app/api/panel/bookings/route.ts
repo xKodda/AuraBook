@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createPanelBooking, getPanelSession, listPanelBookingsRange, listPanelStaff } from "@/lib/panel";
+import { createPanelBooking, getPanelSession, listPanelBookingsRange, listPanelStaff, withClientHistory } from "@/lib/panel";
 import { listRangeTimeOff } from "@/lib/time-off";
 import { daysInRange, isIsoDate } from "@/lib/dates";
 import { panelBookingSchema } from "@/lib/validation";
@@ -34,7 +34,8 @@ export async function GET(request: NextRequest) {
       listRangeTimeOff(business, date, to),
     ]);
 
-    return NextResponse.json({ bookings, staff, timeOff });
+    // Historial de asistencia solo en la vista diaria (es donde se toman decisiones sobre cada cita).
+    return NextResponse.json({ bookings: date === to ? await withClientHistory(business, bookings) : bookings, staff, timeOff });
   } catch (error) {
     console.error("GET panel bookings error:", error);
     return NextResponse.json({ error: "Error al cargar la agenda" }, { status: 500 });

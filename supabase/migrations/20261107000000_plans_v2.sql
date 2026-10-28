@@ -29,7 +29,7 @@ alter table public.plans add column if not exists max_extra_staff integer not nu
 --   custom_branding   logo y color propios en la página de reservas
 alter table public.plans drop constraint if exists plans_features_check;
 alter table public.plans add constraint plans_features_check
-  check (features <@ array['client_reminders', 'revenue_stats', 'custom_branding', 'hide_branding']);
+  check (features <@ array['client_reminders', 'revenue_stats', 'custom_branding', 'hide_branding', 'no_show_control']);
 
 update public.plans set
   description = 'Para empezar y para negocios pequeños.',

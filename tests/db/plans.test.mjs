@@ -36,7 +36,7 @@ describe("planes publicados", () => {
       [premium.code, premium.priceClp, premium.priceYearlyClp, premium.maxStaff, premium.extraStaffPriceClp, premium.maxExtraStaff,
         premium.maxServices, premium.maxMonthlyBookings, premium.promoPriceClp],
       ["premium", 12990, 129900, 3, 2990, 5, null, null, null]);
-    assert.deepEqual(premium.features, ["client_reminders", "revenue_stats", "custom_branding", "hide_branding"]);
+    assert.deepEqual(premium.features, ["client_reminders", "revenue_stats", "custom_branding", "hide_branding", "no_show_control"]);
   });
 });
 
@@ -44,7 +44,7 @@ describe("capacidades efectivas", () => {
   test("en prueba, el negocio tiene Premium sin límites de servicios ni reservas", async () => {
     assert.deepEqual(await limits(IDS.barber), {
       tier: "premium", status: "trial", max_staff: 3, max_services: null, max_monthly_bookings: null,
-      features: ["client_reminders", "revenue_stats", "custom_branding", "hide_branding"],
+      features: ["client_reminders", "revenue_stats", "custom_branding", "hide_branding", "no_show_control"],
     });
   });
 

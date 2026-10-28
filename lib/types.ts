@@ -112,7 +112,11 @@ export type PanelBooking = {
   source: "web" | "panel";
   /** Agregada desde el panel a sabiendas de que choca con otra reserva o queda fuera de horario. */
   overbook: boolean;
+  /** Historial del cliente en este negocio (solo con no_show_control). */
+  history?: ClientHistory;
 };
+
+export type ClientHistory = { total: number; completed: number; noShows: number; cancelled: number };
 
 /**
  * Bloqueo de agenda (vacaciones, feriado, imprevisto). Un bloqueo de «todo el equipo» agrupa una fila por profesional.
@@ -196,6 +200,8 @@ export type OnboardingBusiness = {
   minNoticeMin: number;
   maxDaysAhead: number;
   cancelNoticeMin: number;
+  /** Bloquear reservas online desde N ausencias en 12 meses (null = sin bloqueo). Requiere no_show_control. */
+  noShowBlockThreshold: number | null;
 };
 
 export type OnboardingStaff = { id: string; name: string; roleTitle: string; linkedToMe: boolean };

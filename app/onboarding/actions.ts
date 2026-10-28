@@ -235,6 +235,13 @@ export async function setBrandColorAction(businessId: string, color: string): Pr
   return mutate(businessId, (db) => db.rpc("set_business_brand_color", { p_business_id: businessId, p_brand_color: color }));
 }
 
+export async function updateNoShowPolicyAction(businessId: string, threshold: number | null): Promise<OnboardingResult> {
+  if (!id.safeParse(businessId).success || (threshold !== null && !(Number.isInteger(threshold) && threshold >= 1 && threshold <= 10))) {
+    return INVALID;
+  }
+  return mutate(businessId, (db) => db.rpc("update_no_show_policy", { p_business_id: businessId, p_threshold: threshold }));
+}
+
 export async function setHideBrandingAction(businessId: string, hide: boolean): Promise<OnboardingResult> {
   if (!id.safeParse(businessId).success || typeof hide !== "boolean") return INVALID;
   return mutate(businessId, (db) => db.rpc("set_business_hide_branding", { p_business_id: businessId, p_hide: hide }));

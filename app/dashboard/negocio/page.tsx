@@ -12,6 +12,7 @@ export default async function BusinessPage() {
   const state = await getOnboardingState(business.id, session.userId);
   return (
     <BusinessSettings key={business.id} initial={state} isOwner={business.role === "owner"} siteUrl={SITE_URL}
-      colors={can(business.entitlements, "custom_branding")} canHideBranding={can(business.entitlements, "hide_branding")} />
+      colors={can(business.entitlements, "custom_branding")} canHideBranding={can(business.entitlements, "hide_branding")}
+      canNoShowPolicy={can(business.entitlements, "no_show_control")} />
   );
 }

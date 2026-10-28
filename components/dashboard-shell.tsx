@@ -4,7 +4,7 @@ import { useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  CalendarDays, CalendarOff, CircleUser, Clock, CreditCard, ExternalLink, LayoutGrid, LogOut, Menu, Palette, Scissors, Shield, Users, X,
+  BarChart3, CalendarDays, CalendarOff, CircleUser, Clock, CreditCard, ExternalLink, LayoutGrid, LogOut, Menu, Palette, Scissors, Shield, Users, X,
 } from "lucide-react";
 import { selectBusinessAction } from "@/app/dashboard/actions";
 import { BusinessLogo } from "@/components/business-logo";
@@ -39,7 +39,10 @@ export function DashboardShell({ business, businesses, email, demo, pendingOnboa
   const notice = manager ? billingAlert(business.billing) : null;
 
   const groups: { title?: string; items: Item[] }[] = [
-    { items: [{ href: "/dashboard", label: "Agenda", icon: CalendarDays }] },
+    { items: [
+      { href: "/dashboard", label: "Agenda", icon: CalendarDays },
+      { href: "/dashboard/estadisticas", label: "Estadísticas", icon: BarChart3 },
+    ] },
     ...(manager ? [{
       title: "MI NEGOCIO",
       items: [

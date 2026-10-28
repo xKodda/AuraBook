@@ -3,7 +3,7 @@
 // este módulo solo describe las capacidades y responde `can(...)`, `canAddStaff(...)`, etc.
 // No escribir condiciones del tipo `plan === "premium"` en pantallas.
 
-export type FeatureKey = "client_reminders" | "revenue_stats" | "custom_branding" | "hide_branding";
+export type FeatureKey = "client_reminders" | "revenue_stats" | "custom_branding" | "hide_branding" | "no_show_control";
 export type PlanTier = "free" | "premium";
 
 /** Lo que el plan vigente de un negocio permite y cuánto usa hoy. `max*` null = sin límite. */
@@ -25,8 +25,12 @@ export const FEATURES: Record<FeatureKey, { label: string; description: string }
     description: "Tus clientes reciben un correo el día anterior a su cita. Menos inasistencias.",
   },
   revenue_stats: {
-    label: "Ingresos por semana y mes",
-    description: "Cuánto generas por semana, por mes o entre las fechas que elijas.",
+    label: "Estadísticas e ingresos",
+    description: "Asistencia, clientes recurrentes, horarios más pedidos, ocupación por profesional e ingresos estimados.",
+  },
+  no_show_control: {
+    label: "Control de ausencias",
+    description: "Historial de asistencia de cada cliente en la agenda y bloqueo opcional de reservas online a quien falta seguido.",
   },
   custom_branding: {
     label: "Tus colores",
@@ -147,7 +151,8 @@ export function comparison(free: PublicPlan, premium: PublicPlan, formatPrice: (
         { label: "Recordatorio por correo el día antes", free: true, premium: true },
         { label: "Recordatorios configurables", free: false, premium: SOON },
         { label: "Botón de WhatsApp en cada cita", free: true, premium: true },
-        { label: "Seguimiento de asistencias y ausencias", free: false, premium: SOON },
+        { label: "Historial de asistencia en la agenda", free: false, premium: true },
+        { label: "Bloquear reservas online tras varias ausencias", free: false, premium: true },
         { label: "Ficha avanzada de clientes", free: false, premium: SOON },
         { label: "Recordatorios automáticos por WhatsApp", free: false, premium: "Complemento futuro" },
       ],
@@ -158,8 +163,10 @@ export function comparison(free: PublicPlan, premium: PublicPlan, formatPrice: (
         { label: "Tu logo", free: true, premium: true },
         { label: "Tus colores", free: false, premium: true },
         { label: "Ocultar la marca AuraBook", free: false, premium: true },
+        { label: "Resumen del día en la agenda", free: true, premium: true },
         { label: "Ingresos por semana, mes o fechas", free: false, premium: true },
-        { label: "Estadísticas avanzadas", free: false, premium: SOON },
+        { label: "Estadísticas: asistencia, clientes, horarios y ocupación", free: false, premium: true,
+          hint: "Montos estimados según el precio de cada servicio, no pagos recibidos." },
         { label: "Abonos y pagos online al reservar", free: false, premium: SOON },
         { label: "Código QR de tu página", free: SOON, premium: SOON },
         { label: "Descarga de reservas y clientes (CSV)", free: true, premium: true },
@@ -187,9 +194,9 @@ export function keyFeatures(plan: PublicPlan, formatPrice: (n: number) => string
       : staffLimitLabel(plan.maxStaff) },
     { text: "Reservas y servicios ilimitados" },
     { text: "Tus colores y sin marca AuraBook" },
-    { text: "Ingresos por semana, mes o fechas" },
-    { text: "Todo lo de Free" },
-    { text: "Control de ausencias, reservas combinadas y abonos", soon: true },
+    { text: "Estadísticas e ingresos" },
+    { text: "Control de ausencias" },
+    { text: "Reservas combinadas y abonos online", soon: true },
   ];
 }
 
@@ -212,7 +219,7 @@ export const DEFAULT_PUBLIC_PLANS: PublicPlans = {
     {
       code: "premium", name: "Premium", description: "Para negocios con equipo que quieren crecer y reducir inasistencias.",
       priceClp: 12990, priceYearlyClp: 129900, maxStaff: 3, extraStaffPriceClp: 2990, maxExtraStaff: 5,
-      maxServices: null, maxMonthlyBookings: null, features: ["client_reminders", "revenue_stats", "custom_branding", "hide_branding"],
+      maxServices: null, maxMonthlyBookings: null, features: ["client_reminders", "revenue_stats", "custom_branding", "hide_branding", "no_show_control"],
     },
   ],
 };

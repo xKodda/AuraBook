@@ -351,6 +351,18 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
                       <span style={{ fontSize: 12, color: "var(--muted)" }}>
                         Atiende: <strong>{b.staffName}</strong>
                       </span>
+                      {/* Control de ausencias (Premium): cómo le ha ido a este cliente con el negocio. */}
+                      {b.history && b.history.noShows > 0 && (
+                        <span className="client-flag warn" title={`${b.history.total} reservas · ${b.history.completed} asistió · ${b.history.noShows} no asistió · ${b.history.cancelled} canceladas`}>
+                          {b.history.noShows} {b.history.noShows === 1 ? "ausencia" : "ausencias"}
+                        </span>
+                      )}
+                      {b.history && b.history.noShows === 0 && b.history.completed > 0 && (
+                        <span className="client-flag" title={`${b.history.completed} visitas completadas`}>
+                          {b.history.completed === 1 ? "1 visita" : `${b.history.completed} visitas`}
+                        </span>
+                      )}
+                      {b.history && b.history.total === 1 && b.history.completed === 0 && <span className="client-flag new">Cliente nuevo</span>}
 
                       {waUrl && (
                         <a href={waUrl} target="_blank" rel="noopener noreferrer">

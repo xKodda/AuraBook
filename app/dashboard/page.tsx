@@ -5,7 +5,7 @@ import { PlanUpsell } from "@/components/plan-upsell";
 import { can } from "@/lib/plans";
 import { getDashboardContext } from "@/lib/dashboard";
 import { dateInTimeZone } from "@/lib/dates";
-import { getPanelCatalog, listPanelBookings, listPanelStaff } from "@/lib/panel";
+import { getPanelCatalog, listPanelBookings, listPanelStaff, withClientHistory } from "@/lib/panel";
 import { listDayTimeOff } from "@/lib/time-off";
 
 export default async function DashboardPage() {
@@ -28,7 +28,7 @@ export default async function DashboardPage() {
         key={business.id}
         business={business}
         initialStaff={initialStaff}
-        initialBookings={initialBookings}
+        initialBookings={await withClientHistory(business, initialBookings)}
         initialDate={today}
         catalog={catalog}
         initialTimeOff={initialTimeOff}

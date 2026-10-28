@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Check, Copy, ExternalLink } from "lucide-react";
 import {
-  removeLogoAction, setBrandColorAction, setHideBrandingAction, updateBookingRulesAction, updateBusinessAction, uploadLogoAction,
+  removeLogoAction, setBrandColorAction, setHideBrandingAction, updateBookingRulesAction, updateNoShowPolicyAction, updateBusinessAction, uploadLogoAction,
 } from "@/app/onboarding/actions";
 import { ChoiceField, useBusinessState } from "@/components/business-editors";
 import { BusinessLogo } from "@/components/business-logo";
@@ -27,12 +27,14 @@ const MIN_NOTICE = [0, 15, 30, 60, 120, 240, 720, 1440];
 const MAX_DAYS = [7, 14, 30, 45, 60, 90, 180];
 const CANCEL = [0, 60, 120, 240, 720, 1440, 2880];
 
-export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBranding }: {
+export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBranding, canNoShowPolicy }: {
   initial: OnboardingState; isOwner: boolean; siteUrl: string;
   /** Color propio (custom_branding). Sin él, la página pública usa el color de AuraBook; el logo es de todos los planes. */
   colors: boolean;
   /** Ocultar «Reservas con AuraBook» (hide_branding). */
   canHideBranding: boolean;
+  /** Bloquear reservas online a quien acumula ausencias (no_show_control). */
+  canNoShowPolicy: boolean;
 }) {
   const { state, run, pending, error } = useBusinessState(initial);
   const b = state.business!;
@@ -56,6 +58,7 @@ export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBra
   const [minNotice, setMinNotice] = useState(b.minNoticeMin);
   const [maxDays, setMaxDays] = useState(b.maxDaysAhead);
   const [cancelNotice, setCancelNotice] = useState(b.cancelNoticeMin);
+  const [noShowBlock, setNoShowBlock] = useState<number | null>(b.noShowBlockThreshold);
 
   useEffect(() => { if (!siteUrl) setOrigin(window.location.origin); }, [siteUrl]);
   const url = `${origin}/reservar/${b.slug}`;
@@ -97,8 +100,11 @@ export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBra
 
   function saveRules(e: FormEvent) {
     e.preventDefault();
-    run(() => updateBookingRulesAction(b.id, { minNoticeMin: minNotice, maxDaysAhead: maxDays, cancelNoticeMin: cancelNotice }),
-      () => setSaved("Reglas de reserva guardadas."));
+    run(async () => {
+      const result = await updateBookingRulesAction(b.id, { minNoticeMin: minNotice, maxDaysAhead: maxDays, cancelNoticeMin: cancelNotice });
+      if (!result.ok || noShowBlock === b.noShowBlockThreshold) return result;
+      return updateNoShowPolicyAction(b.id, noShowBlock);
+    }, () => setSaved("Reglas de reserva guardadas."));
   }
 
   const brandDirty = logoFile !== null || removeLogo || color !== b.brandColor.toUpperCase() || hideBranding !== b.hideBranding;
@@ -219,6 +225,23 @@ export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBra
               </label>
             </div>
             <p className="field-hint">Pasado el plazo de cancelación, el cliente debe avisarte directamente.</p>
+            <label className="onb-field">
+              <span className="field-label">Ausencias <span className="onb-optional">Premium</span></span>
+              <select className="text-input" value={noShowBlock ?? ""} disabled={!canNoShowPolicy && noShowBlock === null}
+                onChange={(e) => setNoShowBlock(e.target.value === "" ? null : Number(e.target.value))}>
+                <option value="">No bloquear a nadie</option>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n} disabled={!canNoShowPolicy}>
+                    Bloquear reservas online desde {n} {n === 1 ? "ausencia" : "ausencias"} en 12 meses
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="field-hint">
+              {canNoShowPolicy
+                ? "Quien quede bloqueado ve un aviso para contactarte; tú igual puedes agendarlo desde el panel."
+                : "Disponible con Premium, junto con el historial de asistencia de cada cliente en tu agenda."}
+            </p>
             <div className="dash-form-foot">
               <span />
               <button type="submit" className="btn-primary dash-btn" disabled={pending}>Guardar reglas</button>
