@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { INTRO_SCRIPT } from "@/components/landing-intro";
 import { PUBLIC_ORIGIN } from "@/lib/env";
 
 export const viewport: Viewport = { themeColor: "#2F3A56" };
@@ -19,6 +20,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     // data-scroll-behavior: el desplazamiento suave de globals.css no se aplica al cambiar de página (Next).
     <html lang="es-CL" suppressHydrationWarning data-scroll-behavior="smooth">
+      <head>
+        {/* Cortina de la portada: marca data-intro antes del primer pintado (components/landing-intro.tsx). */}
+        <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }} />
+      </head>
       <body>{children}</body>
     </html>
   );

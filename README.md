@@ -91,6 +91,7 @@ Abre `http://localhost:3000/dashboard` o cualquiera de las páginas de reserva p
    - `20261108000000_plans_v3.sql` (planes v3: logo en Free, colores y ocultar marca en Premium, cuota por mes de la cita).
    - `20261109000000_insights_no_shows.sql` (estadísticas y control de ausencias).
    - `20261110000000_payment_requests.sql` (contratar Premium por transferencia, con aprobación en /admin).
+   - `20261111000000_input_hardening.sql` (rechaza nombres de cliente con HTML, enlaces o caracteres de control).
    - Opcional: `supabase/002_demo_seed.sql` (datos de prueba multi-rubro; no usar en producción).
    - `supabase/legacy/` es histórico: **no ejecutar**.
 3. Configurar `.env.local`:

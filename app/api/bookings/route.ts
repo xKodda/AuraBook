@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   }
   const parsed = bookingSchema.safeParse(raw);
   if (!parsed.success || !isValidChileanPhoneOrInternational(parsed.data.phone)) {
-    return errorJson("Revisa tu nombre, teléfono, correo y los datos de la reserva.", 400);
+    return errorJson("Revisa tu nombre (solo letras, sin enlaces), teléfono, correo y los datos de la reserva.", 400);
   }
   const { captchaToken, email, reminder, ...data } = parsed.data;
 
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       if (error.message.includes("MONTHLY_LIMIT_REACHED")) {
         return errorJson("Este negocio no está recibiendo más reservas online para ese mes. Contáctalo directamente.", 409, "MONTHLY_LIMIT_REACHED");
       }
-      if (error.message.includes("INVALID_BOOKING")) return errorJson("Datos de reserva inválidos.", 400);
+      if (error.message.includes("INVALID_BOOKING") || error.message.includes("INVALID_NAME")) return errorJson("Datos de reserva inválidos.", 400);
       throw new Error(error.message);
     }
     const row = saved?.[0] as {

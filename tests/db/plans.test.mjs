@@ -202,3 +202,68 @@ describe("prueba al publicar", () => {
     assert.equal(events.rows[0].n, 1);
   });
 });
+
+describe("prueba de 30 días: casos borde", () => {
+  let id;
+  let owner;
+  const subOf = async () => (await db.query(
+    `select public.subscription_status(trial_ends_at, paid_until, cancelled_at) status, trial_started_at,
+       round(extract(epoch from trial_ends_at - now()) / 86400) days from public.subscriptions where business_id = $1`, [id])).rows[0];
+
+  before(async () => {
+    owner = await createUser(db);
+    id = (await db.query(
+      "insert into public.businesses (slug, name, is_active) values ('prueba-borde', 'Prueba Borde', false) returning id")).rows[0].id;
+    await addMember(db, id, owner, "owner");
+  });
+
+  test("mientras configura (antes de publicar) ya tiene Premium para probar todo", async () => {
+    assert.equal((await subOf()).status, "trial");
+    assert.equal((await limits(id)).tier, "premium");
+    await as(db, "authenticated", owner, (tx) => tx.query("select public.set_business_brand_color($1, '#123456')", [id]));
+  });
+
+  test("si tardó en publicar, la prueba de 30 días empieza completa al publicar", async () => {
+    await db.query("update public.subscriptions set trial_ends_at = now() - interval '10 days' where business_id = $1", [id]);
+    assert.equal((await subOf()).status, "past_due");
+    await db.query("update public.businesses set onboarding_completed_at = now(), is_active = true where id = $1", [id]);
+    const s = await subOf();
+    assert.equal(s.status, "trial");
+    assert.equal(Number(s.days), 30);
+    assert.ok(s.trial_started_at);
+  });
+
+  test("el último minuto de la prueba sigue siendo Premium; un minuto después es Free", async () => {
+    await db.query("update public.subscriptions set trial_ends_at = now() + interval '1 minute' where business_id = $1", [id]);
+    assert.equal((await limits(id)).tier, "premium");
+    await db.query("update public.subscriptions set trial_ends_at = now() - interval '1 minute' where business_id = $1", [id]);
+    const l = await limits(id);
+    assert.deepEqual([l.tier, l.max_staff, l.max_services, l.max_monthly_bookings], ["free", 2, 8, 100]);
+    await assert.rejects(
+      as(db, "authenticated", owner, (tx) => tx.query("select public.set_business_brand_color($1, '#654321')", [id])),
+      /PLAN_FEATURE_REQUIRED/);
+  });
+
+  test("el dueño no puede alargar su prueba ni cambiar los días de prueba", async () => {
+    await assert.rejects(as(db, "authenticated", owner, (tx) =>
+      tx.query("select public.admin_extend_trial($1, 30)", [id])), /FORBIDDEN/);
+    await assert.rejects(as(db, "authenticated", owner, (tx) =>
+      tx.query("select public.admin_update_settings(365)")), /FORBIDDEN/);
+    await assert.rejects(as(db, "authenticated", owner, (tx) =>
+      tx.query("update public.subscriptions set trial_ends_at = now() + interval '1 year' where business_id = $1", [id])),
+    /permission denied/);
+  });
+
+  test("un negocio que ya pagó antes no recibe prueba al volver a publicar", async () => {
+    const paid = (await db.query(
+      "insert into public.businesses (slug, name, is_active) values ('ya-pago', 'Ya Pagó', false) returning id")).rows[0].id;
+    await db.query(
+      "update public.subscriptions set paid_until = now() - interval '5 days', trial_ends_at = now() - interval '60 days' where business_id = $1",
+      [paid]);
+    await db.query("update public.businesses set onboarding_completed_at = now(), is_active = true where id = $1", [paid]);
+    const s = (await db.query(
+      "select public.subscription_status(trial_ends_at, paid_until, cancelled_at) status, trial_started_at from public.subscriptions where business_id = $1",
+      [paid])).rows[0];
+    assert.deepEqual(s, { status: "past_due", trial_started_at: null });
+  });
+});

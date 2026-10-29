@@ -3,6 +3,7 @@ import { DEMO_MODE, demoAvailability } from "@/lib/demo";
 import { dateWithinBookingWindow } from "@/lib/dates";
 import { publicDb } from "@/lib/supabase";
 import { getBusiness } from "@/lib/business";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import type { AvailableSlot } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,10 @@ function json(data: unknown, status = 200) {
 }
 
 export async function GET(request: NextRequest) {
+  // Una persona revisa unos pocos días; 120 consultas en 5 minutos por IP es holgado y frena el abuso automatizado.
+  if (!(await rateLimit(`availability:ip:${clientIp(request.headers)}`, 120, 300))) {
+    return json({ error: "Demasiadas consultas. Espera un momento y vuelve a intentar." }, 429);
+  }
   const params = request.nextUrl.searchParams;
   const slug = params.get("slug") || "";
   const serviceId = params.get("serviceId") || "";

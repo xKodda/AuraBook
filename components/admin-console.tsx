@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import {
   extendTrialAction, recordPaymentAction, savePlanAction, setBusinessPlanAction, setCancelledAction,
-  updateSettingsAction, type AdminResult,
+  sendTestEmailAction, updateSettingsAction, type AdminResult,
 } from "@/app/admin/actions";
 import { AdminPaymentRequests, type AdminPaymentRequest } from "@/components/admin-payment-requests";
 import { BrandMark } from "@/components/brand";
@@ -17,7 +17,8 @@ import { dateInTimeZone, formatPrice } from "@/lib/dates";
 import { CATEGORY_LABEL } from "@/lib/theme";
 import type { AdminBusiness, AdminPlan, AdminSnapshot, PaymentMethod, SubscriptionStatus } from "@/lib/types";
 
-type Props = { data: AdminSnapshot; demo: boolean; email: string; requests: AdminPaymentRequest[] };
+type EmailStatus = { configured: boolean; from: string };
+type Props = { data: AdminSnapshot; demo: boolean; email: string; requests: AdminPaymentRequest[]; emailStatus: EmailStatus };
 type Tab = "resumen" | "negocios" | "planes" | "pagos" | "ajustes";
 
 const TABS: { id: Tab; label: string; icon: typeof LayoutGrid }[] = [
@@ -58,7 +59,7 @@ function dueText(b: AdminBusiness): string {
 }
 
 // ─────────────────────────────────────────────────────────────
-export function AdminConsole({ data, demo, email, requests }: Props) {
+export function AdminConsole({ data, demo, email, requests, emailStatus }: Props) {
   const [tab, setTab] = useState<Tab>("resumen");
   const [focusId, setFocusId] = useState<string | null>(null);
 
@@ -109,6 +110,7 @@ export function AdminConsole({ data, demo, email, requests }: Props) {
         {tab === "planes" && <Plans plans={data.plans} />}
         {tab === "pagos" && <Payments data={data} />}
         {tab === "ajustes" && <SettingsPanel trialDays={data.settings.trialDays} />}
+        {tab === "ajustes" && <EmailPanel status={emailStatus} email={email} />}
       </main>
     </div>
   );
@@ -652,6 +654,27 @@ function Payments({ data }: { data: AdminSnapshot }) {
           </table>
         </div>
       )}
+    </section>
+  );
+}
+
+// Los avisos de reservas salen por Resend. Si no llegan, el correo de prueba muestra el motivo exacto.
+function EmailPanel({ status, email }: { status: EmailStatus; email: string }) {
+  const [sent, setSent] = useState(false);
+  const { pending, error, run } = useAction();
+  return (
+    <section className="adm-card adm-narrow">
+      <h2>Correos</h2>
+      <p className="adm-muted">
+        {status.configured ? "Envío configurado" : "Falta RESEND_API_KEY: no se envían avisos de reservas ni recordatorios"}
+        {" · "}Remitente: {status.from}
+      </p>
+      {error && <div className="form-error">{error}</div>}
+      {sent && <p className="onb-ok onb-saved">✓ Enviado a {email || "tu correo"}. Revisa también la carpeta de spam.</p>}
+      <button type="button" className="btn-secondary" disabled={pending}
+        onClick={() => { setSent(false); run(() => sendTestEmailAction(), () => setSent(true)); }}>
+        {pending ? "Enviando…" : "Enviar correo de prueba"}
+      </button>
     </section>
   );
 }

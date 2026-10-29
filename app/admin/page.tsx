@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AdminConsole } from "@/components/admin-console";
 import { requireUser } from "@/lib/auth";
 import { getAdminPaymentRequests, getAdminSnapshot, isPlatformAdmin } from "@/lib/billing-server";
+import { EMAIL_STATUS } from "@/lib/email";
 import { DEMO_MODE } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
@@ -21,5 +22,5 @@ export default async function AdminPage() {
     email = user.email ?? "";
   }
   const [data, requests] = await Promise.all([getAdminSnapshot(), getAdminPaymentRequests()]);
-  return <AdminConsole data={data} demo={DEMO_MODE} email={email} requests={requests} />;
+  return <AdminConsole data={data} demo={DEMO_MODE} email={email} requests={requests} emailStatus={EMAIL_STATUS} />;
 }

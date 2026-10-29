@@ -4,6 +4,8 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { isPlatformAdmin } from "@/lib/billing-server";
+import { sendEmailDetailed } from "@/lib/email";
 import { DEMO_MODE } from "@/lib/env";
 import { rpcErrorMessage } from "@/lib/errors";
 import { sessionDb } from "@/lib/supabase";
@@ -89,4 +91,19 @@ export async function updateSettingsAction(trialDays: number): Promise<AdminResu
 export async function resolvePaymentRequestAction(requestId: string, approve: boolean): Promise<AdminResult> {
   if (!id.safeParse(requestId).success || typeof approve !== "boolean") return INVALID;
   return call("admin_resolve_payment_request", { p_request_id: requestId, p_approve: approve });
+}
+
+/** Envía un correo de prueba al administrador para comprobar la configuración de Resend (muestra el error exacto). */
+export async function sendTestEmailAction(): Promise<AdminResult> {
+  if (DEMO_MODE) return DEMO;
+  if (!(await isPlatformAdmin())) return { ok: false, error: rpcErrorMessage("FORBIDDEN") };
+  const db = await sessionDb();
+  const { data: { user } } = await db.auth.getUser();
+  if (!user?.email) return { ok: false, error: rpcErrorMessage("UNAUTHENTICATED") };
+  const result = await sendEmailDetailed(user.email, {
+    subject: "Prueba de correo · AuraBook",
+    text: "Si recibes este correo, los avisos de AuraBook (nuevas reservas, cancelaciones y recordatorios) se están enviando bien.",
+    html: "<p>Si recibes este correo, los avisos de AuraBook (nuevas reservas, cancelaciones y recordatorios) se están enviando bien.</p>",
+  });
+  return result.ok ? { ok: true } : { ok: false, error: result.error };
 }

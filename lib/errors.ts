@@ -4,7 +4,7 @@ const MESSAGES: Record<string, string> = {
   FORBIDDEN: "No tienes permisos para modificar este negocio.",
   UNAUTHENTICATED: "Tu sesión expiró. Vuelve a iniciar sesión.",
   EMAIL_NOT_VERIFIED: "Confirma tu correo electrónico antes de crear un negocio.",
-  INVALID_NAME: "Revisa el nombre: debe tener entre 2 y 120 caracteres.",
+  INVALID_NAME: "Revisa el nombre: debe tener entre 2 y 120 caracteres, sin enlaces ni símbolos < >.",
   INVALID_SLUG: "El enlace solo admite minúsculas, números y guiones (3 a 60 caracteres, sin guion al inicio o al final).",
   SLUG_RESERVED: "Ese enlace no está disponible. Prueba con otro.",
   SLUG_ALREADY_EXISTS: "Ese enlace ya está en uso. Prueba con otro.",

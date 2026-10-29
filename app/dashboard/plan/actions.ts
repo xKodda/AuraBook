@@ -11,6 +11,7 @@ import { sendEmail } from "@/lib/email";
 import { paymentRequestEmail } from "@/lib/email-templates";
 import { BILLING_NOTIFY_EMAIL, DEMO_MODE, PUBLIC_ORIGIN } from "@/lib/env";
 import { rpcErrorMessage } from "@/lib/errors";
+import { rateLimit } from "@/lib/rate-limit";
 import { sessionDb } from "@/lib/supabase";
 
 export type CheckoutResult = { ok: true; amountClp: number } | { ok: false; error: string };
@@ -33,6 +34,9 @@ export async function requestPremiumAction(input: unknown): Promise<CheckoutResu
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { ok: false, error: rpcErrorMessage("INVALID_PAYMENT_REQUEST") };
   const { period, extraStaff, reference } = parsed.data;
+  if (!(await rateLimit(`payment-request:user:${ctx.session.userId}`, 5, 3600))) {
+    return { ok: false, error: "Demasiados intentos. Espera un rato o escríbenos a contacto@clikium.cl." };
+  }
 
   const db = await sessionDb();
   const { data, error } = await db.rpc("create_payment_request", {

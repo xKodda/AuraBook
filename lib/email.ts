@@ -8,15 +8,28 @@ import { privilegedDb } from "./supabase";
 
 const FROM = process.env.EMAIL_FROM || "AuraBook <no-reply@aurabook.clikium.cl>";
 
+/** Para /admin: si el envío de correos está configurado y con qué remitente. */
+export const EMAIL_STATUS = { configured: Boolean(process.env.RESEND_API_KEY), from: FROM };
+
 /** Envía un correo con la API de Resend. Sin RESEND_API_KEY no envía (y lo registra). */
 export async function sendEmail(to: string | string[], content: EmailContent, replyTo?: string): Promise<boolean> {
+  return (await sendEmailDetailed(to, content, replyTo)).ok;
+}
+
+/** Igual que sendEmail, pero devuelve el motivo si falla (para el correo de prueba de /admin). */
+export async function sendEmailDetailed(
+  to: string | string[], content: EmailContent, replyTo?: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
   const key = process.env.RESEND_API_KEY;
   const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
   if (!key) {
     console.warn("RESEND_API_KEY no configurada: correo no enviado:", content.subject);
-    return false;
+    return { ok: false, error: "Falta la variable RESEND_API_KEY en el servidor (Vercel)." };
   }
-  if (recipients.length === 0) return false;
+  if (recipients.length === 0) {
+    console.warn("Correo sin destinatarios:", content.subject);
+    return { ok: false, error: "No hay destinatarios." };
+  }
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -28,13 +41,14 @@ export async function sendEmail(to: string | string[], content: EmailContent, re
       signal: AbortSignal.timeout(10_000),
     });
     if (!res.ok) {
-      console.error("Resend", res.status, (await res.text()).slice(0, 300));
-      return false;
+      const detail = (await res.text()).slice(0, 300);
+      console.error("Resend", res.status, detail);
+      return { ok: false, error: `Resend respondió ${res.status}: ${detail}` };
     }
-    return true;
+    return { ok: true };
   } catch (error) {
     console.error("Resend error:", error);
-    return false;
+    return { ok: false, error: "No se pudo conectar con Resend." };
   }
 }
 
@@ -54,7 +68,11 @@ const siteUrl = () => SITE_URL || "https://aurabook.clikium.cl";
 /** Tras una reserva pública: aviso a los dueños y, si dejó correo, confirmación al cliente. */
 export async function notifyNewBooking(bookingId: string): Promise<void> {
   const n = await loadNotification(bookingId);
-  if (!n) return;
+  if (!n) {
+    console.error("notifyNewBooking: sin datos para la reserva", bookingId);
+    return;
+  }
+  if (n.ownerEmails.length === 0) console.warn("notifyNewBooking: el negocio no tiene dueño con correo", n.businessSlug);
   await Promise.all([
     sendEmail(n.ownerEmails, ownerNewBookingEmail(n, siteUrl()), n.clientEmail ?? undefined),
     n.clientEmail ? sendEmail(n.clientEmail, clientConfirmationEmail(n, siteUrl())) : Promise.resolve(false),

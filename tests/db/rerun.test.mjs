@@ -10,7 +10,7 @@ const RERUNNABLE = [
   "20261101000000_overbooking_and_revenue.sql", "20261102000000_plan_entitlements.sql", "20261103000000_premium_price.sql",
   "20261104000000_premium_launch_promo.sql", "20261105000000_time_off_management.sql", "20261106000000_business_deletion.sql",
   "20261107000000_plans_v2.sql", "20261108000000_plans_v3.sql", "20261109000000_insights_no_shows.sql",
-  "20261110000000_payment_requests.sql",
+  "20261110000000_payment_requests.sql", "20261111000000_input_hardening.sql",
 ];
 
 test("las migraciones de sobrecupos y planes se pueden ejecutar de nuevo", async () => {
