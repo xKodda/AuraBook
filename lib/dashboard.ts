@@ -28,6 +28,8 @@ export const getDashboardContext = cache(async (): Promise<DashboardContext | nu
   const businesses = session.businesses.filter((b) => b.published);
   const pendingOnboarding = session.businesses.some((b) => !b.published && b.role === "owner");
   if (businesses.length === 0) {
+    // El dueño de la plataforma no tiene negocio: su panel es /admin.
+    if (!pendingOnboarding && (await isPlatformAdmin())) redirect("/admin");
     if (pendingOnboarding || session.businesses.length === 0) redirect("/onboarding");
     return null;
   }

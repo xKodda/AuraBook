@@ -160,3 +160,27 @@ test("CSV de exportación: separador chileno, comillas y sin inyección de fórm
   const out = toCsv(["A", "B"], [["1", "2"]]);
   assert.ok(out.startsWith("﻿A;B\r\n1;2\r\n"));
 });
+
+test("plantillas de Supabase Auth: conservan las variables y el enlace con token_hash", async () => {
+  const { readFileSync } = await import("node:fs");
+  for (const [file, type] of [["confirm-signup", "email"], ["reset-password", "recovery"], ["change-email", "email_change"]]) {
+    const html = readFileSync(new URL(`../supabase/email-templates/${file}.html`, import.meta.url), "utf8");
+    assert.ok(html.includes(`{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=${type}&amp;`), file);
+    assert.ok(html.includes("{{ .Email }}"), file);
+  }
+});
+
+test("correos al cliente: calendario, mapa y pie del local", async () => {
+  const { clientConfirmationEmail } = await import("../lib/email-templates.ts");
+  const mail = clientConfirmationEmail({
+    manageToken: "t".repeat(64), startAt: "2026-10-28T14:30:00.000Z", endAt: "2026-10-28T15:30:00.000Z", priceClp: 16000,
+    clientName: "Diego", clientPhone: "+56 9 8765 4321", clientEmail: "d@x.cl", reminderOptIn: false, serviceName: "Corte",
+    staffName: "Tomás", businessName: "Don José", businessSlug: "don-jose", businessAddress: "Av. Providencia 1234",
+    businessPhone: "+56 9 1234 5678", timezone: "America/Santiago",
+  }, "https://aurabook.cl");
+  assert.match(mail.html, /calendar\.google\.com\/calendar\/render\?action=TEMPLATE/);
+  assert.match(mail.html, /dates=20261028T143000Z%2F20261028T153000Z/);
+  assert.match(mail.html, /google\.com\/maps\/search\/\?api=1&amp;query=Av\.%20Providencia%201234/);
+  assert.match(mail.html, /11:30 – 12:30 h/);
+  assert.match(mail.html, /tel:\+56987654321|tel:\+56912345678/);
+});

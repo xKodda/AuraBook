@@ -5,8 +5,9 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isPlatformAdmin } from "@/lib/billing-server";
-import { sendEmailDetailed } from "@/lib/email";
-import { DEMO_MODE } from "@/lib/env";
+import { EMAIL_STATUS, sendEmailDetailed } from "@/lib/email";
+import { adminTestEmail } from "@/lib/email-templates";
+import { DEMO_MODE, PUBLIC_ORIGIN } from "@/lib/env";
 import { rpcErrorMessage } from "@/lib/errors";
 import { sessionDb } from "@/lib/supabase";
 
@@ -100,10 +101,6 @@ export async function sendTestEmailAction(): Promise<AdminResult> {
   const db = await sessionDb();
   const { data: { user } } = await db.auth.getUser();
   if (!user?.email) return { ok: false, error: rpcErrorMessage("UNAUTHENTICATED") };
-  const result = await sendEmailDetailed(user.email, {
-    tag: "admin_test", subject: "Prueba de correo · AuraBook",
-    text: "Si recibes este correo, los avisos de AuraBook (nuevas reservas, cancelaciones y recordatorios) se están enviando bien.",
-    html: "<p>Si recibes este correo, los avisos de AuraBook (nuevas reservas, cancelaciones y recordatorios) se están enviando bien.</p>",
-  });
+  const result = await sendEmailDetailed(user.email, adminTestEmail(EMAIL_STATUS.from, PUBLIC_ORIGIN));
   return result.ok ? { ok: true } : { ok: false, error: result.error };
 }

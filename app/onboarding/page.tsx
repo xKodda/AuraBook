@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
 import { requireUser } from "@/lib/auth";
+import { isPlatformAdmin } from "@/lib/billing-server";
 import { DEMO_MODE, SITE_URL } from "@/lib/env";
 import { findPendingBusinessId, getOnboardingState, hasAnyMembership } from "@/lib/onboarding";
 import type { OnboardingState } from "@/lib/types";
@@ -35,6 +36,8 @@ export default async function OnboardingPage({ searchParams }: Props) {
   // 1) Retomar un negocio propio sin publicar. 2) Si ya tiene negocios y no pidió uno nuevo, al panel.
   const pendingId = await findPendingBusinessId(user.id);
   if (!pendingId && nuevo !== "1" && (await hasAnyMembership(user.id))) redirect("/dashboard");
+  // El admin de la plataforma no crea negocio salvo que lo pida explícitamente (?nuevo=1).
+  if (!pendingId && nuevo !== "1" && (await isPlatformAdmin())) redirect("/admin");
 
   const initial: OnboardingState = pendingId
     ? await getOnboardingState(pendingId, user.id)
