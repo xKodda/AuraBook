@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "AuraBook",
     short_name: "AuraBook",
-    description: "Reservas online para barberías, peluquerías y salones.",
+    description: "Reservas online para todo negocio que atiende con hora.",
     start_url: "/dashboard",
     display: "standalone",
     background_color: "#F7F6F2",

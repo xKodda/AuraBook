@@ -50,6 +50,8 @@ export async function freshDb() {
   }
   await db.exec("grant all on all tables in schema public to service_role;");
   await db.exec(readFileSync(join(ROOT, "supabase", "002_demo_seed.sql"), "utf8"));
+  // Las pruebas de disponibilidad se escribieron con la grilla de 15 min; las horas enteras se prueban aparte.
+  await db.exec("update public.businesses set slot_interval_min = 15;");
   return db;
 }
 

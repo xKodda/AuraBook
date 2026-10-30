@@ -24,7 +24,7 @@ export default function OpenGraphImage() {
             <span>Tu agenda llena,</span>
             <span style={{ color: "#2F3A56" }}>sin perseguir mensajes.</span>
           </div>
-          <div style={{ fontSize: 30, color: "#5B5F66" }}>Reservas online para barberías, peluquerías, belleza, estética y spa.</div>
+          <div style={{ fontSize: 30, color: "#5B5F66" }}>Reservas online para todo negocio que atiende con hora.</div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 24, color: "#6B7079" }}>
           <span>aurabook.cl</span>

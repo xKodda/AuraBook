@@ -59,7 +59,7 @@ export function sandboxSlots(serviceId: string, date: string, staffId: string | 
     if ((staffId && member.id !== staffId) || !member.serviceIds.includes(serviceId)) continue;
     const sched = SCHEDULES[member.id];
     if (!sched.days.includes(weekdayOf(date))) continue;
-    for (let start = minutes(sched.open); start + service.durationMin <= minutes(sched.close); start += 15) {
+    for (let start = minutes(sched.open); start + service.durationMin <= minutes(sched.close); start += 60) {
       const end = start + service.durationMin;
       if (start < minutes(sched.breakEnd) && end > minutes(sched.breakStart)) continue;
       if (date === today && start < nowMin) continue;

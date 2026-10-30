@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(PUBLIC_ORIGIN),
   title: "AuraBook · Plataforma de Reservas",
   applicationName: "AuraBook",
-  description: "Agenda tu cita en segundos en los mejores salones, barberías y centros de estética.",
+  description: "Reservas online para todo negocio que atiende con hora: salones, talleres, consultas, veterinarias, asesorías y más.",
   // La imagen para compartir la genera app/opengraph-image.tsx (y cada página de reservas la suya).
   openGraph: { type: "website", siteName: "AuraBook", locale: "es_CL" },
   twitter: { card: "summary_large_image" },

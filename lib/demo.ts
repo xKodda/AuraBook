@@ -242,7 +242,7 @@ export function demoAvailability(business: Business, serviceId: string, date: st
     if (!member.serviceIds.includes(serviceId)) continue;
     const sched = scheduleFor(member.id, date);
     if (!sched) continue;
-    for (let start = minutes(sched.open); start + service.durationMin <= minutes(sched.close); start += 15) {
+    for (let start = minutes(sched.open); start + service.durationMin <= minutes(sched.close); start += 60) {
       const end = start + service.durationMin;
       if (!fitsSchedule(sched, start, end)) continue;
       if (date === nowDate && start < nowMin + MIN_NOTICE_MIN) continue;
@@ -473,6 +473,7 @@ export function demoOnboardingState(businessId: string): OnboardingState {
       description: b.description ?? "", address: b.address, phone: b.phone, brandColor: b.brandColor,
       logoUrl: b.logoUrl, hideBranding: false, published: true, minNoticeMin: MIN_NOTICE_MIN, maxDaysAhead: b.maxDaysAhead,
       cancelNoticeMin: b.cancelNoticeMin,
+      slotIntervalMin: 60,
       noShowBlockThreshold: null,
     },
     staff: b.staff.map((m, i) => ({ id: m.id, name: m.name, roleTitle: m.roleTitle ?? "", linkedToMe: i === 0 })),

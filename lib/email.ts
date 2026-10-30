@@ -9,8 +9,8 @@ import { pushToBookingTeam } from "./push";
 import { cancellationPush, newBookingPush } from "./push-messages";
 import { privilegedDb } from "./supabase";
 
-// Remitente: dominio verificado en Resend (aurabook.clikium.cl). Para usar @aurabook.cl, verificarlo en Resend y definir EMAIL_FROM.
-const FROM = process.env.EMAIL_FROM || "AuraBook <no-reply@aurabook.clikium.cl>";
+// Remitente: dominio verificado en Resend (aurabook.cl). EMAIL_FROM permite cambiarlo sin tocar el código.
+const FROM = process.env.EMAIL_FROM || "AuraBook <no-reply@aurabook.cl>";
 
 /** Para /admin: si el envío de correos está configurado y con qué remitente. */
 export const EMAIL_STATUS = { configured: Boolean(process.env.RESEND_API_KEY), from: FROM };

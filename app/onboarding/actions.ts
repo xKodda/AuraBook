@@ -13,18 +13,17 @@ import { CATEGORY_LABEL } from "@/lib/theme";
 import { rpcErrorMessage } from "@/lib/errors";
 import { getOnboardingState } from "@/lib/onboarding";
 import { privilegedDb, sessionDb } from "@/lib/supabase";
-import type { OnboardingState } from "@/lib/types";
+import { BUSINESS_CATEGORIES, SLOT_INTERVALS, type OnboardingState } from "@/lib/types";
 
 export type OnboardingResult = { ok: true; state: OnboardingState } | { ok: false; error: string };
 
-const CATEGORIES = ["barberia", "peluqueria", "unas", "spa", "estetica", "otro"] as const;
 const id = z.uuid();
 const optionalText = (max: number) => z.string().trim().max(max).default("");
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 
 const profileSchema = z.object({
   name: z.string().trim().min(2).max(120),
-  category: z.enum(CATEGORIES),
+  category: z.enum(BUSINESS_CATEGORIES),
   tagline: optionalText(160),
   description: optionalText(600),
   address: optionalText(200),
@@ -58,6 +57,8 @@ const scheduleSchema = z.object({
     breakStart: time.nullable(),
     breakEnd: time.nullable(),
   })).max(7),
+  /** Opcional: el asistente guarda el intervalo de horas junto con el horario. */
+  slotIntervalMin: z.union(SLOT_INTERVALS.map((m) => z.literal(m))).optional(),
 });
 
 const INVALID: OnboardingResult = { ok: false, error: "Revisa los datos ingresados." };
@@ -130,9 +131,14 @@ export async function saveScheduleAction(businessId: string, input: unknown): Pr
   const days = parsed.data.days.map((d) => ({
     weekday: d.weekday, opens: d.opens, closes: d.closes, break_start: d.breakStart, break_end: d.breakEnd,
   }));
-  return mutate(businessId, (db) => db.rpc("set_weekly_schedule", {
-    p_business_id: businessId, p_staff_ids: parsed.data.staffIds, p_days: days,
-  }));
+  const interval = parsed.data.slotIntervalMin;
+  return mutate(businessId, async (db) => {
+    if (interval) {
+      const res = await db.rpc("update_slot_interval", { p_business_id: businessId, p_minutes: interval });
+      if (res.error) return res;
+    }
+    return db.rpc("set_weekly_schedule", { p_business_id: businessId, p_staff_ids: parsed.data.staffIds, p_days: days });
+  });
 }
 
 export async function saveServiceAction(businessId: string, input: unknown): Promise<OnboardingResult> {
@@ -277,4 +283,9 @@ export async function updateBookingRulesAction(businessId: string, input: unknow
     p_business_id: businessId, p_min_notice_min: r.minNoticeMin, p_max_days_ahead: r.maxDaysAhead,
     p_cancel_notice_min: r.cancelNoticeMin,
   }));
+}
+
+export async function updateSlotIntervalAction(businessId: string, minutes: number): Promise<OnboardingResult> {
+  if (!id.safeParse(businessId).success || !(SLOT_INTERVALS as readonly number[]).includes(minutes)) return INVALID;
+  return mutate(businessId, (db) => db.rpc("update_slot_interval", { p_business_id: businessId, p_minutes: minutes }));
 }

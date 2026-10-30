@@ -94,6 +94,7 @@ Abre `http://localhost:3000/dashboard` o cualquiera de las páginas de reserva p
    - `20261110000000_payment_requests.sql` (contratar Premium por transferencia, con aprobación en /admin).
    - `20261111000000_input_hardening.sql` (rechaza nombres de cliente con HTML, enlaces o caracteres de control).
    - `20261113000000_push_subscriptions.sql` (avisos push al teléfono de dueños y administradores).
+   - `20261114000000_all_niches_and_slot_interval.sql` (rubros para todo tipo de negocio e intervalo de horas por negocio; por defecto, horas enteras).
    - Opcional: `supabase/002_demo_seed.sql` (datos de prueba multi-rubro; no usar en producción).
    - `supabase/legacy/` es histórico: **no ejecutar**.
 3. Configurar `.env.local`:

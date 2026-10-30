@@ -1,7 +1,7 @@
 import "server-only";
 import { DEMO_MODE, demoOnboardingState } from "./demo";
 import { sessionDb } from "./supabase";
-import type { BusinessCategory, OnboardingState, ScheduleDay } from "./types";
+import type { BusinessCategory, OnboardingState, ScheduleDay, SlotInterval } from "./types";
 
 type DbMembership = {
   business_id: string;
@@ -47,7 +47,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
   const db = await sessionDb();
   const { data: b, error } = await db
     .from("businesses")
-    .select("id,slug,name,category,tagline,description,address,phone,brand_color,logo_url,hide_branding,is_active,min_notice_min,max_days_ahead,cancel_notice_min,no_show_block_threshold")
+    .select("id,slug,name,category,tagline,description,address,phone,brand_color,logo_url,hide_branding,is_active,min_notice_min,max_days_ahead,cancel_notice_min,slot_interval_min,no_show_block_threshold")
     .eq("id", businessId)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -90,7 +90,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
     id: string; slug: string; name: string; category: BusinessCategory; tagline: string | null;
     description: string | null; address: string | null; phone: string | null; is_active: boolean;
     brand_color: string; logo_url: string | null; hide_branding: boolean | null;
-    min_notice_min: number; max_days_ahead: number; cancel_notice_min: number; no_show_block_threshold: number | null;
+    min_notice_min: number; max_days_ahead: number; cancel_notice_min: number; slot_interval_min: SlotInterval; no_show_block_threshold: number | null;
   };
   return {
     business: {
@@ -109,6 +109,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
       minNoticeMin: row.min_notice_min,
       maxDaysAhead: row.max_days_ahead,
       cancelNoticeMin: row.cancel_notice_min,
+      slotIntervalMin: row.slot_interval_min,
       noShowBlockThreshold: row.no_show_block_threshold ?? null,
     },
     staff: ((staffRes.data ?? []) as { id: string; name: string; role_title: string | null }[]).map((s) => ({

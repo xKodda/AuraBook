@@ -1,6 +1,15 @@
 import type { Entitlements, FeatureKey } from "./plans";
 
-export type BusinessCategory = "barberia" | "peluqueria" | "unas" | "spa" | "estetica" | "otro";
+/** Rubros permitidos (mismo orden en que se ofrecen; la BD valida la misma lista). «otro» siempre al final. */
+export const BUSINESS_CATEGORIES = [
+  "barberia", "peluqueria", "unas", "spa", "estetica", "automotriz", "salud", "veterinaria",
+  "profesional", "deporte", "clases", "tatuajes", "fotografia", "otro",
+] as const;
+export type BusinessCategory = (typeof BUSINESS_CATEGORIES)[number];
+
+/** Cada cuánto se ofrecen las horas en la página pública (minutos). */
+export const SLOT_INTERVALS = [60, 30, 15] as const;
+export type SlotInterval = (typeof SLOT_INTERVALS)[number];
 
 export type Service = {
   id: string;
@@ -200,6 +209,7 @@ export type OnboardingBusiness = {
   minNoticeMin: number;
   maxDaysAhead: number;
   cancelNoticeMin: number;
+  slotIntervalMin: SlotInterval;
   /** Bloquear reservas online desde N ausencias en 12 meses (null = sin bloqueo). Requiere no_show_control. */
   noShowBlockThreshold: number | null;
 };

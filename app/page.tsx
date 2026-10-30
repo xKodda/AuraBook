@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import {
-  ArrowRight, BellRing, CalendarCheck, CalendarX2, Check, Clock, Mail, Palette, ShieldCheck, Smartphone, UserPlus, Users,
+  ArrowRight, BellRing, Brush, CalendarCheck, CalendarX2, Camera, Check, Clock, Dumbbell, GraduationCap, Mail, Palette,
+  PawPrint, Scale, ShieldCheck, Smartphone, Stethoscope, UserPlus, Users, Wrench,
 } from "lucide-react";
 import { LandingIntro } from "@/components/landing-intro";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
@@ -26,7 +27,7 @@ const DESCRIPTION =
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "AuraBook · Reservas online para barberías, peluquerías y salones",
+  title: "AuraBook · Reservas online para todo negocio que atiende con hora",
   description: DESCRIPTION,
   alternates: { canonical: "/" },
   openGraph: { title: "AuraBook · Reservas online para tu negocio", description: DESCRIPTION, url: "/" },
@@ -47,7 +48,22 @@ const RUBRO_FOTOS: RubroFoto[] = [
     alt: "Velas encendidas junto a toallas blancas y una flor", position: "40% center" },
 ];
 
-const RUBROS = ["Barberías", "Peluquerías", "Salones de belleza", "Estética", "Spa"];
+const RUBROS = [
+  "Barberías y salones", "Talleres mecánicos", "Salud y consultas", "Veterinarias", "Abogados y asesorías",
+  "Entrenadores", "Clases particulares", "Tatuajes",
+];
+
+// Rubros sin foto propia en la galería.
+const MAS_RUBROS = [
+  { icon: Wrench, title: "Talleres mecánicos", text: "Mantenciones, diagnósticos y revisiones, sin autos esperando en la puerta." },
+  { icon: Stethoscope, title: "Salud y consultas", text: "Kinesiología, psicología, nutrición o dental, cada profesional con su agenda." },
+  { icon: PawPrint, title: "Veterinarias y peluquería canina", text: "Consultas, vacunas y baños, con recordatorio para el dueño." },
+  { icon: Scale, title: "Abogados y asesorías", text: "Primeras reuniones y seguimientos, sin coordinar por correo." },
+  { icon: Dumbbell, title: "Entrenadores y estudios", text: "Sesiones personales, evaluaciones y clases de yoga o pilates." },
+  { icon: GraduationCap, title: "Clases y tutorías", text: "Reforzamiento, música o idiomas, cada profesor con sus horas." },
+  { icon: Brush, title: "Tatuajes y piercing", text: "Evaluaciones y sesiones largas, bien repartidas en la semana." },
+  { icon: Camera, title: "Fotografía", text: "Retratos, fotos de producto o carnet, con hora confirmada." },
+];
 
 const STEPS = [
   { title: "Crea tu negocio", text: "Nombre, rubro, logo y color. Recibes tu enlace propio al instante." },
@@ -67,6 +83,7 @@ const FEATURES = [
 ];
 
 const FAQ = [
+  { q: "¿Sirve para mi rubro?", a: "Si atiendes con hora, sí: barberías y salones, talleres mecánicos, consultas de salud, veterinarias, abogados, entrenadores, profesores y mucho más. Al crear tu negocio eliges tu rubro y te sugerimos servicios y cargos, que puedes cambiar." },
   { q: "¿Mis clientes tienen que crear una cuenta?", a: "No. Eligen servicio, profesional y hora, y dejan su nombre y teléfono. Reciben un enlace para ver o cancelar su cita." },
   { q: "¿Qué pasa si dos personas intentan reservar la misma hora?", a: "Solo una lo consigue. La disponibilidad se vuelve a verificar al confirmar y la base de datos impide horas solapadas." },
   { q: "¿Necesito instalar algo?", a: "No. Funciona en el navegador del computador y del celular, tanto para ti como para tus clientes." },
@@ -90,11 +107,11 @@ function PhonePreview() {
         <div className="lp-mini-pills"><span className="on">Cualquiera</span><span>Camila</span><span>Tomás</span></div>
         <p className="lp-mini-label"><span>3</span> Día y hora</p>
         <div className="lp-mini-times">
-          {["10:00", "10:45", "11:30", "12:15", "15:00", "15:45"].map((t) => (
-            <span key={t} className={t === "11:30" ? "on" : undefined}>{t}</span>
+          {["10:00", "11:00", "12:00", "15:00", "16:00", "17:00"].map((t) => (
+            <span key={t} className={t === "11:00" ? "on" : undefined}>{t}</span>
           ))}
         </div>
-        <div className="lp-mini-cta">Confirmar 11:30 h</div>
+        <div className="lp-mini-cta">Confirmar 11:00 h</div>
       </div>
     </div>
   );
@@ -106,33 +123,33 @@ function BrowserPreview() {
     <div className="lp-browser" aria-hidden="true">
       <div className="lp-browser-bar">
         <i /><i /><i />
-        <span>aurabook.cl/reservar/barberia-don-jose</span>
+        <span>aurabook.cl/reservar/taller-don-jose</span>
       </div>
       <div className="lp-browser-page">
         <div className="lp-browser-biz">
           <span className="lp-mini-logo">DJ</span>
-          <small>BARBERÍA</small>
-          <b>Barbería Don José</b>
-          <p>Un buen corte empieza aquí.</p>
+          <small>TALLER MECÁNICO</small>
+          <b>Taller Don José</b>
+          <p>Tu auto en buenas manos.</p>
           <hr />
           <p>Av. Providencia 1234</p>
           <p>+56 9 1234 5678</p>
         </div>
         <div className="lp-browser-main">
-          <p className="lp-mini-label"><span>1</span> ¿Qué servicio necesitas?</p>
-          <div className="lp-mini-service on"><i /><span><b>Corte de pelo</b><small>45 min</small></span><b>$12.000</b></div>
-          <div className="lp-mini-service"><i /><span><b>Corte + barba</b><small>60 min</small></span><b>$16.000</b></div>
-          <div className="lp-mini-service"><i /><span><b>Perfilado de barba</b><small>30 min</small></span><b>$8.000</b></div>
+          <p className="lp-mini-label"><span>1</span> ¿Qué necesita tu vehículo?</p>
+          <div className="lp-mini-service on"><i /><span><b>Cambio de aceite y filtros</b><small>1 h</small></span><b>$45.000</b></div>
+          <div className="lp-mini-service"><i /><span><b>Diagnóstico / scanner</b><small>1 h</small></span><b>$25.000</b></div>
+          <div className="lp-mini-service"><i /><span><b>Revisión de frenos</b><small>1 h</small></span><b>$20.000</b></div>
           <p className="lp-mini-label"><span>2</span> Día y hora</p>
           <div className="lp-browser-days">
             {["hoy 27", "mié 28", "jue 29", "vie 30", "sáb 31"].map((d, i) => <span key={d} className={i === 1 ? "on" : undefined}>{d}</span>)}
           </div>
           <div className="lp-mini-times lp-browser-times">
-            {["10:00", "10:45", "11:30", "12:15", "15:00", "15:45", "16:30", "17:15"].map((t) => (
-              <span key={t} className={t === "11:30" ? "on" : undefined}>{t}</span>
+            {["09:00", "10:00", "11:00", "12:00", "15:00", "16:00", "17:00", "18:00"].map((t) => (
+              <span key={t} className={t === "11:00" ? "on" : undefined}>{t}</span>
             ))}
           </div>
-          <div className="lp-mini-cta">Confirmar miércoles 28, 11:30 h</div>
+          <div className="lp-mini-cta">Confirmar miércoles 28, 11:00 h</div>
         </div>
       </div>
     </div>
@@ -195,7 +212,7 @@ export default async function Home() {
             </ul>
             </RevealItem>
           </Reveal>
-          <HeroPhone toast={<><Mail size={15} /><span><b>Nueva reserva</b><small>Corte de pelo · mañana 11:30</small></span></>}>
+          <HeroPhone toast={<><Mail size={15} /><span><b>Nueva reserva</b><small>Corte de pelo · mañana 11:00</small></span></>}>
             <PhonePreview />
           </HeroPhone>
         </section>
@@ -266,6 +283,18 @@ export default async function Home() {
             </figure>
           ))}
         </HorizontalGallery>
+
+        <section className="lp-section">
+          <SectionHeading eyebrow="Y mucho más" title="Si atiendes con hora, AuraBook es para ti." />
+          <Reveal className="lp-features">
+            {MAS_RUBROS.map(({ icon: Icon, title, text }) => (
+              <RevealItem key={title} className="lp-feature">
+                <Icon size={20} strokeWidth={1.8} />
+                <div><h3>{title}</h3><p>{text}</p></div>
+              </RevealItem>
+            ))}
+          </Reveal>
+        </section>
 
         <section className="lp-section">
           <SectionHeading eyebrow="Lo esencial, bien hecho" title="Simple para ti. Más simple para tus clientes." />

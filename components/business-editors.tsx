@@ -4,7 +4,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import type { OnboardingResult } from "@/app/onboarding/actions";
-import type { OnboardingState, ScheduleDay } from "@/lib/types";
+import { SLOT_INTERVALS, type OnboardingState, type ScheduleDay, type SlotInterval } from "@/lib/types";
 
 export const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 export const DAY_NAME = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -99,28 +99,19 @@ export type DayRow = {
   hasBreak: boolean; breakStart: string; breakEnd: string;
 };
 
-function defaultRow(weekday: number): DayRow {
-  const weekdayRow = weekday >= 1 && weekday <= 5;
-  return {
-    weekday,
-    enabled: weekday !== 0,
-    opens: "10:00",
-    closes: weekday === 6 ? "14:00" : "19:00",
-    hasBreak: weekdayRow,
-    breakStart: "14:00",
-    breakEnd: "15:00",
-  };
+// Sin horario guardado todo parte vacío: cada negocio marca sus días y elige sus horas (no se proponen por defecto).
+function emptyRow(weekday: number): DayRow {
+  return { weekday, enabled: false, opens: "", closes: "", hasBreak: false, breakStart: "", breakEnd: "" };
 }
 
-/** Filas editables a partir del horario guardado (o una propuesta por defecto si no hay). */
+/** Filas editables a partir del horario guardado (todas vacías si no hay). */
 export function toRows(days: ScheduleDay[] | undefined): DayRow[] {
   return WEEK_ORDER.map((weekday) => {
-    if (!days) return defaultRow(weekday);
-    const d = days.find((x) => x.weekday === weekday);
-    if (!d) return { ...defaultRow(weekday), enabled: false };
+    const d = days?.find((x) => x.weekday === weekday);
+    if (!d) return emptyRow(weekday);
     return {
       weekday, enabled: true, opens: d.opens, closes: d.closes,
-      hasBreak: Boolean(d.breakStart), breakStart: d.breakStart ?? "14:00", breakEnd: d.breakEnd ?? "15:00",
+      hasBreak: Boolean(d.breakStart), breakStart: d.breakStart ?? "", breakEnd: d.breakEnd ?? "",
     };
   });
 }
@@ -134,7 +125,9 @@ export function rowsToDays(rows: DayRow[]) {
 
 function rowError(r: DayRow): string | null {
   if (!r.enabled) return null;
+  if (!r.opens || !r.closes) return "Elige a qué hora abres y cierras.";
   if (r.opens >= r.closes) return "La apertura debe ser antes del cierre.";
+  if (r.hasBreak && (!r.breakStart || !r.breakEnd)) return "Elige el inicio y el fin del descanso.";
   if (r.hasBreak && (r.breakStart >= r.breakEnd || r.breakStart < r.opens || r.breakEnd > r.closes)) {
     return "El descanso debe quedar dentro de la jornada.";
   }
@@ -162,6 +155,7 @@ export function WeekRows({ rows, onChange }: { rows: DayRow[]; onChange: (rows: 
 
   const select = (value: string, set: (v: string) => void, label: string) => (
     <select className="onb-time" value={value} onChange={(e) => set(e.target.value)} aria-label={label}>
+      {!value && <option value="" disabled>--:--</option>}
       {options.map((t) => <option key={t} value={t}>{t}</option>)}
     </select>
   );
@@ -208,5 +202,33 @@ export function WeekRows({ rows, onChange }: { rows: DayRow[]; onChange: (rows: 
         Copiar el horario del lunes a los demás días abiertos
       </button>
     </>
+  );
+}
+
+// ─── Intervalo de horas ───
+
+const INTERVAL_LABEL: Record<SlotInterval, { title: string; example: string }> = {
+  60: { title: "Cada hora", example: "10:00, 11:00, 12:00…" },
+  30: { title: "Cada 30 min", example: "10:00, 10:30, 11:00…" },
+  15: { title: "Cada 15 min", example: "10:00, 10:15, 10:30…" },
+};
+
+/** Cada cuánto aparecen horas disponibles en la página pública. */
+export function SlotIntervalPicker({ value, onChange, disabled }: {
+  value: SlotInterval; onChange: (v: SlotInterval) => void; disabled?: boolean;
+}) {
+  return (
+    <fieldset className="onb-field">
+      <legend className="field-label">¿Cada cuánto ofreces horas?</legend>
+      <div className="onb-chips">
+        {SLOT_INTERVALS.map((m) => (
+          <button key={m} type="button" className={`onb-chip${value === m ? " selected" : ""}`}
+            aria-pressed={value === m} disabled={disabled} onClick={() => onChange(m)}>
+            {INTERVAL_LABEL[m].title}
+          </button>
+        ))}
+      </div>
+      <small className="field-hint">Tus clientes verán horas como {INTERVAL_LABEL[value].example}</small>
+    </fieldset>
   );
 }

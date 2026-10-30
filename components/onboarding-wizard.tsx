@@ -13,7 +13,7 @@ import {
 } from "@/app/onboarding/actions";
 import { BrandMark } from "@/components/brand";
 import {
-  ChoiceField, DURATIONS, WeekRows, formatDuration, rowsInvalid, rowsToDays, toRows, type DayRow,
+  ChoiceField, DURATIONS, SlotIntervalPicker, WeekRows, formatDuration, rowsInvalid, rowsToDays, toRows, type DayRow,
 } from "@/components/business-editors";
 import { LogoPicker } from "@/components/logo-picker";
 import { formatPrice } from "@/lib/dates";
@@ -21,7 +21,7 @@ import { BRAND_COLORS, ROLE_TITLES, SERVICE_PRESETS, TAGLINES } from "@/lib/pres
 import { isValidSlug, slugify } from "@/lib/slug";
 import { CATEGORY_COPY, CATEGORY_LABEL } from "@/lib/theme";
 import type {
-  BusinessCategory, OnboardingService, OnboardingStaff, OnboardingState,
+  BusinessCategory, OnboardingService, OnboardingStaff, OnboardingState, SlotInterval,
 } from "@/lib/types";
 
 type Props = { initial: OnboardingState; userEmail: string; siteUrl: string };
@@ -242,7 +242,7 @@ function BusinessStep({ state, run, pending, error, goTo, origin }: StepProps & 
         <label className="onb-field">
           <span className="field-label">Nombre del negocio</span>
           <input className="text-input" value={name} onChange={(e) => setName(e.target.value)}
-            required minLength={2} maxLength={120} placeholder="Ej: Barbería Don José" autoFocus={!b} />
+            required minLength={2} maxLength={120} placeholder="Ej: Taller Don José" autoFocus={!b} />
         </label>
 
         <fieldset className="onb-field">
@@ -456,6 +456,7 @@ function ScheduleStep({ state, run, pending, error, goTo }: StepProps) {
     : target;
   const [rows, setRows] = useState<DayRow[]>(() => toRows(sourceStaff ? state.schedules[sourceStaff] : undefined));
   const [saved, setSaved] = useState(false);
+  const [slotInterval, setSlotInterval] = useState<SlotInterval>(business.slotIntervalMin);
 
   function changeTarget(next: string) {
     setTarget(next);
@@ -469,7 +470,7 @@ function ScheduleStep({ state, run, pending, error, goTo }: StepProps) {
   function submit(e: FormEvent) {
     e.preventDefault();
     const staffIds = target === "all" ? state.staff.map((s) => s.id) : [target];
-    run(() => saveScheduleAction(business.id, { staffIds, days: rowsToDays(rows) }), () => {
+    run(() => saveScheduleAction(business.id, { staffIds, days: rowsToDays(rows), slotIntervalMin: slotInterval }), () => {
       setSaved(true);
       if (target === "all") goTo(3);
     });
@@ -478,7 +479,8 @@ function ScheduleStep({ state, run, pending, error, goTo }: StepProps) {
   return (
     <form onSubmit={submit}>
       <StepHeading kicker="Paso 3 de 5" title="¿Cuándo atiendes?">
-        Tus clientes solo podrán reservar dentro de estos horarios. El descanso (por ejemplo, almuerzo) se bloquea solo.
+        Marca los días que atiendes y elige tus horas. Tus clientes solo podrán reservar dentro de ellas; el descanso
+        (por ejemplo, almuerzo) se bloquea solo.
       </StepHeading>
 
       {state.staff.length > 1 && (
@@ -503,6 +505,8 @@ function ScheduleStep({ state, run, pending, error, goTo }: StepProps) {
           </small>
         </div>
       )}
+
+      <SlotIntervalPicker value={slotInterval} onChange={(m) => { setSaved(false); setSlotInterval(m); }} disabled={pending} />
 
       <WeekRows rows={rows} onChange={(next) => { setSaved(false); setRows(next); }} />
 

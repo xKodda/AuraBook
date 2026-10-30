@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Copy } from "lucide-react";
-import { saveScheduleAction } from "@/app/onboarding/actions";
-import { WeekRows, rowsInvalid, rowsToDays, toRows, useBusinessState, type DayRow } from "@/components/business-editors";
+import { saveScheduleAction, updateSlotIntervalAction } from "@/app/onboarding/actions";
+import { SlotIntervalPicker, WeekRows, rowsInvalid, rowsToDays, toRows, useBusinessState, type DayRow } from "@/components/business-editors";
 import type { OnboardingState } from "@/lib/types";
 import { PageHead, Saved, scheduleSummary } from "./common";
 
@@ -50,6 +50,11 @@ export function ScheduleManager({ initial, initialStaffId }: { initial: Onboardi
       <Saved message={saved} />
       {error && <div className="form-error" role="alert">{error}</div>}
 
+      <section className="dash-card dash-form">
+        <SlotIntervalPicker value={business.slotIntervalMin} disabled={pending}
+          onChange={(m) => run(() => updateSlotIntervalAction(business.id, m), () => setSaved("Intervalo de horas guardado."))} />
+      </section>
+
       {state.staff.length > 1 && (
         <div className="onb-chips" role="tablist" aria-label="Persona">
           {state.staff.map((s) => (
@@ -64,7 +69,7 @@ export function ScheduleManager({ initial, initialStaffId }: { initial: Onboardi
       <section className="dash-card dash-form">
         <h2>Horario de {person?.name}</h2>
         {!state.schedules[staffId]?.length && (
-          <p className="field-hint">{person?.name} aún no tiene horario: te proponemos uno para que lo ajustes.</p>
+          <p className="field-hint">{person?.name} aún no tiene horario: marca sus días de atención y elige sus horas.</p>
         )}
         <WeekRows rows={rows} onChange={(next) => { setRows(next); setDirty(true); }} />
         <div className="dash-form-foot">
