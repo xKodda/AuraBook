@@ -1941,6 +1941,14 @@ a { color: inherit; text-decoration: none; }
 }
 .lp-rubros span { color: var(--muted); }
 .lp-rubros b { font-weight: 700; color: var(--ink); }
+.lp-rubros a { font-weight: 700; color: var(--ink); text-decoration: none; }
+.lp-rubros a:hover { color: var(--brand); text-decoration: underline; }
+
+/* Páginas por rubro (/para/[rubro]) */
+.rb-actions { justify-content: center; margin-top: 26px; }
+.rb-services { max-width: 640px; }
+.rb-note { margin: 18px 0 0; font-size: 15px; color: var(--ink-secondary); }
+.rb-others { margin-top: clamp(56px, 8vw, 96px); padding-left: 16px; padding-right: 16px; }
 
 .lp-section { max-width: 1160px; margin: 0 auto; padding: clamp(56px, 8vw, 104px) 24px 0; box-sizing: border-box; }
 .lp-section h2, .lp-split h2 {
@@ -1951,6 +1959,8 @@ a { color: inherit; text-decoration: none; }
 .lp-steps li { border-top: 2px solid var(--ink); padding-top: 18px; }
 .lp-step-n { display: block; font-size: 15px; font-weight: 800; color: var(--brand); margin-bottom: 26px; font-variant-numeric: tabular-nums; }
 .lp-steps h3, .lp-feature h3 { margin: 0 0 6px; font-size: 18px; font-weight: 800; }
+.lp-feature-link { color: inherit; text-decoration: none; }
+.lp-feature-link:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 3px; }
 .lp-steps p, .lp-feature p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--ink-secondary); }
 
 .lp-split {

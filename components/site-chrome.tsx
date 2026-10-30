@@ -11,6 +11,10 @@ export function SiteHeader({ home = false }: { home?: boolean }) {
         <a href={`${base}#como-funciona`}>Cómo funciona</a>
         <Link href="/precios">Precios</Link>
         <Link href="/demo">Demo</Link>
+        <Link href="/para/talleres-mecanicos">Talleres</Link>
+        <Link href="/para/consultas-de-salud">Salud</Link>
+        <Link href="/para/veterinarias">Veterinarias</Link>
+        <Link href="/para/barberias">Barberías</Link>
         <Link href="/login" className="lp-nav-login">Ingresar</Link>
         <Link href="/registro" className="btn-primary lp-btn-sm">Crear cuenta</Link>
       </nav>

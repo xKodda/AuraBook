@@ -165,3 +165,11 @@ export function formatMonth(date: string): string {
   return new Intl.DateTimeFormat("es-CL", { month: "long", year: "numeric", timeZone: "UTC" })
     .format(new Date(`${date.slice(0, 7)}-15T12:00:00Z`));
 }
+
+/** 45 → «45 min», 90 → «1 h 30 min», 120 → «2 h». */
+export function formatDuration(min: number): string {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (!h) return `${m} min`;
+  return m ? `${h} h ${m} min` : `${h} h`;
+}

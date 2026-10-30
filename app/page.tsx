@@ -5,10 +5,12 @@ import {
   ArrowRight, BellRing, Brush, CalendarCheck, CalendarX2, Camera, Check, Clock, Dumbbell, GraduationCap, Mail, Palette,
   PawPrint, Scale, ShieldCheck, Smartphone, Stethoscope, UserPlus, Users, Wrench,
 } from "lucide-react";
+import { JsonLd } from "@/components/json-ld";
 import { LandingIntro } from "@/components/landing-intro";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { getPublicPlans } from "@/lib/billing-server";
 import { formatPrice } from "@/lib/dates";
+import { faqLd, graph, organizationLd, softwareLd, websiteLd } from "@/lib/seo";
 import {
   FinalHalo, HeroPhone, HorizontalGallery, LandingMotion, PopIn, Reveal, RevealImage, RevealItem, ScrollZoom,
 } from "@/components/landing-motion";
@@ -27,7 +29,7 @@ const DESCRIPTION =
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "AuraBook · Reservas online para todo negocio que atiende con hora",
+  title: "AuraBook · Agenda y reservas online para tu negocio",
   description: DESCRIPTION,
   alternates: { canonical: "/" },
   openGraph: { title: "AuraBook · Reservas online para tu negocio", description: DESCRIPTION, url: "/" },
@@ -55,14 +57,14 @@ const RUBROS = [
 
 // Rubros sin foto propia en la galería.
 const MAS_RUBROS = [
-  { icon: Wrench, title: "Talleres mecánicos", text: "Mantenciones, diagnósticos y revisiones, sin autos esperando en la puerta." },
-  { icon: Stethoscope, title: "Salud y consultas", text: "Kinesiología, psicología, nutrición o dental, cada profesional con su agenda." },
-  { icon: PawPrint, title: "Veterinarias y peluquería canina", text: "Consultas, vacunas y baños, con recordatorio para el dueño." },
-  { icon: Scale, title: "Abogados y asesorías", text: "Primeras reuniones y seguimientos, sin coordinar por correo." },
-  { icon: Dumbbell, title: "Entrenadores y estudios", text: "Sesiones personales, evaluaciones y clases de yoga o pilates." },
-  { icon: GraduationCap, title: "Clases y tutorías", text: "Reforzamiento, música o idiomas, cada profesor con sus horas." },
-  { icon: Brush, title: "Tatuajes y piercing", text: "Evaluaciones y sesiones largas, bien repartidas en la semana." },
-  { icon: Camera, title: "Fotografía", text: "Retratos, fotos de producto o carnet, con hora confirmada." },
+  { icon: Wrench, href: "/para/talleres-mecanicos", title: "Talleres mecánicos", text: "Mantenciones, diagnósticos y revisiones, sin autos esperando en la puerta." },
+  { icon: Stethoscope, href: "/para/consultas-de-salud", title: "Salud y consultas", text: "Kinesiología, psicología, nutrición o dental, cada profesional con su agenda." },
+  { icon: PawPrint, href: "/para/veterinarias", title: "Veterinarias y peluquería canina", text: "Consultas, vacunas y baños, con recordatorio para el dueño." },
+  { icon: Scale, href: "/para/abogados-y-asesorias", title: "Abogados y asesorías", text: "Primeras reuniones y seguimientos, sin coordinar por correo." },
+  { icon: Dumbbell, href: "/para/entrenadores", title: "Entrenadores y estudios", text: "Sesiones personales, evaluaciones y clases de yoga o pilates." },
+  { icon: GraduationCap, href: "/para/clases-particulares", title: "Clases y tutorías", text: "Reforzamiento, música o idiomas, cada profesor con sus horas." },
+  { icon: Brush, href: "/para/estudios-de-tatuajes", title: "Tatuajes y piercing", text: "Evaluaciones y sesiones largas, bien repartidas en la semana." },
+  { icon: Camera, href: "/para/fotografos", title: "Fotografía", text: "Retratos, fotos de producto o carnet, con hora confirmada." },
 ];
 
 const STEPS = [
@@ -188,6 +190,7 @@ export default async function Home() {
   return (
     <LandingMotion>
     <div className="lp">
+      <JsonLd data={graph(organizationLd, websiteLd, softwareLd(plans.plans, DESCRIPTION), faqLd(FAQ))} />
       <LandingIntro />
       <SiteHeader home />
 
@@ -287,10 +290,10 @@ export default async function Home() {
         <section className="lp-section">
           <SectionHeading eyebrow="Y mucho más" title="Si atiendes con hora, AuraBook es para ti." />
           <Reveal className="lp-features">
-            {MAS_RUBROS.map(({ icon: Icon, title, text }) => (
+            {MAS_RUBROS.map(({ icon: Icon, href, title, text }) => (
               <RevealItem key={title} className="lp-feature">
                 <Icon size={20} strokeWidth={1.8} />
-                <div><h3>{title}</h3><p>{text}</p></div>
+                <div><h3><Link href={href} className="lp-feature-link">{title}</Link></h3><p>{text}</p></div>
               </RevealItem>
             ))}
           </Reveal>

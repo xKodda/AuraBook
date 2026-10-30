@@ -10,12 +10,7 @@ export const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 export const DAY_NAME = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 export const DURATIONS = Array.from({ length: 32 }, (_, i) => (i + 1) * 15);
 
-export function formatDuration(min: number): string {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  if (!h) return `${m} min`;
-  return m ? `${h} h ${m} min` : `${h} h`;
-}
+export { formatDuration } from "@/lib/dates";
 
 export function timeOptions(current: string[]): string[] {
   const base: string[] = [];

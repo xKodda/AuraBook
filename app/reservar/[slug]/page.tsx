@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import { getBusiness } from "@/lib/business";
 import { DEMO_MODE } from "@/lib/demo";
 import { BookingExperience } from "@/components/booking-experience";
+import { JsonLd } from "@/components/json-ld";
+import { businessLd, graph } from "@/lib/seo";
+import { CATEGORY_LABEL } from "@/lib/theme";
 
 export const dynamic = "force-dynamic";
 
@@ -12,14 +15,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const business = await getBusiness(slug);
   if (!business) return { title: "Negocio no encontrado", robots: { index: false } };
-  const description = business.tagline
-    ? `${business.tagline} Reserva tu hora online en ${business.name}, sin crear cuenta.`
-    : `Reserva tu hora online en ${business.name}, sin crear cuenta.`;
+  // Rubro y dirección en el título y la descripción: así busca la gente («taller mecánico en Providencia»).
+  const kind = business.category === "otro" ? "" : ` · ${CATEGORY_LABEL[business.category]}`;
+  const where = business.address ? ` en ${business.address}` : "";
+  const description = [
+    business.tagline,
+    `Reserva tu hora online en ${business.name}${where}: elige servicio, profesional y horario, sin crear cuenta.`,
+  ].filter(Boolean).join(" ");
+  const title = `${business.name}${kind} · Reserva online`;
   return {
-    title: `Reservar en ${business.name}`,
+    title,
     description,
     alternates: { canonical: `/reservar/${business.slug}` },
-    openGraph: { title: `Reservar en ${business.name}`, description, url: `/reservar/${business.slug}` },
+    openGraph: { title, description, url: `/reservar/${business.slug}` },
   };
 }
 
@@ -27,5 +35,10 @@ export default async function BookingPage({ params }: Props) {
   const { slug } = await params;
   const business = await getBusiness(slug);
   if (!business) notFound();
-  return <BookingExperience business={business} demo={DEMO_MODE} />;
+  return (
+    <>
+      <JsonLd data={graph(businessLd(business))} />
+      <BookingExperience business={business} demo={DEMO_MODE} />
+    </>
+  );
 }

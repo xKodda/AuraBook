@@ -5,6 +5,10 @@
 // sin fuentes web y sin imágenes salvo el ícono de AuraBook (PNG, porque Gmail no muestra SVG).
 // Sin dependencias: lo usan también las pruebas y scripts/build-auth-emails.mjs (plantillas de Supabase Auth).
 
+// URL absoluta y fija del ícono (mismo valor que CANONICAL_ORIGIN en lib/domains.ts): no depende de la Site URL de
+// Supabase ni de NEXT_PUBLIC_SITE_URL, que en desarrollo apuntan a localhost y dejan la imagen rota en el correo.
+const LOGO_URL = "https://aurabook.cl/brand/aurabook-icono-192.png";
+
 export type BookingEmailData = {
   manageToken: string;
   startAt: string;
@@ -94,7 +98,7 @@ function shell(s: Shell): string {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
     <tr><td style="padding:0 4px 18px;">
       <a href="${site}" style="text-decoration:none;color:${C.brand};">
-        <img src="${site}/brand/aurabook-icono-192.png" width="32" height="32" alt="AuraBook"
+        <img src="${LOGO_URL}" width="32" height="32" alt="AuraBook"
           style="display:inline-block;vertical-align:middle;border:0;border-radius:8px;">
         <span style="display:inline-block;vertical-align:middle;margin-left:10px;font-size:17px;font-weight:800;letter-spacing:-.01em;color:${C.brand};">AuraBook</span>
       </a>

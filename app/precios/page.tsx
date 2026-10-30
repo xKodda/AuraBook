@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/json-ld";
 import { PricingTable } from "@/components/pricing-table";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { getPublicPlans } from "@/lib/billing-server";
 import { formatPrice } from "@/lib/dates";
 import { launchPromo } from "@/lib/plans";
+import { breadcrumbLd, faqLd, graph, softwareLd } from "@/lib/seo";
 
 // Los precios se editan en /admin; la página se regenera cada hora.
 export const revalidate = 3600;
@@ -67,6 +69,11 @@ export default async function PricingPage() {
 
   return (
     <div className="lp">
+      <JsonLd data={graph(
+        softwareLd(data.plans, "Planes de AuraBook: Free para empezar y Premium para crecer."),
+        faqLd(faq),
+        breadcrumbLd([{ name: "AuraBook", path: "/" }, { name: "Precios", path: "/precios" }]),
+      )} />
       <SiteHeader />
       <main className="pr-main">
         <header className="pr-head">

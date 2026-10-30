@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { DEMO_BUSINESSES } from "@/lib/demo";
 import { DEMO_MODE, PUBLIC_ORIGIN } from "@/lib/env";
+import { RUBRO_PAGES } from "@/lib/rubros";
 import { publicDb } from "@/lib/supabase";
 
 // Se regenera cada hora: así entran las páginas de reservas de los negocios recién publicados.
@@ -31,6 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const slugs = await publishedSlugs();
   return [
     ...PAGES.map((p) => ({ url: `${PUBLIC_ORIGIN}${p.path}`, changeFrequency: p.changeFrequency, priority: p.priority })),
+    ...RUBRO_PAGES.map((r) => ({ url: `${PUBLIC_ORIGIN}/para/${r.slug}`, changeFrequency: "monthly" as const, priority: 0.8 })),
     ...slugs.map((slug) => ({ url: `${PUBLIC_ORIGIN}/reservar/${slug}`, changeFrequency: "weekly" as const, priority: 0.5 })),
   ];
 }
