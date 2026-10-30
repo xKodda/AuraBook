@@ -1,0 +1,39 @@
+# Verificación antes de integrar a main (auditoría P1-04): typecheck, pruebas (incluye las de base de datos con PGlite)
+# y build de producción. No usa secretos ni toca producción: el build corre en modo demo, sin Supabase.
+# Para que bloquee integraciones: GitHub → Settings → Branches → regla para `main` que exija el check «verificar».
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # Las pruebas importan .ts directamente: requiere Node 22.18 o superior.
+          node-version: "22.20.0"
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Pruebas
+        run: npm test
+      - name: Build de producción
+        run: npm run build
+        env:
+          DEMO_MODE: "true"
+          NEXT_TELEMETRY_DISABLED: "1"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { daysInRange, isIsoDate } from "@/lib/dates";
 import { getPanelRevenue, getPanelSession } from "@/lib/panel";
+import { safeError } from "@/lib/log-safe";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
   try {
     return NextResponse.json({ days: await getPanelRevenue(business, from, to) });
   } catch (error) {
-    console.error("GET panel revenue:", error);
+    console.error("GET panel revenue:", safeError(error));
     return NextResponse.json({ error: "No se pudieron calcular los ingresos." }, { status: 500 });
   }
 }

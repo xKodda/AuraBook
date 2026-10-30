@@ -3,6 +3,7 @@ import { bookingsCsv, clientsCsv } from "@/lib/account";
 import { dateInTimeZone } from "@/lib/dates";
 import { getPanelSession } from "@/lib/panel";
 import { canViewAllBookings } from "@/lib/permissions";
+import { safeError } from "@/lib/log-safe";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("GET export:", error);
+    console.error("GET export:", safeError(error));
     return NextResponse.json({ error: "No se pudo generar el archivo." }, { status: 500 });
   }
 }

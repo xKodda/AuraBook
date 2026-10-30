@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { DEMO_MODE } from "@/lib/env";
 import { sendDueReminders } from "@/lib/email";
 import { privilegedDb } from "@/lib/supabase";
+import { safeError } from "@/lib/log-safe";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     console.log("Recordatorios:", result, "· vencimientos registrados:", expirations ?? 0);
     return NextResponse.json({ ...result, expirations: expirations ?? 0 });
   } catch (error) {
-    console.error("cron reminders:", error);
+    console.error("cron reminders:", safeError(error));
     return NextResponse.json({ error: "Error al enviar recordatorios" }, { status: 500 });
   }
 }

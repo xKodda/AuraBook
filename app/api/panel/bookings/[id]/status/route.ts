@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { setPanelBookingStatus } from "@/lib/panel";
 import type { BookingStatus } from "@/lib/types";
 import { uuidSchema } from "@/lib/validation";
+import { safeError } from "@/lib/log-safe";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ export async function POST(
     }
     return NextResponse.json({ error: "No se pudo actualizar la reserva." }, { status: 500 });
   } catch (error) {
-    console.error("POST panel booking status:", error);
+    console.error("POST panel booking status:", safeError(error));
     return NextResponse.json({ error: "Error en el servidor." }, { status: 500 });
   }
 }

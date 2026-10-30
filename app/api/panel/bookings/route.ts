@@ -3,6 +3,7 @@ import { createPanelBooking, getPanelSession, listPanelBookingsRange, listPanelS
 import { listRangeTimeOff } from "@/lib/time-off";
 import { daysInRange, isIsoDate } from "@/lib/dates";
 import { panelBookingSchema } from "@/lib/validation";
+import { safeError } from "@/lib/log-safe";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
     // Historial de asistencia solo en la vista diaria (es donde se toman decisiones sobre cada cita).
     return NextResponse.json({ bookings: date === to ? await withClientHistory(business, bookings) : bookings, staff, timeOff });
   } catch (error) {
-    console.error("GET panel bookings error:", error);
+    console.error("GET panel bookings error:", safeError(error));
     return NextResponse.json({ error: "Error al cargar la agenda" }, { status: 500 });
   }
 }
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
     const [error, status] = CREATE_ERRORS[result] ?? ["No se pudo crear la reserva.", 500];
     return NextResponse.json({ error, code: result }, { status });
   } catch (error) {
-    console.error("POST panel booking:", error);
+    console.error("POST panel booking:", safeError(error));
     return NextResponse.json({ error: "Error en el servidor." }, { status: 500 });
   }
 }

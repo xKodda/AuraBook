@@ -17,7 +17,15 @@ import { dateInTimeZone, formatPrice } from "@/lib/dates";
 import { CATEGORY_LABEL } from "@/lib/theme";
 import type { AdminBusiness, AdminPlan, AdminSnapshot, PaymentMethod, SubscriptionStatus } from "@/lib/types";
 
-type EmailStatus = { configured: boolean; from: string };
+type EmailStatus = {
+  configured: boolean; from: string; captcha: "enforced" | "disabled" | "misconfigured";
+  push: { configured: boolean; partial: boolean };
+};
+const CAPTCHA_LABEL: Record<EmailStatus["captcha"], string> = {
+  enforced: "Captcha activo en las reservas",
+  disabled: "Sin captcha: las reservas solo tienen límites de intentos",
+  misconfigured: "Captcha a medias (falta una clave): las reservas online están detenidas",
+};
 type Props = { data: AdminSnapshot; demo: boolean; email: string; requests: AdminPaymentRequest[]; emailStatus: EmailStatus };
 type Tab = "resumen" | "negocios" | "planes" | "pagos" | "ajustes";
 
@@ -668,6 +676,14 @@ function EmailPanel({ status, email }: { status: EmailStatus; email: string }) {
       <p className="adm-muted">
         {status.configured ? "Envío configurado" : "Falta RESEND_API_KEY: no se envían avisos de reservas ni recordatorios"}
         {" · "}Remitente: {status.from}
+      </p>
+      <p className={status.captcha === "misconfigured" ? "form-error" : "adm-muted"}>{CAPTCHA_LABEL[status.captcha]}</p>
+      <p className={status.push.partial ? "form-error" : "adm-muted"}>
+        {status.push.configured
+          ? "Avisos push activos: los dueños pueden activarlos en su agenda o en «Mi cuenta»"
+          : status.push.partial
+            ? "Avisos push a medias: falta NEXT_PUBLIC_VAPID_PUBLIC_KEY o VAPID_PRIVATE_KEY"
+            : "Sin avisos push (faltan las claves VAPID): los dueños reciben solo correos"}
       </p>
       {error && <div className="form-error">{error}</div>}
       {sent && <p className="onb-ok onb-saved">✓ Enviado a {email || "tu correo"}. Revisa también la carpeta de spam.</p>}

@@ -19,7 +19,8 @@ export type BookingEmailData = {
   timezone: string;
 };
 
-export type EmailContent = { subject: string; html: string; text: string };
+// `tag` identifica el tipo de correo en los logs (nunca se registra el asunto: puede llevar el nombre del cliente).
+export type EmailContent = { subject: string; html: string; text: string; tag?: string };
 
 export function escapeHtml(value: string): string {
   return value
@@ -84,6 +85,7 @@ export function ownerNewBookingEmail(b: BookingEmailData, siteUrl: string): Emai
   ];
   const title = "Nueva reserva";
   return {
+    tag: "owner_new_booking",
     subject: `Nueva reserva: ${b.clientName} · ${when}`,
     html: layout(title, `Recibiste una reserva en <strong>${escapeHtml(b.businessName)}</strong>.`, rows,
       { label: "Ver mi agenda", href: `${siteUrl}/dashboard` }),
@@ -104,6 +106,7 @@ export function ownerCancellationEmail(b: BookingEmailData, siteUrl: string): Em
   const title = "Reserva cancelada";
   const note = "La hora quedó libre otra vez en tu página de reservas.";
   return {
+    tag: "owner_cancellation",
     subject: `Cancelación: ${b.clientName} · ${when}`,
     html: layout(title, `${escapeHtml(b.clientName)} canceló su reserva en <strong>${escapeHtml(b.businessName)}</strong>.`, rows,
       { label: "Ver mi agenda", href: `${siteUrl}/dashboard` }, escapeHtml(note)),
@@ -126,10 +129,32 @@ export function paymentRequestEmail(r: {
   ];
   const title = "Transferencia por revisar";
   return {
+    tag: "payment_request",
     subject: `Premium por transferencia: ${r.businessName} · ${clp(r.amountClp)}`,
     html: layout(title, "Un negocio informó que transfirió para contratar Premium. Revisa la cuenta y aprueba o rechaza la solicitud.",
       rows, { label: "Revisar en /admin", href: `${siteUrl}/admin` }),
     text: text(title, rows, `Revisar: ${siteUrl}/admin`),
+  };
+}
+
+/** Aviso interno a Clikium: un negocio terminó la configuración y publicó su página por primera vez. */
+export function businessPublishedEmail(r: {
+  businessName: string; businessSlug: string; category: string; ownerEmail: string;
+}, siteUrl: string): EmailContent {
+  const page = `${siteUrl}/reservar/${r.businessSlug}`;
+  const rows: [string, string][] = [
+    ["Negocio", r.businessName],
+    ["Rubro", r.category],
+    ["Página", `/reservar/${r.businessSlug}`],
+    ["Dueño", r.ownerEmail || "—"],
+  ];
+  const title = "Negocio nuevo publicado";
+  return {
+    tag: "business_published",
+    subject: `Nuevo negocio en AuraBook: ${r.businessName}`,
+    html: layout(title, "Un negocio terminó la configuración y su página de reservas ya está visible.", rows,
+      { label: "Ver su página", href: page }),
+    text: text(title, rows, `Página: ${page}\nAdmin: ${siteUrl}/admin`),
   };
 }
 
@@ -148,6 +173,7 @@ export function clientConfirmationEmail(b: BookingEmailData, siteUrl: string): E
     ? "Te enviaremos un recordatorio el día antes de tu cita."
     : "Si no puedes asistir, cancela desde el enlace para liberar la hora.";
   return {
+    tag: "client_confirmation",
     subject: `Reserva confirmada en ${b.businessName} · ${when}`,
     html: layout("¡Tu hora está reservada!", `Hola ${escapeHtml(b.clientName)}, tu cita en <strong>${escapeHtml(b.businessName)}</strong> quedó confirmada.`,
       rows, { label: "Ver o cancelar mi reserva", href: manage }, escapeHtml(reminder)),
@@ -167,6 +193,7 @@ export function clientReminderEmail(b: BookingEmailData, siteUrl: string): Email
     ...(b.businessPhone ? [["Teléfono del local", b.businessPhone] as [string, string]] : []),
   ];
   return {
+    tag: "client_reminder",
     subject: `Recordatorio: mañana tienes hora en ${b.businessName}`,
     html: layout("Te esperamos mañana", `Hola ${escapeHtml(b.clientName)}, te recordamos tu cita en <strong>${escapeHtml(b.businessName)}</strong>.`,
       rows, { label: "Ver o cancelar mi reserva", href: manage }, "Si no puedes asistir, cancela desde el enlace para que otra persona pueda tomar la hora."),

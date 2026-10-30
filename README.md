@@ -71,7 +71,8 @@ Abre `http://localhost:3000/dashboard` o cualquiera de las páginas de reserva p
 
 1. Crear un proyecto en [Supabase](https://supabase.com).
 2. **Proyecto nuevo:** pegar `supabase/aurabook_setup.sql` en el **SQL Editor** y ejecutarlo una vez (son todas las
-   migraciones en una transacción). **Proyecto existente:** ejecutar solo las migraciones nuevas, en orden:
+   migraciones en una transacción; se regenera con `node scripts/build-setup-sql.mjs`). **Proyecto existente:**
+   ejecutar solo las migraciones nuevas, en orden:
    - `20261023000000_init.sql` (esquema, RLS, RPCs y restricción GiST anti-solapamiento).
    - `20261024100000_saas_roles_and_permissions.sql` (rol admin, onboarding, reserva manual).
    - `20261025000000_phase1_tenant_hardening.sql` (integridad multi-tenant y endurecimiento).
@@ -92,6 +93,7 @@ Abre `http://localhost:3000/dashboard` o cualquiera de las páginas de reserva p
    - `20261109000000_insights_no_shows.sql` (estadísticas y control de ausencias).
    - `20261110000000_payment_requests.sql` (contratar Premium por transferencia, con aprobación en /admin).
    - `20261111000000_input_hardening.sql` (rechaza nombres de cliente con HTML, enlaces o caracteres de control).
+   - `20261113000000_push_subscriptions.sql` (avisos push al teléfono de dueños y administradores).
    - Opcional: `supabase/002_demo_seed.sql` (datos de prueba multi-rubro; no usar en producción).
    - `supabase/legacy/` es histórico: **no ejecutar**.
 3. Configurar `.env.local`:
@@ -107,7 +109,7 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
 ```
 
-4. En Supabase > **Authentication > URL Configuration**: definir *Site URL* (ej. `https://aurabook.cl`;
+4. En Supabase > **Authentication > URL Configuration**: definir *Site URL* (`https://aurabook.cl`;
    en desarrollo `http://localhost:3000`) y agregar a *Redirect URLs*: `https://aurabook.cl/auth/confirm**` y
    `http://localhost:3000/auth/confirm**`. Definir también `NEXT_PUBLIC_SITE_URL` con el mismo dominio.
 5. En **Authentication > Sign In / Providers > Email**: mantener activo *Confirm email* y fijar el largo mínimo de

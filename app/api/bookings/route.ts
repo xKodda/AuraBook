@@ -7,6 +7,7 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { privilegedDb } from "@/lib/supabase";
 import { verifyCaptcha } from "@/lib/turnstile";
 import { bookingSchema, isValidChileanPhoneOrInternational } from "@/lib/validation";
+import { safeError } from "@/lib/log-safe";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,12 @@ export async function POST(request: Request) {
 
   // 2) CAPTCHA verificado en servidor.
   const captcha = await verifyCaptcha(captchaToken, ip);
+  if (captcha === "misconfigured") {
+    // Configuración incompleta de Turnstile: no se puede verificar y no se omite la protección. Error explícito (503),
+    // no un «no eres una persona», para que se note y se corrija (también aparece en /admin y en los logs).
+    return errorJson("Las reservas online no están disponibles en este momento. Contacta directamente al local.", 503,
+      "CAPTCHA_MISCONFIGURED");
+  }
   if (captcha === "failed") {
     return errorJson("No pudimos verificar que eres una persona. Intenta nuevamente.", 400, "CAPTCHA_FAILED");
   }
@@ -111,7 +118,7 @@ export async function POST(request: Request) {
       demo: false,
     }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    console.error("POST booking:", error);
+    console.error("POST booking:", safeError(error));
     return errorJson("No fue posible confirmar la reserva. Intenta más tarde.", 503);
   }
 }

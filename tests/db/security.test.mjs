@@ -62,7 +62,8 @@ describe("auditoría de permisos", () => {
 
   test("las funciones del servidor (reservas públicas, tokens, límites) no las ejecuta un usuario ni un anónimo", async () => {
     for (const fn of ["create_public_booking(text, uuid, uuid, date, text, text, text)", "get_booking_by_token(text)",
-      "cancel_booking_by_token(text)", "hit_rate_limit(text, integer, integer)", "booking_notification(uuid)"]) {
+      "cancel_booking_by_token(text)", "hit_rate_limit(text, integer, integer)", "booking_notification(uuid)",
+      "booking_push_targets(uuid)", "record_push_result(text, boolean, boolean)"]) {
       for (const role of ["anon", "authenticated"]) {
         const { rows } = await db.query(`select has_function_privilege($1, 'public.${fn}', 'execute') ok`, [role]);
         assert.equal(rows[0].ok, false, `${role} → ${fn}`);

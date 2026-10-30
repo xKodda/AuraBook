@@ -1,11 +1,15 @@
 import "server-only";
-import { SITE_URL } from "./env";
+import { PUBLIC_ORIGIN } from "./env";
+import { redact, safeError } from "./log-safe";
 import {
   clientConfirmationEmail, clientReminderEmail, ownerCancellationEmail, ownerNewBookingEmail,
   type BookingEmailData, type EmailContent,
 } from "./email-templates";
+import { pushToBookingTeam } from "./push";
+import { cancellationPush, newBookingPush } from "./push-messages";
 import { privilegedDb } from "./supabase";
 
+// Remitente: dominio verificado en Resend (aurabook.clikium.cl). Para usar @aurabook.cl, verificarlo en Resend y definir EMAIL_FROM.
 const FROM = process.env.EMAIL_FROM || "AuraBook <no-reply@aurabook.clikium.cl>";
 
 /** Para /admin: si el envío de correos está configurado y con qué remitente. */
@@ -23,11 +27,11 @@ export async function sendEmailDetailed(
   const key = process.env.RESEND_API_KEY;
   const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
   if (!key) {
-    console.warn("RESEND_API_KEY no configurada: correo no enviado:", content.subject);
+    console.warn(`Correo no enviado (${content.tag ?? "sin etiqueta"}): falta RESEND_API_KEY`);
     return { ok: false, error: "Falta la variable RESEND_API_KEY en el servidor (Vercel)." };
   }
   if (recipients.length === 0) {
-    console.warn("Correo sin destinatarios:", content.subject);
+    console.warn(`Correo no enviado (${content.tag ?? "sin etiqueta"}): sin destinatarios`);
     return { ok: false, error: "No hay destinatarios." };
   }
   try {
@@ -41,13 +45,14 @@ export async function sendEmailDetailed(
       signal: AbortSignal.timeout(10_000),
     });
     if (!res.ok) {
-      const detail = (await res.text()).slice(0, 300);
-      console.error("Resend", res.status, detail);
+      // La respuesta de Resend puede repetir direcciones: se redacta antes de registrarla o mostrarla en /admin.
+      const detail = redact(await res.text());
+      console.error(`Resend ${res.status} (${content.tag ?? "sin etiqueta"}): ${detail}`);
       return { ok: false, error: `Resend respondió ${res.status}: ${detail}` };
     }
     return { ok: true };
   } catch (error) {
-    console.error("Resend error:", error);
+    console.error(`Resend sin respuesta (${content.tag ?? "sin etiqueta"}): ${safeError(error)}`);
     return { ok: false, error: "No se pudo conectar con Resend." };
   }
 }
@@ -63,27 +68,32 @@ async function loadNotification(bookingId: string): Promise<Notification | null>
   return (data as Notification | null) ?? null;
 }
 
-const siteUrl = () => SITE_URL || "https://aurabook.clikium.cl";
+const siteUrl = () => PUBLIC_ORIGIN;
 
-/** Tras una reserva pública: aviso a los dueños y, si dejó correo, confirmación al cliente. */
+/** Tras una reserva pública: aviso a los dueños (correo y push) y, si dejó correo, confirmación al cliente. */
 export async function notifyNewBooking(bookingId: string): Promise<void> {
   const n = await loadNotification(bookingId);
   if (!n) {
     console.error("notifyNewBooking: sin datos para la reserva", bookingId);
     return;
   }
-  if (n.ownerEmails.length === 0) console.warn("notifyNewBooking: el negocio no tiene dueño con correo", n.businessSlug);
+  const withoutOwner = n.ownerEmails.length === 0;
+  if (withoutOwner) console.warn("notifyNewBooking: el negocio no tiene dueño con correo", n.businessSlug);
   await Promise.all([
     sendEmail(n.ownerEmails, ownerNewBookingEmail(n, siteUrl()), n.clientEmail ?? undefined),
     n.clientEmail ? sendEmail(n.clientEmail, clientConfirmationEmail(n, siteUrl())) : Promise.resolve(false),
+    pushToBookingTeam(bookingId, newBookingPush(bookingId, n)),
   ]);
 }
 
-/** El cliente canceló desde su enlace: aviso a los dueños para que sepan que la hora quedó libre. */
+/** El cliente canceló desde su enlace: aviso a los dueños (correo y push) para que sepan que la hora quedó libre. */
 export async function notifyClientCancellation(bookingId: string): Promise<void> {
   const n = await loadNotification(bookingId);
   if (!n) return;
-  await sendEmail(n.ownerEmails, ownerCancellationEmail(n, siteUrl()), n.clientEmail ?? undefined);
+  await Promise.all([
+    sendEmail(n.ownerEmails, ownerCancellationEmail(n, siteUrl()), n.clientEmail ?? undefined),
+    pushToBookingTeam(bookingId, cancellationPush(bookingId, n)),
+  ]);
 }
 
 /** Envía los recordatorios de mañana. Cada uno se reclama antes de enviarlo (sin duplicados). */

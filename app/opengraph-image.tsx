@@ -27,7 +27,7 @@ export default function OpenGraphImage() {
           <div style={{ fontSize: 30, color: "#5B5F66" }}>Reservas online para barberías, peluquerías, belleza, estética y spa.</div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 24, color: "#6B7079" }}>
-          <span>aurabook.clikium.cl</span>
+          <span>aurabook.cl</span>
           <span>Un producto de Clikium</span>
         </div>
       </div>

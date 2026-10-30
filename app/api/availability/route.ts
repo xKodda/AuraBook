@@ -5,6 +5,7 @@ import { publicDb } from "@/lib/supabase";
 import { getBusiness } from "@/lib/business";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import type { AvailableSlot } from "@/lib/types";
+import { safeError } from "@/lib/log-safe";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
       && (await publicDb().rpc("public_month_full", { p_slug: slug, p_day: date })).data === true;
     return json({ slots, monthFull, demo: false });
   } catch (error) {
-    console.error("GET availability:", error);
+    console.error("GET availability:", safeError(error));
     return json({ error: "No se pudieron consultar los horarios. Intenta nuevamente." }, 503);
   }
 }

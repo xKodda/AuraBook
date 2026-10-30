@@ -106,7 +106,7 @@ function BrowserPreview() {
     <div className="lp-browser" aria-hidden="true">
       <div className="lp-browser-bar">
         <i /><i /><i />
-        <span>aurabook.clikium.cl/reservar/barberia-don-jose</span>
+        <span>aurabook.cl/reservar/barberia-don-jose</span>
       </div>
       <div className="lp-browser-page">
         <div className="lp-browser-biz">

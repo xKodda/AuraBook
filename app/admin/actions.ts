@@ -101,7 +101,7 @@ export async function sendTestEmailAction(): Promise<AdminResult> {
   const { data: { user } } = await db.auth.getUser();
   if (!user?.email) return { ok: false, error: rpcErrorMessage("UNAUTHENTICATED") };
   const result = await sendEmailDetailed(user.email, {
-    subject: "Prueba de correo · AuraBook",
+    tag: "admin_test", subject: "Prueba de correo · AuraBook",
     text: "Si recibes este correo, los avisos de AuraBook (nuevas reservas, cancelaciones y recordatorios) se están enviando bien.",
     html: "<p>Si recibes este correo, los avisos de AuraBook (nuevas reservas, cancelaciones y recordatorios) se están enviando bien.</p>",
   });

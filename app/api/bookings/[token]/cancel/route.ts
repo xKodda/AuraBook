@@ -4,6 +4,7 @@ import { DEMO_MODE } from "@/lib/demo";
 import { notifyClientCancellation } from "@/lib/email";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { manageTokenSchema } from "@/lib/validation";
+import { safeError } from "@/lib/log-safe";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export async function POST(
     }
     return NextResponse.json({ error: "No se pudo cancelar la reserva." }, { status: 400 });
   } catch (error) {
-    console.error("POST cancel booking:", error);
+    console.error("POST cancel booking:", safeError(error));
     return NextResponse.json({ error: "Error al procesar la cancelación." }, { status: 500 });
   }
 }

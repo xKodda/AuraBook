@@ -3,9 +3,13 @@
 // Cada acción es un endpoint público: se valida la entrada aquí y la autorización la impone la BD
 // (las RPC verifican rol con auth.uid()). Devuelven el estado actualizado para refrescar el asistente.
 
+import { after } from "next/server";
 import { z } from "zod";
 import { currentUser } from "@/lib/auth";
-import { DEMO_MODE } from "@/lib/env";
+import { sendEmail } from "@/lib/email";
+import { businessPublishedEmail } from "@/lib/email-templates";
+import { DEMO_MODE, PLATFORM_NOTIFY_EMAIL, PUBLIC_ORIGIN } from "@/lib/env";
+import { CATEGORY_LABEL } from "@/lib/theme";
 import { rpcErrorMessage } from "@/lib/errors";
 import { getOnboardingState } from "@/lib/onboarding";
 import { privilegedDb, sessionDb } from "@/lib/supabase";
@@ -148,7 +152,19 @@ export async function archiveServiceAction(businessId: string, serviceId: string
 
 export async function publishBusinessAction(businessId: string): Promise<OnboardingResult> {
   if (!id.safeParse(businessId).success) return INVALID;
-  return mutate(businessId, (db) => db.rpc("complete_onboarding", { p_business_id: businessId }));
+  // Solo la primera publicación avisa a Clikium (volver a publicar tras editar no repite el correo).
+  const before = DEMO_MODE ? null : await privilegedDb()
+    .from("businesses").select("onboarding_completed_at").eq("id", businessId).maybeSingle();
+  const firstPublish = before?.data != null && before.data.onboarding_completed_at == null;
+  const result = await mutate(businessId, (db) => db.rpc("complete_onboarding", { p_business_id: businessId }));
+  if (result.ok && firstPublish && result.state.business) {
+    const b = result.state.business;
+    const ownerEmail = (await currentUser())?.email ?? "";
+    after(() => sendEmail(PLATFORM_NOTIFY_EMAIL, businessPublishedEmail({
+      businessName: b.name, businessSlug: b.slug, category: CATEGORY_LABEL[b.category], ownerEmail,
+    }, PUBLIC_ORIGIN)));
+  }
+  return result;
 }
 
 export async function checkSlugAction(slug: string): Promise<boolean | null> {

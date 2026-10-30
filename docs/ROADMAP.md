@@ -10,9 +10,9 @@ textos legales oficiales v1.0, panel optimizado para celular y Premium a $15.990
 los primeros 6 meses. Migraciones hasta `20261104000000`.
 
 **Pendientes de configuración (no son código):**
-1. ~~Hecho~~ Supabase → Authentication → URL Configuration: *Site URL* = `https://aurabook.clikium.cl` y *Redirect URLs* con
-   `https://aurabook.clikium.cl/**`. Es la causa de que el enlace de confirmación lleve a localhost.
-2. ~~Hecho~~ Vercel → `NEXT_PUBLIC_SITE_URL=https://aurabook.clikium.cl` en Production y redeploy (también lo usan el sitemap y
+1. ~~Hecho~~ Supabase → Authentication → URL Configuration: *Site URL* = `https://aurabook.cl` y *Redirect URLs* con
+   `https://aurabook.cl/**` (antes `aurabook.clikium.cl`). Es la causa de que el enlace de confirmación lleve a localhost.
+2. ~~Hecho~~ Vercel → `NEXT_PUBLIC_SITE_URL=https://aurabook.cl` en Production y redeploy (también lo usan el sitemap y
    las imágenes para compartir).
 3. ~~Hecho~~ Precios publicados con IVA incluido; Clikium SpA emite boleta o factura.
 4. ~~Medir Core Web Vitals~~ Hecho 2026-10-26 con Lighthouse (celular): portada 96–99, `/precios` 97–99, `/demo` 98–99;
@@ -149,6 +149,6 @@ Inventario, punto de venta, comisiones, marketplace, inteligencia artificial. Ag
 | Vercel | Hosting de la app | Uso comercial requiere plan Pro |
 | Supabase | Base de datos, autenticación y logos | Pro recomendado para producción |
 | Resend | Correos | El plan gratuito tiene límites diarios y mensuales; revisar al crecer |
-| Dominio | `aurabook.clikium.cl` | Evaluar `aurabook.cl` propio |
+| Dominio | `aurabook.cl` (decisión 2026-10-29) | `www.aurabook.cl` y `aurabook.clikium.cl` redirigen al canónico |
 
 Precios vigentes: consultar las páginas de cada proveedor. Con pocos negocios pagados se cubren los costos fijos; calcular el punto de equilibrio cuando el precio esté definido.

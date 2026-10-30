@@ -63,7 +63,7 @@ test("los correos escapan todo lo que viene del cliente o del negocio", () => {
     clientName: "<script>alert(1)</script>", clientPhone: "+56912345678", clientEmail: "a@b.cl", reminderOptIn: false,
     serviceName: "<img src=x onerror=alert(1)>", staffName: "Carlos", businessName: "Barber \"Studio\"", businessSlug: "barber-studio",
     businessAddress: "", businessPhone: "", timezone: "America/Santiago",
-  }, "https://aurabook.clikium.cl");
+  }, "https://aurabook.cl");
   assert.ok(!mail.html.includes("<script>"), "sin <script> en el HTML");
   assert.ok(!mail.html.includes("<img src=x"), "sin etiquetas del servicio");
   assert.ok(mail.html.includes("&lt;script&gt;"));
