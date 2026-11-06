@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import {
-  ArrowRight, BellRing, Brush, CalendarCheck, CalendarX2, Camera, Check, Clock, Dumbbell, GraduationCap, Mail, Palette,
-  PawPrint, Scale, ShieldCheck, Smartphone, Stethoscope, UserPlus, Users, Wrench,
+  ArrowRight, BellRing, Brush, Building2, CalendarCheck, CalendarX2, Camera, Check, Clock, CreditCard, Download, Dumbbell,
+  GraduationCap, LockKeyhole, Mail, MessageCircle, Palette, PawPrint, Scale, ShieldCheck, Smartphone, Stethoscope, UserPlus,
+  Users, Wrench,
 } from "lucide-react";
 import { JsonLd } from "@/components/json-ld";
 import { LandingIntro } from "@/components/landing-intro";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { getPublicPlans } from "@/lib/billing-server";
+import { COMPANY } from "@/lib/company";
+import { FOUNDERS, foundersLeft } from "@/lib/founders";
 import { formatPrice } from "@/lib/dates";
 import { faqLd, graph, organizationLd, softwareLd, websiteLd } from "@/lib/seo";
 import {
@@ -82,6 +85,16 @@ const FEATURES = [
   { icon: CalendarX2, title: "Cancelación autogestionada", text: "Cada cliente cancela desde su enlace, dentro del plazo que tú defines." },
   { icon: Palette, title: "Con tu marca", text: "Tu logo en la página que ven tus clientes; con Premium, también tus colores." },
   { icon: Users, title: "Tu equipo ordenado", text: "Cada profesional con sus servicios y su horario." },
+];
+
+// Señales de confianza antes de los precios. Cada afirmación tiene respaldo en el producto o en docs/legal.
+const TRUST = [
+  { icon: Building2, title: "Empresa chilena", text: `${COMPANY.legalName}, RUT ${COMPANY.rut}. Boleta o factura en cada pago.` },
+  { icon: CreditCard, title: "Sin tarjeta, sin trampas", text: "No guardamos tarjetas ni cobramos automáticamente. Tú decides cuándo pagar." },
+  { icon: Download, title: "Tus datos son tuyos", text: "Exporta tus reservas y clientes cuando quieras. Si dejas de pagar, pasas a Free y no se borra nada." },
+  { icon: LockKeyhole, title: "Seguridad en serio", text: "Conexión cifrada, datos separados por negocio y aviso en 72 horas ante cualquier incidente.",
+    link: { href: "/seguridad", label: "Ver cómo protegemos tus datos" } },
+  { icon: MessageCircle, title: "Te atiende una persona", text: "Escríbenos por WhatsApp y te responde el equipo, no un bot." },
 ];
 
 const FAQ = [
@@ -192,6 +205,16 @@ export default async function Home() {
     <div className="lp">
       <JsonLd data={graph(organizationLd, websiteLd, softwareLd(plans.plans, DESCRIPTION), faqLd(FAQ))} />
       <LandingIntro />
+      {foundersLeft > 0 && (
+        <aside className="lp-founders-bar" aria-label="Programa Fundadores">
+          <p>
+            <i aria-hidden="true" />
+            <b>Programa Fundadores:</b> los primeros {FOUNDERS.total} negocios tienen Premium gratis por {FOUNDERS.freeMonths} meses.
+            {" "}{foundersLeft === 1 ? "Queda 1 cupo." : `Quedan ${foundersLeft} cupos.`}
+            {" "}<Link href="/fundadores">Quiero mi cupo <ArrowRight size={14} /></Link>
+          </p>
+        </aside>
+      )}
       <SiteHeader home />
 
       <main>
@@ -306,6 +329,22 @@ export default async function Home() {
               <RevealItem key={title} className="lp-feature">
                 <Icon size={20} strokeWidth={1.8} />
                 <div><h3>{title}</h3><p>{text}</p></div>
+              </RevealItem>
+            ))}
+          </Reveal>
+        </section>
+
+        <section className="lp-section" id="confianza">
+          <SectionHeading eyebrow="Por qué confiar en AuraBook" title="Un proyecto nuevo, con las cosas claras." />
+          <Reveal className="lp-features">
+            {TRUST.map(({ icon: Icon, title, text, link }) => (
+              <RevealItem key={title} className="lp-feature">
+                <Icon size={20} strokeWidth={1.8} />
+                <div>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                  {link && <Link href={link.href} className="lp-trust-link">{link.label} <ArrowRight size={14} /></Link>}
+                </div>
               </RevealItem>
             ))}
           </Reveal>

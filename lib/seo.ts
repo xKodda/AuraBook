@@ -1,4 +1,5 @@
 // Datos estructurados (schema.org) compartidos por las páginas públicas.
+import { COMPANY } from "./company";
 import { PUBLIC_ORIGIN } from "./env";
 import type { PublicPlan } from "./plans";
 import type { Business } from "./types";
@@ -13,6 +14,8 @@ export const organizationLd = {
   logo: `${PUBLIC_ORIGIN}/brand/aurabook-icono-512.png`,
   email: "contacto@clikium.cl",
   areaServed: "CL",
+  address: { "@type": "PostalAddress", addressLocality: "Santiago", addressCountry: "CL" },
+  founder: { "@type": "Person", name: COMPANY.founder },
   parentOrganization: { "@type": "Organization", name: "Clikium SpA", url: "https://clikium.cl/" },
 };
 

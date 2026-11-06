@@ -124,6 +124,7 @@ export const RUBRO_PAGES: RubroPage[] = [
       { title: "Menos inasistencias", text: "Recordatorio por correo el día antes y registro de ausencias." },
     ],
     faq: [
+      { q: "¿Puedo usar AuraBook en mi consulta?", a: "Sí, para agendar horas: tus pacientes reservan, reciben confirmación y recordatorio, y tú ves tu agenda ordenada. AuraBook no es una ficha clínica: no guarda diagnósticos, tratamientos ni historial médico. Te recomendamos no escribir información clínica en las notas de la reserva. Para eso, sigue usando tu sistema de fichas." },
       { q: "¿Mis pacientes necesitan crear una cuenta?", a: "No. Dejan su nombre y teléfono, y reciben un enlace para ver o cancelar su hora." },
       { q: "¿Quién puede ver los datos de mis pacientes?", a: "Solo tu equipo. Cada consulta está separada del resto a nivel de base de datos." },
     ],

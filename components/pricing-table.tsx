@@ -5,10 +5,10 @@
 
 import { Fragment, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Minus } from "lucide-react";
+import { ArrowRight, Check, Clock, Minus } from "lucide-react";
 import { formatPrice } from "@/lib/dates";
 import {
-  SOON, comparison, keyFeatures, launchPromo, premiumMonthlyFor, type CompareValue, type PublicPlans,
+  SOON, comparison, keyFeatures, launchPromo, premiumComingSoon, premiumMonthlyFor, type CompareValue, type PublicPlans,
 } from "@/lib/plans";
 
 const TAGLINE: Record<string, string> = {
@@ -70,13 +70,22 @@ export function PricingTable({ data }: { data: PublicPlans }) {
               <Link href="/registro" className={isPremium ? "btn-primary pr-cta" : "btn-secondary pr-cta"}>
                 {isPremium ? `Probar Premium ${data.trialDays} días` : "Empezar gratis"} <ArrowRight size={16} />
               </Link>
-              <ul className="pr-list">
+              {isPremium && <p className="pr-group">Incluye hoy</p>}
+              <ul className={`pr-list${isPremium ? " grouped" : ""}`}>
                 {keyFeatures(p, formatPrice).map((f) => (
-                  <li key={f.text} className={f.soon ? "soon" : undefined}>
-                    <Check size={16} /> <span>{f.text}{f.soon && <small>Próximamente</small>}</span>
-                  </li>
+                  <li key={f.text}><Check size={16} /> <span>{f.text}</span></li>
                 ))}
               </ul>
+              {isPremium && free && (
+                <>
+                  <p className="pr-group">Viene pronto <span>(sin costo extra)</span></p>
+                  <ul className="pr-list grouped soon">
+                    {premiumComingSoon(free, p, formatPrice).map((label) => (
+                      <li key={label}><Clock size={16} /> <span>{label}</span></li>
+                    ))}
+                  </ul>
+                </>
+              )}
               <p className="pr-for">{isPremium ? "Para negocios que quieren crecer" : "Para quienes están comenzando"}</p>
             </article>
           );

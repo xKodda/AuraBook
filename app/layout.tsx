@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { INTRO_SCRIPT } from "@/components/landing-intro";
 import { VercelAnalytics } from "@/components/vercel-analytics";
+import { WhatsAppButton } from "@/components/whatsapp-button";
 import { PUBLIC_ORIGIN } from "@/lib/env";
 
 export const viewport: Viewport = { themeColor: "#2F3A56" };
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body>
         {children}
+        <WhatsAppButton />
         <VercelAnalytics />
       </body>
     </html>

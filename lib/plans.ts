@@ -176,8 +176,8 @@ export function comparison(free: PublicPlan, premium: PublicPlan, formatPrice: (
   ];
 }
 
-/** Las seis características que se muestran en cada tarjeta; el detalle completo va en la comparación. */
-export function keyFeatures(plan: PublicPlan, formatPrice: (n: number) => string): { text: string; soon?: boolean }[] {
+/** Lo principal que ya incluye cada plan, para su tarjeta; el detalle completo va en la comparación. */
+export function keyFeatures(plan: PublicPlan, formatPrice: (n: number) => string): { text: string }[] {
   if (plan.code === "free") {
     return [
       { text: staffLimitLabel(plan.maxStaff) },
@@ -196,8 +196,12 @@ export function keyFeatures(plan: PublicPlan, formatPrice: (n: number) => string
     { text: "Tus colores y sin marca AuraBook" },
     { text: "Estadísticas e ingresos" },
     { text: "Control de ausencias" },
-    { text: "Reservas combinadas y abonos online", soon: true },
   ];
+}
+
+/** Funciones en desarrollo que Premium incluirá sin costo extra: las filas `SOON` de la comparación. */
+export function premiumComingSoon(free: PublicPlan, premium: PublicPlan, formatPrice: (n: number) => string): string[] {
+  return comparison(free, premium, formatPrice).flatMap((s) => s.rows.filter((r) => r.premium === SOON).map((r) => r.label));
 }
 
 /** Precio mensual de Premium según el equipo (los adicionales se pagan mes a mes). null = supera el máximo. */

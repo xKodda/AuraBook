@@ -3,6 +3,7 @@ import { join } from "node:path";
 import Link from "next/link";
 import { AuraMark } from "@/components/aura-mark";
 import { LegalToc } from "@/components/legal-toc";
+import { SiteFooter } from "@/components/site-chrome";
 import { renderMarkdown } from "@/lib/markdown";
 
 export const LEGAL_DOCS = [
@@ -70,13 +71,7 @@ export function LegalPage({ file }: { file: string }) {
         <article className="legal-article">{nodes}</article>
       </div>
 
-      <footer className="legal-footer">
-        <span className="legal-brand"><AuraMark size={20} /><span>AURA<span>BOOK</span></span></span>
-        <nav aria-label="Legal">
-          {LEGAL_DOCS.map((d) => <Link key={d.href} href={d.href}>{d.label}</Link>)}
-        </nav>
-        <small>© {new Date().getFullYear()} AuraBook · Un producto de <a href="https://clikium.cl/" target="_blank" rel="noopener">Clikium</a></small>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
