@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   if (!parsed.success || !isValidChileanPhoneOrInternational(parsed.data.phone)) {
     return errorJson("Revisa tu nombre (solo letras, sin enlaces), teléfono, correo y los datos de la reserva.", 400);
   }
-  const { captchaToken, email, reminder, ...data } = parsed.data;
+  const { captchaToken, email, reminder, address, addressRef, ...data } = parsed.data;
 
   // 2) CAPTCHA verificado en servidor.
   const captcha = await verifyCaptcha(captchaToken, ip);
@@ -55,9 +55,9 @@ export async function POST(request: Request) {
     if (!dateWithinBookingWindow(data.date, business.timezone, business.maxDaysAhead)) {
       return errorJson(`Fecha fuera de rango. Solo se permiten reservas dentro de ${business.maxDaysAhead} días.`, 400);
     }
-    if (!business.services.some((s) => s.id === data.serviceId)) {
-      return errorJson("Servicio no disponible.", 400);
-    }
+    const service = business.services.find((s) => s.id === data.serviceId);
+    if (!service) return errorJson("Servicio no disponible.", 400);
+    if (service.atHome && !address) return errorJson("Escribe la dirección donde quieres que te atiendan.", 400, "ADDRESS_REQUIRED");
     if (data.staffId && !business.staff.some((m) => m.id === data.staffId && m.serviceIds.includes(data.serviceId))) {
       return errorJson("Profesional no disponible para este servicio.", 400);
     }
@@ -99,6 +99,18 @@ export async function POST(request: Request) {
       booking_id: string; public_token: string; assigned_staff_id: string; assigned_staff_name: string; slot_time: string;
     } | undefined;
     if (!row) return errorJson("No se pudo confirmar este horario.", 409);
+
+    // A domicilio: sin dirección el negocio no sabe adónde ir, así que si no se guarda se anula la reserva.
+    if (service.atHome && address) {
+      const { error: addressError } = await privilegedDb().rpc("set_public_booking_address", {
+        p_booking_id: row.booking_id, p_address: address, p_reference: addressRef,
+      });
+      if (addressError) {
+        console.error("set_public_booking_address:", addressError.message);
+        await privilegedDb().rpc("cancel_booking_by_token", { p_token: row.public_token });
+        return errorJson("Revisa la dirección: sin enlaces ni símbolos < >.", 400, "INVALID_ADDRESS");
+      }
+    }
 
     // La reserva ya existe: el correo y los avisos no deben hacerla fallar.
     if (email) {

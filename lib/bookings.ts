@@ -33,6 +33,10 @@ export async function getManagedBooking(token: string): Promise<ManagedBooking |
   if (error) throw new Error(error.message);
   const row = (data as DbManaged[] | null)?.[0];
   if (!row) return null;
+  // A domicilio (migración 20261116000000): la cita es en la dirección del cliente, no en el local.
+  const { data: home } = await privilegedDb().from("bookings")
+    .select("at_home,client_address,client_address_ref").eq("id", row.booking_id).maybeSingle();
+  const atHome = Boolean(home?.at_home && home.client_address);
   const start = new Date(row.start_at);
   return {
     bookingId: row.booking_id,
@@ -48,7 +52,10 @@ export async function getManagedBooking(token: string): Promise<ManagedBooking |
     staffName: row.staff_name,
     businessName: row.business_name,
     businessSlug: row.business_slug,
-    businessAddress: row.business_address ?? "",
+    businessAddress: atHome
+      ? [home!.client_address, home!.client_address_ref].filter(Boolean).join(" · ")
+      : row.business_address ?? "",
+    atHome,
     businessPhone: row.business_phone ?? "",
     businessCategory: row.business_category,
     brandColor: row.brand_color,

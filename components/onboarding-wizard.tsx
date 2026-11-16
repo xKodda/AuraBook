@@ -9,7 +9,7 @@ import {
 import {
   archiveServiceAction, archiveStaffAction, checkSlugAction, createBusinessAction, publishBusinessAction,
   removeLogoAction, saveScheduleAction, saveServiceAction, saveStaffAction, setBrandColorAction,
-  updateBusinessAction, uploadLogoAction, type OnboardingResult,
+  updateBusinessAction, updateHomeServiceAction, uploadLogoAction, type OnboardingResult,
 } from "@/app/onboarding/actions";
 import { BrandMark } from "@/components/brand";
 import {
@@ -185,6 +185,7 @@ function BusinessStep({ state, run, pending, error, goTo, origin }: StepProps & 
   const [brandColor, setBrandColor] = useState((b?.brandColor ?? BRAND_COLORS[0].hex).toUpperCase());
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [removeLogo, setRemoveLogo] = useState(false);
+  const [homeService, setHomeService] = useState(b?.homeEnabled ?? false);
   const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
 
   const slug = b ? b.slug : (slugInput ?? slugify(name));
@@ -221,6 +222,14 @@ function BusinessStep({ state, run, pending, error, goTo, origin }: StepProps & 
         result = await uploadLogoAction(id, form);
       } else if (removeLogo && result.state.business?.logoUrl) {
         result = await removeLogoAction(id);
+      }
+      if (!result.ok) return result;
+      // A domicilio: solo se activa aquí; recargo, traslado, comunas y qué servicios, en el panel.
+      const current = result.state.business!;
+      if (homeService !== current.homeEnabled) {
+        result = await updateHomeServiceAction(id, {
+          enabled: homeService, feeClp: current.homeFeeClp, travelMin: current.homeTravelMin, area: current.homeArea,
+        });
       }
       return result;
     }, () => {
@@ -320,6 +329,17 @@ function BusinessStep({ state, run, pending, error, goTo, origin }: StepProps & 
             <input className="text-input" value={phone} onChange={(e) => setPhone(e.target.value)}
               maxLength={20} placeholder="+56 9 1234 5678" inputMode="tel" autoComplete="tel" />
           </label>
+        </div>
+
+        <div className="onb-field">
+          <label className="onb-check">
+            <input type="checkbox" checked={homeService} onChange={(e) => setHomeService(e.target.checked)} />
+            <span>Hago servicios a domicilio</span>
+          </label>
+          <small className="field-hint">
+            Tus clientes podrán reservar en su dirección. En tu panel defines el recargo, el tiempo de traslado, las comunas
+            que cubres y qué servicios se hacen a domicilio.
+          </small>
         </div>
       </div>
 

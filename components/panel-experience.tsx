@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  CalendarDays, CalendarOff, Check, ChevronLeft, ChevronRight, ExternalLink, MessageSquare, Plus, RefreshCw, UserX, XCircle,
+  CalendarDays, CalendarOff, Check, ChevronLeft, ChevronRight, ExternalLink, House, MessageSquare, Plus, RefreshCw, UserX, XCircle,
 } from "lucide-react";
 import { PanelNewBooking } from "@/components/panel-new-booking";
 import { PanelWeek } from "@/components/panel-week";
@@ -373,6 +373,18 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
                         </a>
                       )}
                     </div>
+                    {/* A domicilio: adónde ir, con enlace a Google Maps. */}
+                    {b.atHome && (
+                      <div className="panel-home">
+                        <House size={13} />
+                        {b.clientAddress ? (
+                          <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.clientAddress)}`}
+                            target="_blank" rel="noopener noreferrer">
+                            {b.clientAddress}{b.clientAddressRef ? ` · ${b.clientAddressRef}` : ""}
+                          </a>
+                        ) : <span>A domicilio · sin dirección registrada</span>}
+                      </div>
+                    )}
                   </div>
 
                   <div>

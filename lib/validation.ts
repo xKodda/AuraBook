@@ -13,6 +13,12 @@ export const personNameSchema = z.string()
     .refine((v) => !LINK_OR_HTML.test(v), "Nombre con enlaces o HTML")
     .refine((v) => /\p{L}/u.test(v), "El nombre debe tener letras"));
 
+/** Dirección para un servicio a domicilio (la base de datos aplica las mismas reglas en set_public_booking_address). */
+const addressText = (min: number) => z.string()
+  .transform((v) => v.trim().replace(/\s+/g, " "))
+  .pipe(z.string().min(min).max(200)
+    .refine((v) => !INVISIBLE.test(v) && !/[<>]|https?:/i.test(v), "Dirección con caracteres no permitidos"));
+
 export const bookingSchema = z.object({
   slug: z.string().regex(/^[a-z0-9-]{3,60}$/),
   serviceId: z.uuid(),
@@ -24,6 +30,9 @@ export const bookingSchema = z.object({
   // Opcionales: sin correo no hay confirmación ni recordatorio por correo.
   email: z.union([z.literal(""), z.email().max(254)]).optional().transform((e) => e || null),
   reminder: z.boolean().optional().default(false),
+  // Solo en servicios a domicilio (POST /api/bookings exige la dirección en ese caso).
+  address: z.union([z.literal(""), addressText(5)]).optional().transform((a) => a || null),
+  addressRef: z.union([z.literal(""), addressText(1)]).optional().transform((a) => a || null),
   captchaToken: z.string().max(4096).optional(),
 });
 

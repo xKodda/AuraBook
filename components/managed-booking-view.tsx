@@ -79,7 +79,7 @@ export function ManagedBookingView({ initialBooking, token }: Props) {
   const mapsUrl = useMemo(() => {
     if (!booking.businessAddress) return null;
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      `${booking.businessName}, ${booking.businessAddress}`,
+      booking.atHome ? booking.businessAddress : `${booking.businessName}, ${booking.businessAddress}`,
     )}`;
   }, [booking]);
 
@@ -121,7 +121,7 @@ export function ManagedBookingView({ initialBooking, token }: Props) {
           <BusinessLogo name={booking.businessName} url={null} brandColor={booking.brandColor} size={44} />
           <span>
             <b>{booking.businessName}</b>
-            {booking.businessAddress && <small>{booking.businessAddress}</small>}
+            {booking.businessAddress && <small>{booking.atHome ? `A domicilio · ${booking.businessAddress}` : booking.businessAddress}</small>}
           </span>
         </Link>
 

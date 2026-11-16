@@ -84,6 +84,10 @@ type DbPanelBooking = {
   client_name: string;
   client_phone: string;
   price_clp: number;
+  at_home: boolean;
+  home_fee_clp: number;
+  client_address: string | null;
+  client_address_ref: string | null;
   start_at: string;
   end_at: string;
   status: BookingStatus;
@@ -110,7 +114,7 @@ export async function listPanelBookingsRange(business: PanelBusiness, fromDate: 
   const db = await sessionDb();
   const { data, error } = await db
     .from("bookings")
-    .select("id,staff_id,client_name,client_phone,price_clp,start_at,end_at,status,source,is_overbook,services(name),staff(name)")
+    .select("id,staff_id,client_name,client_phone,price_clp,at_home,home_fee_clp,client_address,client_address_ref,start_at,end_at,status,source,is_overbook,services(name),staff(name)")
     .eq("business_id", business.id)
     .gte("start_at", from)
     .lt("start_at", to)
@@ -130,6 +134,10 @@ export async function listPanelBookingsRange(business: PanelBusiness, fromDate: 
     status: b.status,
     source: b.source,
     overbook: b.is_overbook,
+    atHome: b.at_home,
+    clientAddress: b.client_address,
+    clientAddressRef: b.client_address_ref,
+    homeFeeClp: b.home_fee_clp,
   }));
 }
 

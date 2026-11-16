@@ -23,6 +23,11 @@ type DbBusiness = {
   max_days_ahead: number;
   cancel_notice_min: number;
   founder_number: number | null;
+  cover_url: string | null;
+  home_service: boolean;
+  home_fee_clp: number;
+  home_travel_min: number;
+  home_area: string | null;
 };
 
 type DbService = {
@@ -31,6 +36,7 @@ type DbService = {
   description: string | null;
   duration_min: number;
   price_clp: number;
+  at_home: boolean;
 };
 
 type DbStaff = { id: string; name: string; role_title: string | null; avatar_url: string | null };
@@ -43,7 +49,7 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
   const db = publicDb();
   const { data: row, error } = await db
     .from("businesses")
-    .select("id,slug,name,category,tagline,description,address,phone,timezone,brand_color,logo_url,max_days_ahead,cancel_notice_min,founder_number")
+    .select("id,slug,name,category,tagline,description,address,phone,timezone,brand_color,logo_url,max_days_ahead,cancel_notice_min,founder_number,cover_url,home_service,home_fee_clp,home_travel_min,home_area")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
@@ -51,7 +57,7 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
   if (!row) return null;
   const business = row as DbBusiness;
   const [servicesResponse, staffResponse, eligibilityResponse, planResponse] = await Promise.all([
-    db.from("services").select("id,name,description,duration_min,price_clp")
+    db.from("services").select("id,name,description,duration_min,price_clp,at_home")
       .eq("business_id", business.id).eq("is_active", true).order("sort_order").order("name"),
     db.from("staff").select("id,name,role_title,avatar_url")
       .eq("business_id", business.id).eq("is_active", true).order("sort_order"),
@@ -72,6 +78,8 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
     description: s.description ?? "",
     durationMin: s.duration_min,
     priceClp: s.price_clp,
+    // «A domicilio» solo cuenta si el negocio tiene la opción activa.
+    atHome: business.home_service && s.at_home,
   }));
   const eligible = (eligibilityResponse.data ?? []) as DbEligibility[];
   const staff: StaffMember[] = ((staffResponse.data ?? []) as DbStaff[]).filter((m) => bookable.has(m.id)).map((m) => ({
@@ -101,5 +109,9 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
     features: plan.features ?? [],
     hideBranding: plan.hideBranding ?? false,
     founderNumber: business.founder_number,
+    coverUrl: business.cover_url,
+    homeService: business.home_service
+      ? { feeClp: business.home_fee_clp, travelMin: business.home_travel_min, area: business.home_area ?? "" }
+      : null,
   };
 });

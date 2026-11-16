@@ -25,7 +25,25 @@ export type BookingEmailData = {
   businessAddress: string;
   businessPhone: string;
   timezone: string;
+  /** A domicilio (booking_notification, migración 20261116000000): dirección del cliente y recargo incluido en el valor. */
+  atHome?: boolean;
+  homeFeeClp?: number;
+  clientAddress?: string;
+  clientAddressRef?: string;
 };
+
+/** Dónde es la cita: la dirección del cliente si es a domicilio; si no, la del local. */
+function placeOf(b: BookingEmailData): { label: string; value: string; maps: string } | null {
+  if (b.atHome && b.clientAddress) {
+    const value = b.clientAddressRef ? `${b.clientAddress} · ${b.clientAddressRef}` : b.clientAddress;
+    return { label: "A domicilio", value, maps: mapsUrl(b.clientAddress) };
+  }
+  return b.businessAddress ? { label: "Dirección", value: b.businessAddress, maps: mapsUrl(b.businessAddress) } : null;
+}
+
+const totalLabel = (b: BookingEmailData) => (b.atHome ? "Total a pagar" : "Total en el local");
+const priceText = (b: BookingEmailData) =>
+  b.atHome && b.homeFeeClp ? `${clp(b.priceClp)} (incluye ${clp(b.homeFeeClp)} de traslado)` : clp(b.priceClp);
 
 // `tag` identifica el tipo de correo en los logs (nunca se registra el asunto: puede llevar el nombre del cliente).
 export type EmailContent = { subject: string; html: string; text: string; tag?: string };
@@ -230,7 +248,8 @@ export function ownerNewBookingEmail(b: BookingEmailData, siteUrl: string): Emai
     ["Servicio", b.serviceName],
     ["Profesional", b.staffName],
     ["Fecha", when],
-    ["Valor", clp(b.priceClp)],
+    ...(b.atHome && placeOf(b) ? [["A domicilio", placeOf(b)!.value] as [string, string]] : []),
+    ["Valor", priceText(b)],
   ];
   const title = "Nueva reserva";
   return {
@@ -246,9 +265,11 @@ export function ownerNewBookingEmail(b: BookingEmailData, siteUrl: string): Emai
         { label: "Cliente", value: b.clientName },
         { label: "Teléfono", value: b.clientPhone, href: `tel:${b.clientPhone.replace(/[^\d+]/g, "")}` },
         ...(b.clientEmail ? [{ label: "Correo", value: b.clientEmail, href: `mailto:${b.clientEmail}` }] : []),
-        { label: "Valor", value: clp(b.priceClp) },
+        ...(b.atHome && placeOf(b) ? [{ label: "A domicilio", value: placeOf(b)!.value, href: placeOf(b)!.maps }] : []),
+        { label: "Valor", value: priceText(b) },
       ]) + buttons([
         { label: "Ver mi agenda", href: `${siteUrl}/dashboard` },
+        ...(b.atHome && placeOf(b) ? [{ label: "Cómo llegar", href: placeOf(b)!.maps }] : []),
         { label: "Escribirle por WhatsApp", href: whatsappUrl(b.clientPhone) },
       ]),
     }),
@@ -296,8 +317,8 @@ export function clientConfirmationEmail(b: BookingEmailData, siteUrl: string): E
     ["Servicio", b.serviceName],
     ["Profesional", b.staffName],
     ["Fecha", when],
-    ...(b.businessAddress ? [["Dirección", b.businessAddress] as [string, string]] : []),
-    ["Total en el local", clp(b.priceClp)],
+    ...(placeOf(b) ? [[placeOf(b)!.label, placeOf(b)!.value] as [string, string]] : []),
+    [totalLabel(b), priceText(b)],
   ];
   const reminder = b.reminderOptIn
     ? "Te enviaremos un recordatorio el día antes de tu cita."
@@ -310,14 +331,16 @@ export function clientConfirmationEmail(b: BookingEmailData, siteUrl: string): E
       preheader: `${escapeHtml(b.serviceName)} con ${escapeHtml(b.staffName)}, ${escapeHtml(when)}.`,
       badge: { label: "Reserva confirmada", tone: "success" },
       title: "¡Tu hora está reservada!",
-      intro: `Hola ${escapeHtml(b.clientName)}, te esperamos en <strong style="color:${C.ink};">${escapeHtml(b.businessName)}</strong>.`,
+      intro: b.atHome
+        ? `Hola ${escapeHtml(b.clientName)}, <strong style="color:${C.ink};">${escapeHtml(b.businessName)}</strong> irá a atenderte a tu dirección.`
+        : `Hola ${escapeHtml(b.clientName)}, te esperamos en <strong style="color:${C.ink};">${escapeHtml(b.businessName)}</strong>.`,
       body: ticket(b) + details([
-        ...(b.businessAddress ? [{ label: "Dirección", value: b.businessAddress, href: mapsUrl(b.businessAddress) }] : []),
-        { label: "Total en el local", value: clp(b.priceClp) },
+        ...(placeOf(b) ? [{ label: placeOf(b)!.label, value: placeOf(b)!.value, href: placeOf(b)!.maps }] : []),
+        { label: totalLabel(b), value: priceText(b) },
       ]) + note(escapeHtml(reminder)) + buttons([
         { label: "Ver o cancelar mi reserva", href: manage },
         { label: "Agregar a Google Calendar", href: googleCalendarUrl(b, manage) },
-        ...(b.businessAddress ? [{ label: "Cómo llegar", href: mapsUrl(b.businessAddress) }] : []),
+        ...(!b.atHome && b.businessAddress ? [{ label: "Cómo llegar", href: mapsUrl(b.businessAddress) }] : []),
       ]),
       footer: businessFooter(b),
     }),
@@ -333,7 +356,7 @@ export function clientReminderEmail(b: BookingEmailData, siteUrl: string): Email
     ["Servicio", b.serviceName],
     ["Profesional", b.staffName],
     ["Fecha", when],
-    ...(b.businessAddress ? [["Dirección", b.businessAddress] as [string, string]] : []),
+    ...(placeOf(b) ? [[placeOf(b)!.label, placeOf(b)!.value] as [string, string]] : []),
     ...(b.businessPhone ? [["Teléfono del local", b.businessPhone] as [string, string]] : []),
   ];
   return {
@@ -346,12 +369,12 @@ export function clientReminderEmail(b: BookingEmailData, siteUrl: string): Email
       title: "Te esperamos mañana",
       intro: `Hola ${escapeHtml(b.clientName)}, te recordamos tu cita en <strong style="color:${C.ink};">${escapeHtml(b.businessName)}</strong>.`,
       body: ticket(b) + details([
-        ...(b.businessAddress ? [{ label: "Dirección", value: b.businessAddress, href: mapsUrl(b.businessAddress) }] : []),
+        ...(placeOf(b) ? [{ label: placeOf(b)!.label, value: placeOf(b)!.value, href: placeOf(b)!.maps }] : []),
         ...(b.businessPhone
           ? [{ label: "Teléfono del local", value: b.businessPhone, href: `tel:${b.businessPhone.replace(/[^\d+]/g, "")}` }]
           : []),
       ]) + note("¿No puedes asistir? Cancela desde el enlace para que otra persona pueda tomar la hora.", "warning") + buttons([
-        ...(b.businessAddress ? [{ label: "Cómo llegar", href: mapsUrl(b.businessAddress) }] : []),
+        ...(!b.atHome && b.businessAddress ? [{ label: "Cómo llegar", href: mapsUrl(b.businessAddress) }] : []),
         { label: "Ver o cancelar mi reserva", href: manage },
       ]),
       footer: businessFooter(b),

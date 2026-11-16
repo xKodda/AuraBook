@@ -180,10 +180,15 @@ export async function checkSlugAction(slug: string): Promise<boolean | null> {
   return error ? null : data === true;
 }
 
-// ─── Marca: logo y color ───
+// ─── Marca: logo, portada y color ───
 
+// El logo y la foto de portada van al mismo bucket, en la carpeta del negocio.
 const LOGO_BUCKET = "business-logos";
-const MAX_LOGO_BYTES = 512 * 1024;
+const MAX_IMAGE_BYTES = 512 * 1024;
+
+type ImageKind = { field: string; prefix: string; column: "logo_url" | "cover_url"; rpc: string; param: string; label: string };
+const LOGO: ImageKind = { field: "logo", prefix: "logo", column: "logo_url", rpc: "set_business_logo", param: "p_logo_url", label: "el logo" };
+const COVER: ImageKind = { field: "cover", prefix: "cover", column: "cover_url", rpc: "set_business_cover", param: "p_cover_url", label: "la portada" };
 
 /** Tipo real según la firma del archivo (no se confía en el nombre ni en el tipo declarado). */
 function sniffImage(bytes: Uint8Array): { ext: "png" | "jpg" | "webp"; mime: string } | null {
@@ -203,15 +208,15 @@ function logoPath(url: string | null | undefined, businessId: string): string | 
   return path.startsWith(`${businessId}/`) ? path : null;
 }
 
-export async function uploadLogoAction(businessId: string, formData: FormData): Promise<OnboardingResult> {
+async function uploadImage(businessId: string, formData: FormData, kind: ImageKind): Promise<OnboardingResult> {
   if (DEMO_MODE) return DEMO;
   if (!id.safeParse(businessId).success) return INVALID;
-  const file = formData.get("logo");
+  const file = formData.get(kind.field);
   if (!(file instanceof File) || file.size === 0) return INVALID;
-  if (file.size > MAX_LOGO_BYTES) return { ok: false, error: "El logo debe pesar menos de 512 KB." };
+  if (file.size > MAX_IMAGE_BYTES) return { ok: false, error: `La imagen de ${kind.label} debe pesar menos de 512 KB.` };
   const bytes = new Uint8Array(await file.arrayBuffer());
-  const kind = sniffImage(bytes);
-  if (!kind) return { ok: false, error: "Sube una imagen PNG, JPG o WebP." };
+  const image = sniffImage(bytes);
+  if (!image) return { ok: false, error: "Sube una imagen PNG, JPG o WebP." };
 
   const user = await currentUser();
   if (!user) return SESSION_EXPIRED;
@@ -222,34 +227,73 @@ export async function uploadLogoAction(businessId: string, formData: FormData): 
   });
   if (roleError || allowed !== true) return { ok: false, error: rpcErrorMessage("FORBIDDEN") };
 
-  const { data: current } = await db.from("businesses").select("logo_url").eq("id", businessId).maybeSingle();
+  const { data: current } = await db.from("businesses").select(kind.column).eq("id", businessId).maybeSingle();
   const storage = privilegedDb().storage.from(LOGO_BUCKET);
-  const path = `${businessId}/logo-${Date.now()}.${kind.ext}`;
-  const { error: uploadError } = await storage.upload(path, bytes, { contentType: kind.mime, upsert: false });
+  const path = `${businessId}/${kind.prefix}-${Date.now()}.${image.ext}`;
+  const { error: uploadError } = await storage.upload(path, bytes, { contentType: image.mime, upsert: false });
   if (uploadError) {
-    console.error("logo upload:", uploadError.message);
-    return { ok: false, error: "No pudimos subir el logo. Intenta nuevamente." };
+    console.error(`${kind.prefix} upload:`, uploadError.message);
+    return { ok: false, error: `No pudimos subir ${kind.label}. Intenta nuevamente.` };
   }
   const publicUrl = storage.getPublicUrl(path).data.publicUrl;
-  const result = await mutate(businessId, (s) => s.rpc("set_business_logo", { p_business_id: businessId, p_logo_url: publicUrl }));
+  const result = await mutate(businessId, (s) => s.rpc(kind.rpc, { p_business_id: businessId, [kind.param]: publicUrl }));
   if (!result.ok) {
     await storage.remove([path]);
     return result;
   }
-  const previous = logoPath((current as { logo_url: string | null } | null)?.logo_url, businessId);
+  const previous = logoPath((current as Record<string, string | null> | null)?.[kind.column], businessId);
   if (previous && previous !== path) await storage.remove([previous]);
   return result;
 }
 
-export async function removeLogoAction(businessId: string): Promise<OnboardingResult> {
+async function removeImage(businessId: string, kind: ImageKind): Promise<OnboardingResult> {
   if (DEMO_MODE) return DEMO;
   if (!id.safeParse(businessId).success) return INVALID;
   const db = await sessionDb();
-  const { data: current } = await db.from("businesses").select("logo_url").eq("id", businessId).maybeSingle();
-  const result = await mutate(businessId, (s) => s.rpc("set_business_logo", { p_business_id: businessId, p_logo_url: null }));
-  const previous = logoPath((current as { logo_url: string | null } | null)?.logo_url, businessId);
+  const { data: current } = await db.from("businesses").select(kind.column).eq("id", businessId).maybeSingle();
+  const result = await mutate(businessId, (s) => s.rpc(kind.rpc, { p_business_id: businessId, [kind.param]: null }));
+  const previous = logoPath((current as Record<string, string | null> | null)?.[kind.column], businessId);
   if (result.ok && previous) await privilegedDb().storage.from(LOGO_BUCKET).remove([previous]);
   return result;
+}
+
+export async function uploadLogoAction(businessId: string, formData: FormData): Promise<OnboardingResult> {
+  return uploadImage(businessId, formData, LOGO);
+}
+
+export async function removeLogoAction(businessId: string): Promise<OnboardingResult> {
+  return removeImage(businessId, LOGO);
+}
+
+export async function uploadCoverAction(businessId: string, formData: FormData): Promise<OnboardingResult> {
+  return uploadImage(businessId, formData, COVER);
+}
+
+export async function removeCoverAction(businessId: string): Promise<OnboardingResult> {
+  return removeImage(businessId, COVER);
+}
+
+// ─── Servicios a domicilio ───
+
+const homeServiceSchema = z.object({
+  enabled: z.boolean(),
+  feeClp: z.number().int().min(0).max(1_000_000),
+  travelMin: z.number().int().min(0).max(240).multipleOf(5),
+  area: z.string().trim().max(200).default(""),
+});
+
+export async function updateHomeServiceAction(businessId: string, input: unknown): Promise<OnboardingResult> {
+  const parsed = homeServiceSchema.safeParse(input);
+  if (!id.safeParse(businessId).success || !parsed.success) return INVALID;
+  const { enabled, feeClp, travelMin, area } = parsed.data;
+  return mutate(businessId, (db) => db.rpc("update_home_service", {
+    p_business_id: businessId, p_enabled: enabled, p_fee_clp: feeClp, p_travel_min: travelMin, p_area: area || null,
+  }));
+}
+
+export async function setServiceAtHomeAction(businessId: string, serviceId: string, atHome: boolean): Promise<OnboardingResult> {
+  if (!id.safeParse(businessId).success || !id.safeParse(serviceId).success || typeof atHome !== "boolean") return INVALID;
+  return mutate(businessId, (db) => db.rpc("set_service_at_home", { p_service_id: serviceId, p_at_home: atHome }));
 }
 
 export async function setBrandColorAction(businessId: string, color: string): Promise<OnboardingResult> {

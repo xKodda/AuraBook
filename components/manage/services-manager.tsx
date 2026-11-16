@@ -2,8 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { Check, Pencil, Plus } from "lucide-react";
-import { archiveServiceAction, saveServiceAction } from "@/app/onboarding/actions";
+import { Check, House, Pencil, Plus } from "lucide-react";
+import { archiveServiceAction, saveServiceAction, setServiceAtHomeAction } from "@/app/onboarding/actions";
 import { ChoiceField, DURATIONS, formatDuration, useBusinessState } from "@/components/business-editors";
 import { formatPrice } from "@/lib/dates";
 import { canAddService, type Entitlements } from "@/lib/plans";
@@ -20,6 +20,7 @@ export function ServicesManager({ initial, entitlements }: { initial: Onboarding
   const [duration, setDuration] = useState(30);
   const [price, setPrice] = useState("");
   const [staffIds, setStaffIds] = useState<string[]>([]);
+  const [atHome, setAtHome] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
 
   const current = editing && editing !== "new" ? editing : null;
@@ -38,6 +39,7 @@ export function ServicesManager({ initial, entitlements }: { initial: Onboarding
     setDuration(s === "new" ? 30 : s.durationMin);
     setPrice(s === "new" ? "" : String(s.priceClp));
     setStaffIds(s === "new" ? state.staff.map((x) => x.id) : s.staffIds);
+    setAtHome(s === "new" ? false : s.atHome);
   }
 
   const toggle = (id: string) =>
@@ -45,10 +47,18 @@ export function ServicesManager({ initial, entitlements }: { initial: Onboarding
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    run(() => saveServiceAction(business.id, {
-      id: current?.id ?? null, name, description, priceClp, durationMin: duration,
-      staffIds: state.staff.length === 1 ? [state.staff[0].id] : staffIds,
-    }), () => { setSaved(`«${name.trim()}» guardado.`); setEditing(null); });
+    run(async () => {
+      const result = await saveServiceAction(business.id, {
+        id: current?.id ?? null, name, description, priceClp, durationMin: duration,
+        staffIds: state.staff.length === 1 ? [state.staff[0].id] : staffIds,
+      });
+      if (!result.ok || !business.homeEnabled) return result;
+      // «A domicilio» se guarda aparte (set_service_at_home); un servicio nuevo es el que no estaba antes.
+      const service = current
+        ? result.state.services.find((x) => x.id === current.id)
+        : result.state.services.find((x) => !state.services.some((o) => o.id === x.id));
+      return service && service.atHome !== atHome ? setServiceAtHomeAction(business.id, service.id, atHome) : result;
+    }, () => { setSaved(`«${name.trim()}» guardado.`); setEditing(null); });
   }
 
   function remove(s: OnboardingService) {
@@ -78,7 +88,7 @@ export function ServicesManager({ initial, entitlements }: { initial: Onboarding
         {state.services.map((s) => (
           <div key={s.id} className={`dash-row${current?.id === s.id ? " editing" : ""}`}>
             <span className="dash-row-body">
-              <strong>{s.name}</strong>
+              <strong>{s.name}{business.homeEnabled && s.atHome && <span className="dash-home-tag"><House size={11} /> A domicilio</span>}</strong>
               <small>{s.staffIds.map(staffName).filter(Boolean).join(", ") || "Sin profesional asignado"}</small>
             </span>
             <span className="dash-row-meta">{formatDuration(s.durationMin)}</span>
@@ -126,6 +136,16 @@ export function ServicesManager({ initial, entitlements }: { initial: Onboarding
                 ))}
               </div>
             </fieldset>
+          )}
+          {business.homeEnabled && (
+            <label className="onb-check small">
+              <input type="checkbox" checked={atHome} onChange={(e) => setAtHome(e.target.checked)} />
+              <span>
+                Se hace a domicilio
+                {business.homeFeeClp > 0 && ` (se suma tu recargo de ${formatPrice(business.homeFeeClp)})`}
+                {business.homeTravelMin > 0 && ` y bloquea ${business.homeTravelMin} min de traslado`}
+              </span>
+            </label>
           )}
           {current && <p className="field-hint">Cambiar el precio o la duración no modifica las citas ya reservadas.</p>}
           <div className="dash-form-foot">

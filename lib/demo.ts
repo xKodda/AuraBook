@@ -476,11 +476,17 @@ export function demoOnboardingState(businessId: string): OnboardingState {
       cancelNoticeMin: b.cancelNoticeMin,
       slotIntervalMin: 60,
       noShowBlockThreshold: null,
+      coverUrl: null,
+      homeEnabled: false,
+      homeFeeClp: 0,
+      homeTravelMin: 0,
+      homeArea: "",
     },
     staff: b.staff.map((m, i) => ({ id: m.id, name: m.name, roleTitle: m.roleTitle ?? "", linkedToMe: i === 0 })),
     services: b.services.map((s) => ({
       id: s.id, name: s.name, description: s.description, priceClp: s.priceClp, durationMin: s.durationMin,
       staffIds: b.staff.filter((m) => m.serviceIds.includes(s.id)).map((m) => m.id),
+      atHome: false,
     })),
     schedules,
   };

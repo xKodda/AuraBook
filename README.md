@@ -96,6 +96,7 @@ Abre `http://localhost:3000/dashboard` o cualquiera de las páginas de reserva p
    - `20261113000000_push_subscriptions.sql` (avisos push al teléfono de dueños y administradores).
    - `20261114000000_all_niches_and_slot_interval.sql` (rubros para todo tipo de negocio e intervalo de horas por negocio; por defecto, horas enteras).
    - `20261115000000_founders_program.sql` (Programa Fundadores: cupos al publicar, 6 meses de Premium y muro en /fundadores).
+   - `20261116000000_cover_and_home_service.sql` (foto de portada y servicios a domicilio: recargo, traslado y dirección del cliente).
    - Opcional: `supabase/002_demo_seed.sql` (datos de prueba multi-rubro; no usar en producción).
 3. Configurar `.env.local`:
 

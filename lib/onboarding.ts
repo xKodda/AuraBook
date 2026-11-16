@@ -47,7 +47,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
   const db = await sessionDb();
   const { data: b, error } = await db
     .from("businesses")
-    .select("id,slug,name,category,tagline,description,address,phone,brand_color,logo_url,hide_branding,is_active,min_notice_min,max_days_ahead,cancel_notice_min,slot_interval_min,no_show_block_threshold")
+    .select("id,slug,name,category,tagline,description,address,phone,brand_color,logo_url,hide_branding,is_active,min_notice_min,max_days_ahead,cancel_notice_min,slot_interval_min,no_show_block_threshold,cover_url,home_service,home_fee_clp,home_travel_min,home_area")
     .eq("id", businessId)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -55,7 +55,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
 
   const [staffRes, servicesRes, eligibilityRes, hoursRes, breaksRes, memberRes] = await Promise.all([
     db.from("staff").select("id,name,role_title").eq("business_id", businessId).eq("is_active", true).order("sort_order"),
-    db.from("services").select("id,name,description,price_clp,duration_min")
+    db.from("services").select("id,name,description,price_clp,duration_min,at_home")
       .eq("business_id", businessId).eq("is_active", true).order("sort_order"),
     db.from("staff_services").select("staff_id,service_id").eq("business_id", businessId),
     db.from("working_hours").select("staff_id,weekday,opens_at,closes_at").eq("business_id", businessId),
@@ -91,6 +91,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
     description: string | null; address: string | null; phone: string | null; is_active: boolean;
     brand_color: string; logo_url: string | null; hide_branding: boolean | null;
     min_notice_min: number; max_days_ahead: number; cancel_notice_min: number; slot_interval_min: SlotInterval; no_show_block_threshold: number | null;
+    cover_url: string | null; home_service: boolean; home_fee_clp: number; home_travel_min: number; home_area: string | null;
   };
   return {
     business: {
@@ -111,12 +112,17 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
       cancelNoticeMin: row.cancel_notice_min,
       slotIntervalMin: row.slot_interval_min,
       noShowBlockThreshold: row.no_show_block_threshold ?? null,
+      coverUrl: row.cover_url,
+      homeEnabled: row.home_service,
+      homeFeeClp: row.home_fee_clp,
+      homeTravelMin: row.home_travel_min,
+      homeArea: row.home_area ?? "",
     },
     staff: ((staffRes.data ?? []) as { id: string; name: string; role_title: string | null }[]).map((s) => ({
       id: s.id, name: s.name, roleTitle: s.role_title ?? "", linkedToMe: s.id === myStaffId,
     })),
     services: ((servicesRes.data ?? []) as {
-      id: string; name: string; description: string | null; price_clp: number; duration_min: number;
+      id: string; name: string; description: string | null; price_clp: number; duration_min: number; at_home: boolean;
     }[]).map((s) => ({
       id: s.id,
       name: s.name,
@@ -124,6 +130,7 @@ export async function getOnboardingState(businessId: string, userId: string): Pr
       priceClp: s.price_clp,
       durationMin: s.duration_min,
       staffIds: eligibility.filter((e) => e.service_id === s.id).map((e) => e.staff_id),
+      atHome: s.at_home,
     })),
     schedules,
   };

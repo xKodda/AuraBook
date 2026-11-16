@@ -5,10 +5,11 @@ import { ImagePlus, X } from "lucide-react";
 import { BusinessLogo } from "./business-logo";
 
 const MAX_SIDE = 512;
+// El bucket acepta hasta 512 KB por archivo (20261028000000_business_branding.sql).
 const MAX_BYTES = 500 * 1024;
 
-/** Reduce la imagen a ≤512 px y la convierte a WebP (o PNG si el navegador no codifica WebP). */
-async function shrink(file: File): Promise<File> {
+/** Reduce la imagen a ≤maxSide px y la convierte a WebP (o PNG si el navegador no codifica WebP). También para la portada. */
+export async function shrinkImage(file: File, maxSide = MAX_SIDE, baseName = "logo"): Promise<File> {
   const url = URL.createObjectURL(file);
   try {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -17,7 +18,7 @@ async function shrink(file: File): Promise<File> {
       el.onerror = () => reject(new Error("No pudimos leer la imagen."));
       el.src = url;
     });
-    const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+    const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
     canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
@@ -26,7 +27,7 @@ async function shrink(file: File): Promise<File> {
       const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/webp", quality));
       if (blob && blob.size <= MAX_BYTES) {
         const ext = blob.type === "image/webp" ? "webp" : "png";
-        return new File([blob], `logo.${ext}`, { type: blob.type });
+        return new File([blob], `${baseName}.${ext}`, { type: blob.type });
       }
     }
     throw new Error("La imagen es demasiado pesada. Prueba con una más simple.");
@@ -66,7 +67,7 @@ export function LogoPicker({ name, brandColor, currentUrl, file, onFile, onRemov
     }
     setBusy(true);
     try {
-      onFile(await shrink(f));
+      onFile(await shrinkImage(f));
     } catch (e) {
       setError(e instanceof Error ? e.message : "No pudimos procesar la imagen.");
     } finally {

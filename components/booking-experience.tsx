@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, ExternalLink, MapPin, Phone, ShieldCheck, Users, WifiOff,
+  ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, ExternalLink, House, MapPin, Phone, ShieldCheck, Users, WifiOff,
 } from "lucide-react";
 import {
   addCalendarDays, dateInTimeZone, dayChipParts, formatDate, formatPrice,
@@ -11,7 +11,7 @@ import {
 } from "@/lib/dates";
 import { CATEGORY_COPY, brandStyle } from "@/lib/theme";
 import { sandboxSlots } from "@/lib/sandbox";
-import type { AvailableSlot, BookingSuccess, Business, StaffMember } from "@/lib/types";
+import type { AvailableSlot, BookingSuccess, Business, Service, StaffMember } from "@/lib/types";
 import { AuraMark } from "./aura-mark";
 import { BusinessLogo } from "./business-logo";
 import { FounderChip } from "./founder-badge";
@@ -60,6 +60,8 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [wantsReminder, setWantsReminder] = useState(true);
+  const [address, setAddress] = useState("");
+  const [addressRef, setAddressRef] = useState("");
   const emailLooksValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(customerEmail.trim());
   // El recordatorio solo se ofrece si el plan del negocio lo incluye (lib/plans.ts).
   const offersReminder = business.features.includes("client_reminders");
@@ -72,6 +74,10 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
   const today = dateInTimeZone(new Date(), business.timezone);
   const maxDate = addCalendarDays(today, business.maxDaysAhead);
   const service = business.services.find((item) => item.id === serviceId);
+  // A domicilio: el recargo del negocio se suma al precio y se pide la dirección (la base de datos lo vuelve a calcular).
+  const homeFee = business.homeService?.feeClp ?? 0;
+  const priceOf = (s: Service) => s.priceClp + (s.atHome ? homeFee : 0);
+  const atHome = Boolean(service?.atHome);
 
   // Profesionales elegibles para el servicio seleccionado
   const eligibleStaff: StaffMember[] = useMemo(
@@ -187,6 +193,7 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
           phone: customerPhone.trim(),
           email: customerEmail.trim(),
           reminder: offersReminder && emailLooksValid && wantsReminder,
+          ...(atHome ? { address: address.trim(), addressRef: addressRef.trim() } : {}),
           ...(captchaToken ? { captchaToken } : {}),
         }),
       });
@@ -214,6 +221,8 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
     setCustomerName("");
     setCustomerPhone("");
     setCustomerEmail("");
+    setAddress("");
+    setAddressRef("");
     setSlot("");
     setFormError(null);
     setRetry((n) => n + 1);
@@ -230,21 +239,39 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
     </div>
   );
 
+  // Portada: foto del local o del equipo (o el color de la marca) con el logo grande encima del borde.
+  const Hero = (
+    <header className="bk-hero">
+      <div className="bk-cover">
+        {business.coverUrl && <img src={business.coverUrl} alt={`Foto de ${business.name}`} />}
+      </div>
+      <div className="bk-hero-body">
+        <span className="bk-hero-logo">
+          <BusinessLogo name={business.name} url={business.logoUrl} brandColor={business.brandColor} size={96} />
+        </span>
+        <div className="bk-business-text">
+          <span className="bk-kicker">{copy.kicker}</span>
+          <h1>{business.name}</h1>
+          {business.tagline && <p className="bk-tagline">{business.tagline}</p>}
+        </div>
+      </div>
+    </header>
+  );
+
+  const showFounder = Boolean(business.founderNumber && !business.hideBranding);
+  const hasInfo = Boolean(business.address || business.phone || business.homeService || business.description || showFounder);
   const BusinessCard = (
     <div className="bk-business">
-      <BusinessLogo name={business.name} url={business.logoUrl} brandColor={business.brandColor} size={56} />
-      <div className="bk-business-text">
-        <span className="bk-kicker">{copy.kicker}</span>
-        <h1>{business.name}</h1>
-        {business.tagline && <p className="bk-tagline">{business.tagline}</p>}
-      </div>
       <ul className="bk-business-meta">
         {business.address && <li><MapPin size={14} /> {business.address}</li>}
         {business.phone && <li><Phone size={14} /> {business.phone}</li>}
+        {business.homeService && (
+          <li><House size={14} /> A domicilio{business.homeService.area ? ` en ${business.homeService.area}` : ""}</li>
+        )}
       </ul>
       {business.description && <p className="bk-description">{business.description}</p>}
       {/* Programa Fundadores: el sello lleva la marca AuraBook, así que se oculta junto con ella. */}
-      {business.founderNumber && !business.hideBranding && <FounderChip number={business.founderNumber} />}
+      {showFounder && <FounderChip number={business.founderNumber!} />}
     </div>
   );
 
@@ -269,8 +296,9 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
         </div>
       )}
 
-      <main className="bk-layout">
-        <aside className="bk-aside">{BusinessCard}</aside>
+      {Hero}
+      <main className={`bk-layout${hasInfo ? "" : " no-aside"}`}>
+        {hasInfo && <aside className="bk-aside">{BusinessCard}</aside>}
 
         <section className="bk-main">
           {confirmed ? (
@@ -287,7 +315,8 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
                 <div><dt>Profesional</dt><dd>{confirmed.assignedStaffName}</dd></div>
                 <div><dt>Fecha</dt><dd>{formatDate(date)}</dd></div>
                 <div><dt>Hora</dt><dd>{confirmed.time} h · {service?.durationMin} min</dd></div>
-                <div><dt>Total en el local</dt><dd>{service && formatPrice(service.priceClp)}</dd></div>
+                {atHome && <div><dt>Dirección</dt><dd>{address}{addressRef ? ` · ${addressRef}` : ""}</dd></div>}
+                <div><dt>{atHome ? "Total a pagar" : "Total en el local"}</dt><dd>{service && formatPrice(priceOf(service))}</dd></div>
               </dl>
               <div className="bk-confirm-actions">
                 {sandbox ? (
@@ -319,10 +348,14 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
                       onClick={() => changeService(item.id)}>
                       <span className="bk-radio" />
                       <span className="bk-service-body">
-                        <strong>{item.name}</strong>
-                        <small>{item.durationMin} min{item.description ? ` · ${item.description}` : ""}</small>
+                        <strong>{item.name}{item.atHome && <span className="bk-home-tag"><House size={11} /> A domicilio</span>}</strong>
+                        <small>
+                          {item.durationMin} min
+                          {item.atHome && homeFee > 0 ? ` · incluye ${formatPrice(homeFee)} de traslado` : ""}
+                          {item.description ? ` · ${item.description}` : ""}
+                        </small>
                       </span>
-                      <span className="bk-price">{formatPrice(item.priceClp)}</span>
+                      <span className="bk-price">{formatPrice(priceOf(item))}</span>
                     </button>
                   ))}
                 </div>
@@ -436,6 +469,23 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
                     <input className="text-input" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)}
                       autoComplete="tel" type="tel" inputMode="tel" placeholder="+56 9 1234 5678" required minLength={8} maxLength={20} />
                   </label>
+                  {atHome && (
+                    <>
+                      <label className="bk-input-wide">
+                        <span className="field-label">Dirección donde te atendemos</span>
+                        <input className="text-input" value={address} onChange={(e) => setAddress(e.target.value)}
+                          autoComplete="street-address" placeholder="Calle, número y comuna" required minLength={5} maxLength={200} />
+                      </label>
+                      <label className="bk-input-wide">
+                        <span className="field-label">Depto o referencia <em className="onb-optional">opcional</em></span>
+                        <input className="text-input" value={addressRef} onChange={(e) => setAddressRef(e.target.value)}
+                          placeholder="Depto 302, timbre 2, casa esquina" maxLength={200} />
+                      </label>
+                      {business.homeService?.area && (
+                        <p className="bk-home-note bk-input-wide"><House size={13} /> Atiende a domicilio en {business.homeService.area}.</p>
+                      )}
+                    </>
+                  )}
                   <label className="bk-input-wide">
                     <span className="field-label">Correo <em className="onb-optional">opcional</em></span>
                     <input className="text-input" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)}
@@ -461,7 +511,7 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
                       {chosenStaff?.name ?? "Cualquier profesional"} · {slot ? `${formatDate(date).split(",")[0]} ${dayChipParts(date).day}, ${slot} h` : "elige una hora"}
                     </small>
                   </div>
-                  <strong className="bk-summary-price">{service ? formatPrice(service.priceClp) : "—"}</strong>
+                  <strong className="bk-summary-price">{service ? formatPrice(priceOf(service)) : "—"}</strong>
                 </div>
 
                 {formError && <div role="alert" className="form-error">{formError}</div>}
@@ -478,7 +528,7 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
                 <p className="bk-policy">
                   <ShieldCheck size={13} />
                   <span>
-                    Pagas en el local, sin pagos online. {cancelPolicy(business.cancelNoticeMin)}{" "}
+                    {atHome ? "Pagas al profesional, sin pagos online." : "Pagas en el local, sin pagos online."} {cancelPolicy(business.cancelNoticeMin)}{" "}
                     Al reservar aceptas la <Link href="/privacidad" target="_blank">Política de Privacidad</Link>.
                   </span>
                 </p>

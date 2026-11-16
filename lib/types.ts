@@ -18,7 +18,12 @@ export type Service = {
   description: string;
   durationMin: number;
   priceClp: number;
+  /** A domicilio: se le suma el recargo del negocio y pide la dirección del cliente (solo si el negocio lo ofrece). */
+  atHome?: boolean;
 };
+
+/** Servicios a domicilio del negocio (null = no los ofrece). */
+export type HomeService = { feeClp: number; travelMin: number; area: string };
 
 /** Profesional genérico: barbero, estilista, manicurista, terapeuta… */
 export type StaffMember = {
@@ -53,6 +58,9 @@ export type Business = {
   hideBranding?: boolean;
   /** Número del Programa Fundadores (lib/founders.ts), si tiene uno. */
   founderNumber?: number | null;
+  /** Foto ancha arriba de la página de reservas (local o equipo). */
+  coverUrl?: string | null;
+  homeService?: HomeService | null;
 };
 
 export type AvailableSlot = {
@@ -97,7 +105,10 @@ export type ManagedBooking = {
   staffName: string;
   businessName: string;
   businessSlug: string;
+  /** Dónde es la cita: la dirección del local o, si es a domicilio, la del cliente. */
   businessAddress: string;
+  /** Cita a domicilio: businessAddress es la dirección del cliente. */
+  atHome?: boolean;
   businessPhone: string;
   businessCategory: BusinessCategory;
   brandColor: string;
@@ -124,6 +135,11 @@ export type PanelBooking = {
   source: "web" | "panel";
   /** Agregada desde el panel a sabiendas de que choca con otra reserva o queda fuera de horario. */
   overbook: boolean;
+  /** A domicilio: dirección del cliente y recargo (ya incluido en priceClp). */
+  atHome?: boolean;
+  clientAddress?: string | null;
+  clientAddressRef?: string | null;
+  homeFeeClp?: number;
   /** Historial del cliente en este negocio (solo con no_show_control). */
   history?: ClientHistory;
 };
@@ -217,6 +233,12 @@ export type OnboardingBusiness = {
   slotIntervalMin: SlotInterval;
   /** Bloquear reservas online desde N ausencias en 12 meses (null = sin bloqueo). Requiere no_show_control. */
   noShowBlockThreshold: number | null;
+  coverUrl: string | null;
+  /** Servicios a domicilio: si están activos y sus condiciones. */
+  homeEnabled: boolean;
+  homeFeeClp: number;
+  homeTravelMin: number;
+  homeArea: string;
 };
 
 export type OnboardingStaff = { id: string; name: string; roleTitle: string; linkedToMe: boolean };
@@ -228,6 +250,7 @@ export type OnboardingService = {
   priceClp: number;
   durationMin: number;
   staffIds: string[];
+  atHome: boolean;
 };
 
 export type OnboardingState = {
