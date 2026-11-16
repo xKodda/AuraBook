@@ -1,6 +1,7 @@
 // Regenera supabase/aurabook_setup.sql a partir de supabase/migrations/ (todas en una transacción).
-// Uso: node scripts/build-setup-sql.mjs
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+// Uso: node scripts/build-setup-sql.mjs          (escribe el archivo)
+//      node scripts/build-setup-sql.mjs --check  (falla si el archivo no está al día; lo usa tests/db/backup.test.mjs)
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = join(import.meta.dirname, "..");
@@ -17,5 +18,15 @@ for (const f of files) {
   parts.push(`-- ════════ ${f} ════════`, readFileSync(join(dir, f), "utf8").replace(/\r\n/g, "\n").trimEnd(), "");
 }
 parts.push("commit;", "", "select 'AuraBook instalado' as resultado;", "");
-writeFileSync(join(ROOT, "supabase", "aurabook_setup.sql"), parts.join("\n"));
-console.log(`aurabook_setup.sql: ${files.length} migraciones`);
+const target = join(ROOT, "supabase", "aurabook_setup.sql");
+if (process.argv.includes("--check")) {
+  const current = existsSync(target) ? readFileSync(target, "utf8").replace(/\r\n/g, "\n") : "";
+  if (current !== parts.join("\n")) {
+    console.error("supabase/aurabook_setup.sql no está al día: ejecuta node scripts/build-setup-sql.mjs");
+    process.exit(1);
+  }
+  console.log(`aurabook_setup.sql al día (${files.length} migraciones)`);
+} else {
+  writeFileSync(target, parts.join("\n"));
+  console.log(`aurabook_setup.sql: ${files.length} migraciones`);
+}

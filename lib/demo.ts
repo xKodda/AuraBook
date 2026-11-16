@@ -107,9 +107,6 @@ export const DEMO_BUSINESSES: Omit<Business, "features">[] = [
   },
 ];
 
-/** Compatibilidad con código previo. */
-export const DEMO_BUSINESS = DEMO_BUSINESSES[0];
-
 // En demo, los negocios tienen Premium (lo que se ve en una prueba recién creada).
 const DEMO_FEATURES: FeatureKey[] = ["client_reminders", "revenue_stats", "custom_branding", "hide_branding", "no_show_control"];
 

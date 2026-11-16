@@ -97,7 +97,6 @@ Abre `http://localhost:3000/dashboard` o cualquiera de las páginas de reserva p
    - `20261114000000_all_niches_and_slot_interval.sql` (rubros para todo tipo de negocio e intervalo de horas por negocio; por defecto, horas enteras).
    - `20261115000000_founders_program.sql` (Programa Fundadores: cupos al publicar, 6 meses de Premium y muro en /fundadores).
    - Opcional: `supabase/002_demo_seed.sql` (datos de prueba multi-rubro; no usar en producción).
-   - `supabase/legacy/` es histórico: **no ejecutar**.
 3. Configurar `.env.local`:
 
 ```dotenv
@@ -139,6 +138,12 @@ TURNSTILE_SECRET_KEY=
 insert into public.business_members (business_id, user_id, role)
 values ('11111111-1111-4111-8111-111111111111', '<UUID_DEL_USUARIO_EN_AUTH_USERS>', 'owner');
 ```
+
+---
+
+## Respaldo de emergencia
+
+`npm run backup` descarga datos, cuentas y logos a `backups/` (fuera de Git: contiene datos personales). La estructura sale de las mismas migraciones (`aurabook_setup.sql`). Cómo restaurar, paso a paso: [docs/RESPALDO.md](docs/RESPALDO.md).
 
 ---
 
@@ -185,7 +190,6 @@ lib/
 supabase/
   migrations/                      Esquema PostgreSQL + RLS + RPCs (aplicar en orden)
   002_demo_seed.sql                Semillas para barbería, uñas y peluquería
-  legacy/                          Esquema obsoleto con `barbers` (no ejecutar)
 tests/
   core-validation.test.mjs         Pruebas unitarias de lib/
   db/                              Pruebas de RLS, aislamiento, solapamiento y onboarding

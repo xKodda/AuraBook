@@ -228,4 +228,3 @@ export const RUBRO_PAGES: RubroPage[] = [
 ];
 
 export const rubroBySlug = (slug: string) => RUBRO_PAGES.find((r) => r.slug === slug);
-export const rubroForCategory = (category: BusinessCategory) => RUBRO_PAGES.find((r) => r.category === category);
