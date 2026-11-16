@@ -19,7 +19,7 @@ export const SANDBOX_BUSINESS: Business = {
   brandColor: "#2F3A56",
   logoUrl: null,
   coverUrl: "/photos/barberia-herramientas.jpg",
-  homeService: { feeClp: 3000, travelMin: 30, area: "Providencia y Ñuñoa" },
+  homeService: { feeClp: 0, travelMin: 30, area: "Providencia y Ñuñoa" },
   maxDaysAhead: 14,
   cancelNoticeMin: 120,
   features: ["client_reminders", "revenue_stats", "custom_branding"],
@@ -27,7 +27,7 @@ export const SANDBOX_BUSINESS: Business = {
     { id: "d3e00000-0000-4000-8000-000000000001", name: "Corte clásico", description: "Corte y terminaciones de precisión", durationMin: 30, priceClp: 12000 },
     { id: "d3e00000-0000-4000-8000-000000000002", name: "Corte + barba", description: "Experiencia completa para tu estilo", durationMin: 45, priceClp: 17000 },
     { id: "d3e00000-0000-4000-8000-000000000003", name: "Perfilado de barba", description: "Líneas limpias y definición", durationMin: 30, priceClp: 8000 },
-    { id: "d3e00000-0000-4000-8000-000000000004", name: "Corte a domicilio", description: "Vamos a tu casa u oficina", durationMin: 45, priceClp: 15000, atHome: true },
+    { id: "d3e00000-0000-4000-8000-000000000004", name: "Corte clásico a domicilio", description: "Vamos a tu casa u oficina", durationMin: 30, priceClp: 18000, atHome: true },
   ],
   staff: [
     { id: "d3e10000-0000-4000-8000-000000000001", name: "Camila", roleTitle: "Barbera", avatarUrl: null,

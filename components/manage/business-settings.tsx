@@ -4,8 +4,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Check, Copy, ExternalLink, House } from "lucide-react";
 import {
-  removeCoverAction, removeLogoAction, setBrandColorAction, setHideBrandingAction, updateBookingRulesAction, updateHomeServiceAction,
-  updateNoShowPolicyAction, updateBusinessAction, uploadCoverAction, uploadLogoAction,
+  removeCoverAction, removeLogoAction, setBrandColorAction, setHideBrandingAction, setServiceAtHomeAction, updateBookingRulesAction,
+  updateHomeServiceAction, updateNoShowPolicyAction, updateBusinessAction, uploadCoverAction, uploadLogoAction,
 } from "@/app/onboarding/actions";
 import { ChoiceField, useBusinessState } from "@/components/business-editors";
 import { BusinessLogo } from "@/components/business-logo";
@@ -31,6 +31,14 @@ const CANCEL = [0, 60, 120, 240, 720, 1440, 2880];
 /** Minutos que se bloquean después de cada cita a domicilio, para trasladarse a la siguiente. */
 const TRAVEL = [0, 10, 15, 20, 30, 45, 60, 90, 120];
 
+/** Dónde atiende el negocio. «Solo a domicilio» = opción activa y todos sus servicios marcados a domicilio. */
+type PlaceMode = "local" | "both" | "home";
+const PLACE_OPTIONS: { value: PlaceMode; label: string; hint: string }[] = [
+  { value: "local", label: "En mi local", hint: "Tus clientes van a tu local." },
+  { value: "both", label: "En mi local y a domicilio", hint: "Ofreces algunos servicios a domicilio, con su propio precio." },
+  { value: "home", label: "Solo a domicilio", hint: "No tienes local: todos tus servicios son en la dirección del cliente." },
+];
+
 export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBranding, canNoShowPolicy }: {
   initial: OnboardingState; isOwner: boolean; siteUrl: string;
   /** Color propio (custom_branding). Sin él, la página pública usa el color de AuraBook; el logo es de todos los planes. */
@@ -54,8 +62,10 @@ export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBra
   const [removeCover, setRemoveCover] = useState(false);
   const [hideBranding, setHideBranding] = useState(b.hideBranding);
   // A domicilio
-  const [homeEnabled, setHomeEnabled] = useState(b.homeEnabled);
-  const [homeFee, setHomeFee] = useState(b.homeFeeClp ? String(b.homeFeeClp) : "");
+  const initialPlace: PlaceMode = !b.homeEnabled ? "local"
+    : state.services.length > 0 && state.services.every((s) => s.atHome) ? "home" : "both";
+  const [place, setPlace] = useState<PlaceMode>(initialPlace);
+  const homeEnabled = place !== "local";
   const [homeTravel, setHomeTravel] = useState(b.homeTravelMin);
   const [homeArea, setHomeArea] = useState(b.homeArea);
   // Datos
@@ -113,11 +123,24 @@ export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBra
     });
   }
 
-  const feeValue = Number(homeFee.replace(/\D/g, "") || "0");
   function saveHome(e: FormEvent) {
     e.preventDefault();
-    run(() => updateHomeServiceAction(b.id, { enabled: homeEnabled, feeClp: feeValue, travelMin: homeTravel, area: homeArea }),
-      () => setSaved(homeEnabled ? "Servicios a domicilio guardados. Marca en «Servicios» cuáles se hacen a domicilio." : "Servicios a domicilio desactivados."));
+    run(async () => {
+      // El precio a domicilio va en cada servicio, por eso el recargo general queda en 0.
+      let result = await updateHomeServiceAction(b.id, { enabled: homeEnabled, feeClp: 0, travelMin: homeTravel, area: homeArea });
+      // Solo a domicilio: todos los servicios pasan a ser en la dirección del cliente.
+      if (place === "home") {
+        for (const s of state.services.filter((x) => !x.atHome)) {
+          if (!result.ok) break;
+          result = await setServiceAtHomeAction(b.id, s.id, true);
+        }
+      }
+      return result;
+    }, () => setSaved(
+      place === "local" ? "Listo: atiendes solo en tu local."
+        : place === "home" ? "Listo: atiendes solo a domicilio y todos tus servicios quedaron a domicilio."
+        : "Listo. En «Servicios» usa «+ A domicilio» para ofrecer cada servicio a domicilio con su precio.",
+    ));
   }
 
   function saveProfile(e: FormEvent) {
@@ -146,7 +169,7 @@ export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBra
     setCoverPreview(u);
     return () => URL.revokeObjectURL(u);
   }, [coverFile]);
-  const homeDirty = homeEnabled !== b.homeEnabled || feeValue !== b.homeFeeClp || homeTravel !== b.homeTravelMin || homeArea.trim() !== b.homeArea;
+  const homeDirty = place !== initialPlace || b.homeFeeClp > 0 || homeTravel !== b.homeTravelMin || homeArea.trim() !== b.homeArea;
 
   return (
     <main className="dash-page">
@@ -245,19 +268,18 @@ export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBra
           )}
 
           <form className="dash-card dash-form" onSubmit={saveHome}>
-            <h2>Servicios a domicilio</h2>
-            <label className="onb-check">
-              <input type="checkbox" checked={homeEnabled} onChange={(e) => setHomeEnabled(e.target.checked)} />
-              <span>Hago servicios a domicilio</span>
-            </label>
+            <h2>¿Dónde atiendes?</h2>
+            <div className="place-options" role="radiogroup" aria-label="Dónde atiendes">
+              {PLACE_OPTIONS.map((o) => (
+                <label key={o.value} className={`place-option${place === o.value ? " selected" : ""}`}>
+                  <input type="radio" name="place" value={o.value} checked={place === o.value} onChange={() => setPlace(o.value)} />
+                  <span><strong>{o.label}</strong><small>{o.hint}</small></span>
+                </label>
+              ))}
+            </div>
             {homeEnabled && (
               <>
-                <div className="dash-grid-3">
-                  <label className="onb-field">
-                    <span className="field-label">Recargo a domicilio</span>
-                    <input className="text-input" inputMode="numeric" placeholder="$0" value={homeFee ? `$${feeValue.toLocaleString("es-CL")}` : ""}
-                      onChange={(e) => setHomeFee(e.target.value.replace(/\D/g, "").slice(0, 7))} />
-                  </label>
+                <div className="onb-grid-2">
                   <label className="onb-field">
                     <span className="field-label">Tiempo de traslado</span>
                     <select className="text-input" value={homeTravel} onChange={(e) => setHomeTravel(Number(e.target.value))}>
@@ -273,9 +295,10 @@ export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBra
                   </label>
                 </div>
                 <p className="field-hint">
-                  El recargo se suma al precio de cada servicio a domicilio y tu cliente lo ve antes de reservar. El traslado
-                  bloquea tu agenda después de cada cita a domicilio, para que no te tomen otra hora mientras te mueves.
-                  Marca en <Link href="/dashboard/servicios">Servicios</Link> cuáles se hacen a domicilio.
+                  El traslado bloquea tu agenda después de cada cita a domicilio, para que no te tomen otra hora mientras te
+                  mueves. {place === "both"
+                    ? <>El precio a domicilio lo defines en <Link href="/dashboard/servicios">Servicios</Link>, con «+ A domicilio» junto a cada servicio.</>
+                    : <>Los precios los ajustas en <Link href="/dashboard/servicios">Servicios</Link>.</>}
                 </p>
               </>
             )}
@@ -352,9 +375,9 @@ export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBra
             </div>
             {(address || phone || homeEnabled) && (
               <ul className="bk-business-meta">
-                {address && <li>{address}</li>}
+                {address && place !== "home" && <li>{address}</li>}
                 {phone && <li>{phone}</li>}
-                {homeEnabled && <li><House size={13} /> A domicilio{homeArea.trim() ? ` en ${homeArea.trim()}` : ""}</li>}
+                {homeEnabled && <li><House size={13} /> {place === "home" ? "Solo a domicilio" : "A domicilio"}{homeArea.trim() ? ` en ${homeArea.trim()}` : ""}</li>}
               </ul>
             )}
           </div>

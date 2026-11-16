@@ -337,8 +337,8 @@ function BusinessStep({ state, run, pending, error, goTo, origin }: StepProps & 
             <span>Hago servicios a domicilio</span>
           </label>
           <small className="field-hint">
-            Tus clientes podrán reservar en su dirección. En tu panel defines el recargo, el tiempo de traslado, las comunas
-            que cubres y qué servicios se hacen a domicilio.
+            Tus clientes podrán reservar en su dirección. En tu panel eliges si atiendes también en un local o solo a domicilio,
+            el precio a domicilio de cada servicio, el tiempo de traslado y las comunas que cubres.
           </small>
         </div>
       </div>

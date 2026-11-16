@@ -61,6 +61,10 @@ export async function POST(request: Request) {
     if (data.staffId && !business.staff.some((m) => m.id === data.staffId && m.serviceIds.includes(data.serviceId))) {
       return errorJson("Profesional no disponible para este servicio.", 400);
     }
+    // El cliente elige profesional; sin elegir solo se acepta si el servicio lo hace una sola persona.
+    if (!data.staffId && business.staff.filter((m) => m.serviceIds.includes(data.serviceId)).length > 1) {
+      return errorJson("Elige un profesional para tu reserva.", 400, "STAFF_REQUIRED");
+    }
 
     if (DEMO_MODE) {
       const result = demoCreateBooking(business, data);

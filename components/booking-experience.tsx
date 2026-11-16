@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, ExternalLink, House, MapPin, Phone, ShieldCheck, Users, WifiOff,
@@ -48,7 +48,12 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
   const brandVars = useMemo(() => brandStyle(business.brandColor), [business.brandColor]);
 
   const [serviceId, setServiceId] = useState(business.services[0]?.id ?? "");
-  const [staffId, setStaffId] = useState<string>("any");
+  // El cliente siempre elige profesional; si el servicio lo hace una sola persona, ya viene elegida ("" = sin elegir).
+  const onlyStaffFor = (id: string) => {
+    const eligible = business.staff.filter((m) => m.serviceIds.includes(id));
+    return eligible.length === 1 ? eligible[0].id : "";
+  };
+  const [staffId, setStaffId] = useState<string>(() => onlyStaffFor(business.services[0]?.id ?? ""));
   const [date, setDate] = useState(() => suggestedBookingDate(business.timezone));
   const [slot, setSlot] = useState<string>("");
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
@@ -70,6 +75,7 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
   const [confirmed, setConfirmed] = useState<BookingSuccess | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaReset, setCaptchaReset] = useState(0);
+  const datePicker = useRef<HTMLInputElement>(null);
 
   const today = dateInTimeZone(new Date(), business.timezone);
   const maxDate = addCalendarDays(today, business.maxDaysAhead);
@@ -78,6 +84,8 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
   const homeFee = business.homeService?.feeClp ?? 0;
   const priceOf = (s: Service) => s.priceClp + (s.atHome ? homeFee : 0);
   const atHome = Boolean(service?.atHome);
+  // Negocio sin local: todos sus servicios son a domicilio (no se muestra dirección de local ni la etiqueta en cada uno).
+  const homeOnly = business.services.length > 0 && business.services.every((s) => s.atHome);
 
   // Profesionales elegibles para el servicio seleccionado
   const eligibleStaff: StaffMember[] = useMemo(
@@ -112,13 +120,18 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
 
   useEffect(() => {
     if (!serviceId || !date) return;
-    const controller = new AbortController();
     setSlots([]);
     setSlot("");
+    // Sin profesional elegido no se muestran horas: se le pide elegir uno primero.
+    if (!staffId) {
+      setAvailabilityState("idle");
+      return;
+    }
+    const controller = new AbortController();
     setAvailabilityState("loading");
     if (sandbox) {
       const timer = window.setTimeout(() => {
-        setSlots(sandboxSlots(serviceId, date, staffId === "any" ? null : staffId));
+        setSlots(sandboxSlots(serviceId, date, staffId));
         setAvailabilityState("success");
       }, 250);
       return () => window.clearTimeout(timer);
@@ -157,7 +170,8 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
   function changeService(id: string) {
     setServiceId(id);
     const nextStaff = business.staff.filter((m) => m.serviceIds.includes(id));
-    if (staffId !== "any" && !nextStaff.some((m) => m.id === staffId)) setStaffId("any");
+    if (nextStaff.length === 1) setStaffId(nextStaff[0].id);
+    else if (!nextStaff.some((m) => m.id === staffId)) setStaffId("");
     setFormError(null);
   }
 
@@ -168,7 +182,7 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
     setFormError(null);
     if (sandbox) {
       // Demo pública: se simula la confirmación sin enviar los datos a ningún lado.
-      const assigned = slots.find((s) => s.time === slot && (staffId === "any" || s.staffId === staffId));
+      const assigned = slots.find((s) => s.time === slot && s.staffId === staffId);
       window.setTimeout(() => {
         setConfirmed({
           bookingId: "demo", manageToken: "", time: slot, demo: true,
@@ -186,7 +200,7 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
         body: JSON.stringify({
           slug: business.slug,
           serviceId,
-          staffId: staffId === "any" ? null : staffId,
+          staffId,
           date,
           time: slot,
           name: customerName.trim(),
@@ -259,14 +273,18 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
   );
 
   const showFounder = Boolean(business.founderNumber && !business.hideBranding);
-  const hasInfo = Boolean(business.address || business.phone || business.homeService || business.description || showFounder);
+  const shopAddress = homeOnly ? "" : business.address;
+  const hasInfo = Boolean(shopAddress || business.phone || business.homeService || business.description || showFounder);
   const BusinessCard = (
     <div className="bk-business">
       <ul className="bk-business-meta">
-        {business.address && <li><MapPin size={14} /> {business.address}</li>}
+        {shopAddress && <li><MapPin size={14} /> {shopAddress}</li>}
         {business.phone && <li><Phone size={14} /> {business.phone}</li>}
         {business.homeService && (
-          <li><House size={14} /> A domicilio{business.homeService.area ? ` en ${business.homeService.area}` : ""}</li>
+          <li>
+            <House size={14} /> {homeOnly ? "Atiende solo a domicilio" : "A domicilio"}
+            {business.homeService.area ? ` en ${business.homeService.area}` : ""}
+          </li>
         )}
       </ul>
       {business.description && <p className="bk-description">{business.description}</p>}
@@ -348,7 +366,7 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
                       onClick={() => changeService(item.id)}>
                       <span className="bk-radio" />
                       <span className="bk-service-body">
-                        <strong>{item.name}{item.atHome && <span className="bk-home-tag"><House size={11} /> A domicilio</span>}</strong>
+                        <strong>{item.name}{item.atHome && !homeOnly && <span className="bk-home-tag"><House size={11} /> A domicilio</span>}</strong>
                         <small>
                           {item.durationMin} min
                           {item.atHome && homeFee > 0 ? ` · incluye ${formatPrice(homeFee)} de traslado` : ""}
@@ -368,11 +386,6 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
                   <h2>{copy.staffQuestion}</h2>
                 </div>
                 <div className="bk-pills" role="radiogroup" aria-label="Profesional">
-                  <button type="button" role="radio" aria-checked={staffId === "any"}
-                    className={`bk-pill${staffId === "any" ? " selected" : ""}`}
-                    onClick={() => { setStaffId("any"); setFormError(null); }}>
-                    <span className="bk-avatar"><Users size={13} /></span> Cualquiera
-                  </button>
                   {eligibleStaff.map((member) => (
                     <button key={member.id} type="button" role="radio" aria-checked={staffId === member.id}
                       className={`bk-pill${staffId === member.id ? " selected" : ""}`}
@@ -392,12 +405,18 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
                 <div className="bk-card-head">
                   <span className="bk-num">3</span>
                   <h2>Día y hora</h2>
-                  <label className="bk-date-more" title="Elegir otra fecha">
+                  {/* El campo de fecha va oculto: en Chrome solo abre el calendario desde su propio ícono, así que se abre con showPicker. */}
+                  <button type="button" className="bk-date-more" title="Elegir otra fecha" onClick={() => {
+                    const input = datePicker.current;
+                    if (!input) return;
+                    try { input.showPicker(); } catch { input.focus(); input.click(); }
+                  }}>
                     <CalendarDays size={15} />
                     <span>Otra fecha</span>
-                    <input type="date" value={date} min={today} max={maxDate}
-                      onChange={(e) => { if (e.target.value) { setDate(e.target.value); setFormError(null); } }} />
-                  </label>
+                  </button>
+                  <input ref={datePicker} type="date" className="bk-date-input" value={date} min={today} max={maxDate}
+                    tabIndex={-1} aria-label="Otra fecha"
+                    onChange={(e) => { if (e.target.value) { setDate(e.target.value); setFormError(null); } }} />
                 </div>
                 <div className="bk-days" role="radiogroup" aria-label="Fecha">
                   {[...new Set([...dayChips, date])].sort().map((d) => {
@@ -415,6 +434,12 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
                 </div>
 
                 <div className="bk-slots" aria-live="polite">
+                  {!staffId && (
+                    <div className="bk-empty">
+                      <Users size={18} />
+                      <span>Elige un profesional para ver sus horas disponibles.</span>
+                    </div>
+                  )}
                   {availabilityState === "loading" && (
                     <div className="loading-slots"><span /><span /><span /><span /><span /><span /></div>
                   )}
@@ -508,7 +533,7 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
                   <div className="bk-summary-text">
                     <strong>{service?.name ?? "Elige un servicio"}</strong>
                     <small>
-                      {chosenStaff?.name ?? "Cualquier profesional"} · {slot ? `${formatDate(date).split(",")[0]} ${dayChipParts(date).day}, ${slot} h` : "elige una hora"}
+                      {chosenStaff?.name ?? "elige un profesional"} · {slot ? `${formatDate(date).split(",")[0]} ${dayChipParts(date).day}, ${slot} h` : "elige una hora"}
                     </small>
                   </div>
                   <strong className="bk-summary-price">{service ? formatPrice(priceOf(service)) : "—"}</strong>

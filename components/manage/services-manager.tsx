@@ -24,6 +24,10 @@ export function ServicesManager({ initial, entitlements }: { initial: Onboarding
   const [saved, setSaved] = useState<string | null>(null);
 
   const current = editing && editing !== "new" ? editing : null;
+  // «Solo a domicilio»: la opción está activa y todos los servicios son a domicilio (Datos y marca → ¿Dónde atiendes?).
+  const homeOnly = business.homeEnabled && state.services.length > 0 && state.services.every((s) => s.atHome);
+  const homeName = (s: OnboardingService) => `${s.name} a domicilio`;
+  const hasHomeVersion = (s: OnboardingService) => state.services.some((x) => x.atHome && x.name === homeName(s));
   // El límite se evalúa con los servicios actuales (cambian al agregar o quitar sin recargar).
   const atLimit = !canAddService({ ...entitlements, servicesCount: state.services.length });
   const priceClp = Number(price.replace(/\D/g, "") || "NaN");
@@ -39,7 +43,18 @@ export function ServicesManager({ initial, entitlements }: { initial: Onboarding
     setDuration(s === "new" ? 30 : s.durationMin);
     setPrice(s === "new" ? "" : String(s.priceClp));
     setStaffIds(s === "new" ? state.staff.map((x) => x.id) : s.staffIds);
-    setAtHome(s === "new" ? false : s.atHome);
+    setAtHome(s === "new" ? homeOnly : s.atHome);
+  }
+
+  /** Versión a domicilio de un servicio del local: mismo servicio y equipo; solo falta el precio a domicilio. */
+  function openHomeVersion(s: OnboardingService) {
+    open("new");
+    setName(homeName(s));
+    setDescription(s.description);
+    setDuration(s.durationMin);
+    setPrice(String(s.priceClp));
+    setStaffIds(s.staffIds);
+    setAtHome(true);
   }
 
   const toggle = (id: string) =>
@@ -88,11 +103,17 @@ export function ServicesManager({ initial, entitlements }: { initial: Onboarding
         {state.services.map((s) => (
           <div key={s.id} className={`dash-row${current?.id === s.id ? " editing" : ""}`}>
             <span className="dash-row-body">
-              <strong>{s.name}{business.homeEnabled && s.atHome && <span className="dash-home-tag"><House size={11} /> A domicilio</span>}</strong>
+              <strong>{s.name}{business.homeEnabled && s.atHome && !homeOnly && <span className="dash-home-tag"><House size={11} /> A domicilio</span>}</strong>
               <small>{s.staffIds.map(staffName).filter(Boolean).join(", ") || "Sin profesional asignado"}</small>
             </span>
             <span className="dash-row-meta">{formatDuration(s.durationMin)}</span>
             <strong className="dash-row-price">{formatPrice(s.priceClp)}</strong>
+            {business.homeEnabled && !homeOnly && !s.atHome && !hasHomeVersion(s) && (
+              <button type="button" className="btn-secondary dash-btn-sm" onClick={() => openHomeVersion(s)} disabled={atLimit}
+                title="Crear la versión a domicilio de este servicio, con su propio precio">
+                <Plus size={14} /> A domicilio
+              </button>
+            )}
             <button type="button" className="btn-secondary dash-btn-sm" onClick={() => open(s)} aria-label={`Editar ${s.name}`}>
               <Pencil size={14} /> Editar
             </button>
@@ -137,15 +158,25 @@ export function ServicesManager({ initial, entitlements }: { initial: Onboarding
               </div>
             </fieldset>
           )}
-          {business.homeEnabled && (
-            <label className="onb-check small">
-              <input type="checkbox" checked={atHome} onChange={(e) => setAtHome(e.target.checked)} />
-              <span>
-                Se hace a domicilio
-                {business.homeFeeClp > 0 && ` (se suma tu recargo de ${formatPrice(business.homeFeeClp)})`}
-                {business.homeTravelMin > 0 && ` y bloquea ${business.homeTravelMin} min de traslado`}
-              </span>
-            </label>
+          {business.homeEnabled && !homeOnly && (
+            <fieldset className="onb-field">
+              <legend className="field-label">¿Dónde se hace?</legend>
+              <div className="onb-chips">
+                <button type="button" className={`onb-chip${!atHome ? " selected" : ""}`} aria-pressed={!atHome} onClick={() => setAtHome(false)}>
+                  En el local
+                </button>
+                <button type="button" className={`onb-chip${atHome ? " selected" : ""}`} aria-pressed={atHome} onClick={() => setAtHome(true)}>
+                  <House size={12} /> A domicilio
+                </button>
+              </div>
+              {atHome && (
+                <small className="field-hint">
+                  Tu cliente deja su dirección al reservar.
+                  {business.homeTravelMin > 0 && ` Después de la cita se bloquean ${business.homeTravelMin} min de traslado.`}
+                  {" "}El precio de arriba es el precio a domicilio.
+                </small>
+              )}
+            </fieldset>
           )}
           {current && <p className="field-hint">Cambiar el precio o la duración no modifica las citas ya reservadas.</p>}
           <div className="dash-form-foot">
