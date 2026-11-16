@@ -2,6 +2,8 @@
 
 const MESSAGES: Record<string, string> = {
   FORBIDDEN: "No tienes permisos para modificar este negocio.",
+  NOT_FOUNDER: "Este negocio no tiene un cupo del Programa Fundadores.",
+  NOT_ELIGIBLE: "Este negocio no puede recibir un cupo: es interno, no está publicado, ya tiene uno o no quedan cupos.",
   UNAUTHENTICATED: "Tu sesión expiró. Vuelve a iniciar sesión.",
   EMAIL_NOT_VERIFIED: "Confirma tu correo electrónico antes de crear un negocio.",
   INVALID_NAME: "Revisa el nombre: debe tener entre 2 y 120 caracteres, sin enlaces ni símbolos < >.",

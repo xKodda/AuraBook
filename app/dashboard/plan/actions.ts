@@ -66,3 +66,16 @@ export async function cancelPremiumRequestAction(): Promise<CheckoutResult> {
   revalidatePath("/dashboard/plan");
   return { ok: true, amountClp: 0 };
 }
+
+/** Programa Fundadores: el dueño decide si su negocio aparece en el muro de /fundadores. */
+export async function setFounderPublicAction(visible: boolean): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (DEMO_MODE) return { ok: false, error: "En el modo demo no se guardan cambios." };
+  const ctx = await managed();
+  if (!ctx) return { ok: false, error: rpcErrorMessage("FORBIDDEN") };
+  const db = await sessionDb();
+  const { error } = await db.rpc("set_founder_public", { p_business_id: ctx.business.id, p_visible: visible === true });
+  if (error) return { ok: false, error: rpcErrorMessage(error.message) };
+  revalidatePath("/fundadores");
+  revalidatePath("/dashboard/plan");
+  return { ok: true };
+}

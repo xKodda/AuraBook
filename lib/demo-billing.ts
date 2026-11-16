@@ -45,6 +45,11 @@ function businesses(): AdminBusiness[] {
       staffCount: staff,
       bookings30d: bookings,
       lastPaidAt: status === "trial" ? null : day(status === "active" ? -26 + i * 9 : -36),
+      // Programa Fundadores: los dos negocios en prueba son fundadores; el primero es una demo interna.
+      isInternal: i === 0,
+      ownedByAdmin: false,
+      founderNumber: status === "trial" ? (slug === "estudio-kora" ? 1 : 2) : null,
+      founderUntil: status === "trial" ? at(180 - created) : null,
     };
   });
 }

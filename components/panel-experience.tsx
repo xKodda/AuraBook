@@ -160,6 +160,7 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
 
   return (
     <div className="panel-agenda">
+        <h1 className="sr-only">Agenda</h1>
         {/* Barra de herramientas: Navegación de fecha y filtros */}
         <div className="panel-toolbar">
           <div className="panel-date-nav">
@@ -212,6 +213,7 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
             {staffList.length > 1 && (
               <select
                 className="panel-filter-pill"
+                aria-label="Filtrar por profesional"
                 value={selectedStaffId}
                 onChange={(e) => setSelectedStaffId(e.target.value)}
               >
@@ -227,6 +229,7 @@ export function PanelExperience({ business: currentBusiness, initialStaff, initi
             {/* Filtro por estado */}
             <select
               className="panel-filter-pill"
+              aria-label="Filtrar por estado"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >

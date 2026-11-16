@@ -21,9 +21,23 @@ export async function isPlatformAdmin(): Promise<boolean> {
 export async function getAdminSnapshot(): Promise<AdminSnapshot> {
   if (DEMO_MODE) return demoAdminSnapshot();
   const db = await sessionDb();
-  const { data, error } = await db.rpc("admin_snapshot");
-  if (error) throw new Error(error.message);
-  return data as AdminSnapshot;
+  const [snapshot, founders] = await Promise.all([db.rpc("admin_snapshot"), db.rpc("admin_founders")]);
+  if (snapshot.error) throw new Error(snapshot.error.message);
+  const data = snapshot.data as AdminSnapshot;
+  // Programa Fundadores: si la migración aún no se aplica, /admin sigue funcionando sin esos datos.
+  if (founders.error) {
+    console.error("admin_founders:", founders.error.message);
+    return data;
+  }
+  type Row = { id: string; isInternal: boolean; ownedByAdmin: boolean; founderNumber: number | null; founderUntil: string | null };
+  const byId = new Map(((founders.data as { businesses: Row[] }).businesses ?? []).map((r) => [r.id, r]));
+  return {
+    ...data,
+    businesses: data.businesses.map((b) => {
+      const f = byId.get(b.id);
+      return f ? { ...b, isInternal: f.isInternal, ownedByAdmin: f.ownedByAdmin, founderNumber: f.founderNumber, founderUntil: f.founderUntil } : b;
+    }),
+  };
 }
 
 /** null si el negocio no existe o el usuario no es owner/admin. */

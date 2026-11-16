@@ -21,7 +21,7 @@ function AuthHeader({ title, subtitle }: { title: string; subtitle: string }) {
       <Link href="/" className="brand-symbol auth-symbol" aria-label="AuraBook, inicio">
         <AuraMark size={26} />
       </Link>
-      <h2>{title}</h2>
+      <h1>{title}</h1>
       <p>{subtitle}</p>
     </div>
   );

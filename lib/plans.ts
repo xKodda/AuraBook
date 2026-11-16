@@ -185,6 +185,7 @@ export function keyFeatures(plan: PublicPlan, formatPrice: (n: number) => string
       { text: plan.maxServices ? `Hasta ${plan.maxServices} servicios` : "Servicios ilimitados" },
       { text: "Agenda online, reservas 24/7" },
       { text: "Confirmación y recordatorio por correo" },
+      { text: "Botón de WhatsApp en cada cita" },
       { text: "Tu logo en tu página" },
     ];
   }
@@ -196,6 +197,7 @@ export function keyFeatures(plan: PublicPlan, formatPrice: (n: number) => string
     { text: "Tus colores y sin marca AuraBook" },
     { text: "Estadísticas e ingresos" },
     { text: "Control de ausencias" },
+    { text: "Botón de WhatsApp en cada cita" },
   ];
 }
 

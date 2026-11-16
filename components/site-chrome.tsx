@@ -1,24 +1,24 @@
 import Link from "next/link";
 import { AuraMark } from "@/components/aura-mark";
 import { COMPANY, whatsappUrl } from "@/lib/company";
-import { foundersLeft } from "@/lib/founders";
+import { SiteMenu } from "@/components/site-menu";
 
-/** Encabezado del sitio comercial. En la portada, los enlaces de sección apuntan a la misma página. */
+/** Encabezado del sitio comercial. En la portada, «Cómo funciona» apunta a la misma página. En el celular, los enlaces van en SiteMenu. */
 export function SiteHeader({ home = false }: { home?: boolean }) {
-  const base = home ? "" : "/";
+  const links = [
+    { href: `${home ? "" : "/"}#como-funciona`, label: "Cómo funciona" },
+    { href: "/precios", label: "Precios" },
+    { href: "/demo", label: "Demo" },
+    { href: "/nosotros", label: "Nosotros" },
+  ];
   return (
     <header className="lp-header">
       <Link href="/" className="lp-brand"><AuraMark size={26} title="AuraBook" /><span>AURA<span>BOOK</span></span></Link>
       <nav className="lp-nav" aria-label="Principal">
-        <a href={`${base}#como-funciona`}>Cómo funciona</a>
-        <Link href="/precios">Precios</Link>
-        <Link href="/demo">Demo</Link>
-        <Link href="/para/talleres-mecanicos">Talleres</Link>
-        <Link href="/para/consultas-de-salud">Salud</Link>
-        <Link href="/para/veterinarias">Veterinarias</Link>
-        <Link href="/para/barberias">Barberías</Link>
+        {links.map((l) => <Link key={l.href} href={l.href} className="lp-nav-link">{l.label}</Link>)}
         <Link href="/login" className="lp-nav-login">Ingresar</Link>
         <Link href="/registro" className="btn-primary lp-btn-sm">Crear cuenta</Link>
+        <SiteMenu links={links} />
       </nav>
     </header>
   );
@@ -43,7 +43,7 @@ export function SiteFooter() {
           <Link href="/precios">Precios</Link>
           <Link href="/demo">Demo</Link>
           <Link href="/seguridad">Seguridad</Link>
-          {foundersLeft > 0 && <Link href="/fundadores">Programa Fundadores</Link>}
+          <Link href="/fundadores">Programa Fundadores</Link>
         </nav>
         <nav aria-label="Empresa">
           <p>Empresa</p>

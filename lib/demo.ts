@@ -115,7 +115,8 @@ const DEMO_FEATURES: FeatureKey[] = ["client_reminders", "revenue_stats", "custo
 
 export function demoBusinessBySlug(slug: string): Business | null {
   const business = DEMO_BUSINESSES.find((b) => b.slug === slug);
-  return business ? { ...business, features: DEMO_FEATURES } : null;
+  // La primera barbería del demo es el Negocio Fundador #01 (lib/founders-server.ts).
+  return business ? { ...business, features: DEMO_FEATURES, founderNumber: business.slug === "barber-studio" ? 1 : null } : null;
 }
 
 export function demoPanelBusinesses(): PanelBusiness[] {
@@ -126,6 +127,9 @@ export function demoPanelBusinesses(): PanelBusiness[] {
       tier: "premium" as const, maxStaff: 3, maxServices: null, maxMonthlyBookings: null, features: DEMO_FEATURES,
       staffCount: b.staff.length, servicesCount: b.services.length, bookingsThisMonth: 0,
     },
+    founder: b.slug === "barber-studio"
+      ? { number: 1, until: new Date(Date.now() + 170 * 86_400_000).toISOString(), public: true }
+      : null,
   }));
 }
 

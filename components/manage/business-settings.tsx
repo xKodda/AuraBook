@@ -255,7 +255,7 @@ export function BusinessSettings({ initial, isOwner, siteUrl, colors, canHideBra
             <BusinessLogo name={name || b.name} url={logoFile ? null : previewLogo} brandColor={color} size={52} />
             <div className="bk-business-text">
               <span className="bk-kicker">{CATEGORY_COPY[category].kicker}</span>
-              <h1>{name || b.name}</h1>
+              <p className="bk-name">{name || b.name}</p>
               {tagline && <p className="bk-tagline">{tagline}</p>}
             </div>
             {(address || phone) && (

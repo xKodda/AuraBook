@@ -46,7 +46,7 @@ describe("auditoría de permisos", () => {
     const { rows } = await db.query(`select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute') order by 1`);
     assert.deepEqual(rows.map((r) => r.proname),
-      ["available_slots", "phone_digits", "premium_quote", "public_business_plan", "public_month_full", "public_plans"]);
+      ["available_slots", "founders_summary", "phone_digits", "premium_quote", "public_business_plan", "public_month_full", "public_plans"]);
   });
 
   test("un anónimo solo lee el catálogo y nadie escribe tablas directamente", async () => {

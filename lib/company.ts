@@ -8,7 +8,7 @@ export const COMPANY = {
   whatsappDisplay: "+56 9 7878 5893",
   /** Sin «+» ni espacios, como lo pide wa.me. */
   whatsappNumber: "56978785893",
-  hours: "todos los días, a toda hora",
+  hours: "todos los días, de 8:00 a 20:00",
   founder: "Christofer Godoy Cerda",
 } as const;
 

@@ -14,6 +14,7 @@ import { sandboxSlots } from "@/lib/sandbox";
 import type { AvailableSlot, BookingSuccess, Business, StaffMember } from "@/lib/types";
 import { AuraMark } from "./aura-mark";
 import { BusinessLogo } from "./business-logo";
+import { FounderChip } from "./founder-badge";
 import { Turnstile } from "./turnstile";
 
 // Se incrusta en el build (NEXT_PUBLIC_*). Sin clave, no se muestra el captcha.
@@ -242,6 +243,8 @@ export function BookingExperience({ business, demo, sandbox = false }: Props) {
         {business.phone && <li><Phone size={14} /> {business.phone}</li>}
       </ul>
       {business.description && <p className="bk-description">{business.description}</p>}
+      {/* Programa Fundadores: el sello lleva la marca AuraBook, así que se oculta junto con ella. */}
+      {business.founderNumber && !business.hideBranding && <FounderChip number={business.founderNumber} />}
     </div>
   );
 

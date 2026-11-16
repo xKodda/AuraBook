@@ -22,7 +22,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
       <div className="auth-shell">
         <div className="auth-card">
           <div className="auth-header">
-            <h2>Onboarding no disponible en demo</h2>
+            <h1>Onboarding no disponible en demo</h1>
             <p>Configura Supabase (DEMO_MODE=false) para crear negocios reales.</p>
           </div>
         </div>

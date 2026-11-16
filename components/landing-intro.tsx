@@ -20,7 +20,7 @@ export function LandingIntro() {
         </svg>
         <p className="lp-intro-name">AURA<span>BOOK</span></p>
         <p className="lp-intro-phrase">
-          <span className="lp-intro-line"><span>De emprendedores,</span></span>
+          <span className="lp-intro-line"><span>De emprendedores,</span></span>{" "}
           <span className="lp-intro-line"><span>para negocios que crecen.</span></span>
         </p>
         <p className="lp-intro-by">Un producto de Clikium</p>

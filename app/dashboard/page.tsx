@@ -23,7 +23,8 @@ export default async function DashboardPage() {
     listDayTimeOff(business, today),
   ]);
   return (
-    <>
+    // .dash-home: en el celular la agenda va antes que los ingresos (globals.css).
+    <div className="dash-home">
       {/* Los avisos push llegan a dueños y administradores (booking_push_targets). */}
       {PUSH_STATUS.configured && business.role !== "staff" && <PushToggle publicKey={VAPID_PUBLIC_KEY} variant="banner" />}
       {can(business.entitlements, "revenue_stats")
@@ -38,6 +39,6 @@ export default async function DashboardPage() {
         catalog={catalog}
         initialTimeOff={initialTimeOff}
       />
-    </>
+    </div>
   );
 }

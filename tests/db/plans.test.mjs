@@ -24,6 +24,8 @@ before(async () => {
   nailsOwner = await createUser(db);
   await addMember(db, IDS.barber, barberOwner, "owner");
   await addMember(db, IDS.nails, nailsOwner, "owner");
+  // Programa Fundadores lleno: aquí se prueba la prueba normal de 30 días (los cupos, en founders.test.mjs).
+  await db.query("update public.platform_settings set founders_total = 0");
 });
 
 describe("planes publicados", () => {

@@ -76,6 +76,22 @@ export async function extendTrialAction(businessId: string, days: number): Promi
   return call("admin_extend_trial", { p_business_id: businessId, p_days: days });
 }
 
+/** Programa Fundadores: dar o quitar el cupo de un negocio. */
+export async function setFounderAction(businessId: string, grant: boolean): Promise<AdminResult> {
+  if (!id.safeParse(businessId).success || typeof grant !== "boolean") return INVALID;
+  const result = await call(grant ? "admin_grant_founder" : "admin_revoke_founder", { p_business_id: businessId });
+  if (result.ok) revalidatePath("/fundadores");
+  return result;
+}
+
+/** Negocio interno (demo o prueba del equipo): nunca ocupa un cupo de fundador. */
+export async function setInternalAction(businessId: string, internal: boolean): Promise<AdminResult> {
+  if (!id.safeParse(businessId).success || typeof internal !== "boolean") return INVALID;
+  const result = await call("admin_set_business_internal", { p_business_id: businessId, p_internal: internal });
+  if (result.ok) revalidatePath("/fundadores");
+  return result;
+}
+
 export async function setCancelledAction(businessId: string, cancelled: boolean, notes: string): Promise<AdminResult> {
   if (!id.safeParse(businessId).success || typeof cancelled !== "boolean" || typeof notes !== "string" || notes.length > 1000) {
     return INVALID;

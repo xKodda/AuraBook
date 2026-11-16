@@ -7,13 +7,14 @@ import {
   Pencil, Plus, Receipt, Search, Settings, Store, TrendingUp, Wallet,
 } from "lucide-react";
 import {
-  extendTrialAction, recordPaymentAction, savePlanAction, setBusinessPlanAction, setCancelledAction,
-  sendTestEmailAction, updateSettingsAction, type AdminResult,
+  extendTrialAction, recordPaymentAction, savePlanAction, setBusinessPlanAction, setCancelledAction, setFounderAction,
+  setInternalAction, sendTestEmailAction, updateSettingsAction, type AdminResult,
 } from "@/app/admin/actions";
 import { AdminPaymentRequests, type AdminPaymentRequest } from "@/components/admin-payment-requests";
 import { BrandMark } from "@/components/brand";
 import { METHOD_LABEL, STATUS_LABEL, daysUntil, formatShortDate, monthLabel } from "@/lib/billing";
 import { dateInTimeZone, formatPrice } from "@/lib/dates";
+import { founderNumberLabel } from "@/lib/founders";
 import { CATEGORY_LABEL } from "@/lib/theme";
 import type { AdminBusiness, AdminPlan, AdminSnapshot, PaymentMethod, SubscriptionStatus } from "@/lib/types";
 
@@ -49,6 +50,46 @@ function needsAttention(b: AdminBusiness): boolean {
 
 function StatusBadge({ status }: { status: SubscriptionStatus }) {
   return <span className={`sub-badge sub-${status}`}>{STATUS_LABEL[status]}</span>;
+}
+
+/** Programa Fundadores: dar o quitar el cupo y marcar negocios internos (demos del equipo, pruebas). */
+function FounderActions({ b }: { b: AdminBusiness }) {
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  // Sin la migración 20261115000000 no llegan estos datos y no se muestran los botones.
+  if (b.isInternal === undefined) return null;
+  const run = (question: string, fn: () => Promise<AdminResult>) => {
+    if (!window.confirm(question)) return;
+    start(async () => {
+      const result = await fn();
+      setError(result.ok ? null : result.error);
+    });
+  };
+  return (
+    <>
+      {b.founderNumber ? (
+        <button type="button" className="panel-action-btn" disabled={pending} onClick={() => run(
+          `¿Quitar el cupo ${founderNumberLabel(b.founderNumber!)} a ${b.name}? Su prueba vuelve a la duración normal y el cupo queda libre.`,
+          () => setFounderAction(b.id, false))}>
+          Quitar cupo
+        </button>
+      ) : b.published && !b.isInternal && !b.ownedByAdmin && (
+        <button type="button" className="panel-action-btn" disabled={pending} onClick={() => run(
+          `¿Dar un cupo de fundador a ${b.name}? Tendrá Premium gratis por los meses del programa desde hoy.`,
+          () => setFounderAction(b.id, true))}>
+          Dar cupo
+        </button>
+      )}
+      <button type="button" className="panel-action-btn" disabled={pending} onClick={() => run(
+        b.isInternal
+          ? `¿${b.name} deja de ser interno? Podrá recibir un cupo de fundador.`
+          : `¿Marcar ${b.name} como interno (demo o prueba)? No contará como fundador${b.founderNumber ? " y se libera su cupo" : ""}.`,
+        () => setInternalAction(b.id, !b.isInternal))}>
+        {b.isInternal ? "Quitar «interno»" : "Marcar interno"}
+      </button>
+      {error && <span className="form-error" role="alert">{error}</span>}
+    </>
+  );
 }
 
 function whatsappLink(phone: string, text: string): string | null {
@@ -101,6 +142,7 @@ export function AdminConsole({ data, demo, email, requests, emailStatus }: Props
       </header>
 
       <main className="panel-main">
+        <h1 className="sr-only">Plataforma AuraBook</h1>
         <nav className="adm-tabs" aria-label="Secciones">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button key={id} type="button" className={`adm-tab${tab === id ? " active" : ""}`}
@@ -357,6 +399,12 @@ function BusinessRow({ b, plans, panel, onPanel }: {
               ? <a href={`/reservar/${b.slug}`} target="_blank" rel="noreferrer">/{b.slug} <ExternalLink size={11} /></a>
               : <span>/{b.slug} · sin publicar</span>}
           </small>
+          {(b.founderNumber || b.isInternal || b.ownedByAdmin) && (
+            <span className="adm-biz-tags">
+              {b.founderNumber && <span className="adm-tag-founder">★ Fundador {founderNumberLabel(b.founderNumber)}</span>}
+              {(b.isInternal || b.ownedByAdmin) && <span className="adm-tag-internal">Interno</span>}
+            </span>
+          )}
         </span>
         <StatusBadge status={b.status} />
       </div>
@@ -374,6 +422,7 @@ function BusinessRow({ b, plans, panel, onPanel }: {
         <div><dt>Reservas 30 d</dt><dd>{b.bookings30d}</dd></div>
         <div><dt>Dueño</dt><dd className="adm-break">{b.ownerEmail || "—"}</dd></div>
         <div><dt>Último pago</dt><dd>{formatShortDate(b.lastPaidAt)}</dd></div>
+        {b.founderNumber && <div><dt>Fundador hasta</dt><dd>{formatShortDate(b.founderUntil ?? null)}</dd></div>}
       </dl>
       {b.notes && <p className="adm-note">Nota: {b.notes}</p>}
 
@@ -389,6 +438,7 @@ function BusinessRow({ b, plans, panel, onPanel }: {
         <button type="button" className="panel-action-btn" onClick={() => toggle("cancelar")}>
           {b.status === "cancelled" ? "Reactivar" : "Cancelar"}
         </button>
+        <FounderActions b={b} />
         {wa && (
           <a href={wa} target="_blank" rel="noreferrer" className="panel-action-btn adm-icon-btn" aria-label={`WhatsApp a ${b.name}`}>
             <MessageSquare size={14} />

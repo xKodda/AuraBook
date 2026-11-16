@@ -31,7 +31,7 @@ describe("propuestas: permisos", () => {
     const anon = await db.query(`select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute') order by 1`);
     assert.deepEqual(anon.rows.map((r) => r.proname),
-      ["available_slots", "phone_digits", "premium_quote", "public_business_plan", "public_month_full", "public_plans"]);
+      ["available_slots", "founders_summary", "phone_digits", "premium_quote", "public_business_plan", "public_month_full", "public_plans"]);
     const noRls = await db.query(`select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace
       where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity`);
     assert.deepEqual(noRls.rows, []);

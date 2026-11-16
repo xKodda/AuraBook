@@ -9,6 +9,7 @@ import {
 import { selectBusinessAction } from "@/app/dashboard/actions";
 import { BusinessLogo } from "@/components/business-logo";
 import { billingAlert } from "@/lib/billing";
+import { founderNumberLabel } from "@/lib/founders";
 import { brandStyle } from "@/lib/theme";
 import type { PanelBusiness } from "@/lib/types";
 
@@ -85,6 +86,11 @@ export function DashboardShell({ business, businesses, email, demo, pendingOnboa
             </select>
           ) : <strong>{business.name}</strong>}
           <span>{ROLE_LABEL[business.role]}</span>
+          {business.founder && (
+            <Link href="/dashboard/plan" className="dash-founder-link" onClick={() => setMenuOpen(false)}>
+              <span className="dash-founder">★ Negocio Fundador {founderNumberLabel(business.founder.number)}</span>
+            </Link>
+          )}
         </div>
       </div>
       {groups.map((g, i) => (

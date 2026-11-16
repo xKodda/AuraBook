@@ -12,6 +12,7 @@
 --     queda registrado quién lo hizo (subscription_events.created_by).
 -- No resuelve el registro con correos distintos: eso requiere una señal extra (teléfono verificado o revisión manual).
 -- Ojo: no volver a ejecutar 20261107000000_plans_v2.sql después de esta migración (reemplazaría start_trial_on_publish).
+-- Requiere 20261115000000_founders_program.sql aplicada antes (usa public.assign_founder).
 
 create table if not exists public.trial_grants (
   email_hash text not null check (email_hash ~ '^[0-9a-f]{64}$'),
@@ -88,6 +89,8 @@ begin
   from public.business_members m join auth.users u on u.id = m.user_id
   where m.business_id = new.id and m.role = 'owner' and u.email is not null
   on conflict do nothing;
+  -- Programa Fundadores (20261115000000_founders_program.sql): solo a quien recibe su primera prueba.
+  perform public.assign_founder(new.id);
   return new;
 end;
 $$;

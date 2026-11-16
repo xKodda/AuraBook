@@ -1,3 +1,4 @@
+import type { FounderStatus } from "./founders";
 import type { Entitlements, FeatureKey } from "./plans";
 
 /** Rubros permitidos (mismo orden en que se ofrecen; la BD valida la misma lista). «otro» siempre al final. */
@@ -50,6 +51,8 @@ export type Business = {
   features: FeatureKey[];
   /** Plan Premium con «ocultar marca» activado: sin «Reservas con AuraBook» al pie. */
   hideBranding?: boolean;
+  /** Número del Programa Fundadores (lib/founders.ts), si tiene uno. */
+  founderNumber?: number | null;
 };
 
 export type AvailableSlot = {
@@ -180,6 +183,8 @@ export type PanelBusiness = {
   billing?: BillingSummary;
   /** Qué permite el plan vigente (lib/plans.ts). Todos los roles lo reciben. */
   entitlements: Entitlements;
+  /** Programa Fundadores: número, hasta cuándo tiene Premium gratis y si aparece en el muro. */
+  founder?: FounderStatus | null;
 };
 
 /** Un día del horario semanal. weekday sigue a PostgreSQL: domingo = 0. */
@@ -270,6 +275,11 @@ export type AdminBusiness = {
   staffCount: number;
   bookings30d: number;
   lastPaidAt: string | null;
+  /** Programa Fundadores (admin_founders). */
+  isInternal?: boolean;
+  ownedByAdmin?: boolean;
+  founderNumber?: number | null;
+  founderUntil?: string | null;
 };
 
 export type AdminPayment = {

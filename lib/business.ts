@@ -22,6 +22,7 @@ type DbBusiness = {
   logo_url: string | null;
   max_days_ahead: number;
   cancel_notice_min: number;
+  founder_number: number | null;
 };
 
 type DbService = {
@@ -42,7 +43,7 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
   const db = publicDb();
   const { data: row, error } = await db
     .from("businesses")
-    .select("id,slug,name,category,tagline,description,address,phone,timezone,brand_color,logo_url,max_days_ahead,cancel_notice_min")
+    .select("id,slug,name,category,tagline,description,address,phone,timezone,brand_color,logo_url,max_days_ahead,cancel_notice_min,founder_number")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
@@ -99,5 +100,6 @@ export const getBusiness = cache(async (slug: string): Promise<Business | null> 
     staff,
     features: plan.features ?? [],
     hideBranding: plan.hideBranding ?? false,
+    founderNumber: business.founder_number,
   };
 });

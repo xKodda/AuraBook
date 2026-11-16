@@ -22,6 +22,7 @@ type DbMembership = {
   businesses: {
     id: string; slug: string; name: string; category: BusinessCategory; brand_color: string; timezone: string;
     is_active: boolean; logo_url: string | null;
+    founder_number: number | null; founder_until: string | null; founder_public: boolean;
   } | null;
 };
 
@@ -40,7 +41,7 @@ export async function getPanelSession(): Promise<PanelSession | null> {
   if (!user) return null;
   const { data, error } = await db
     .from("business_members")
-    .select("role, businesses(id,slug,name,category,brand_color,timezone,is_active,logo_url)")
+    .select("role, businesses(id,slug,name,category,brand_color,timezone,is_active,logo_url,founder_number,founder_until,founder_public)")
     .eq("user_id", user.id);
   if (error) throw new Error(`No se pudieron cargar los negocios: ${error.message}`);
   const [billing, entitlements] = await Promise.all([mySubscriptions(), myEntitlements()]);
@@ -58,6 +59,9 @@ export async function getPanelSession(): Promise<PanelSession | null> {
       logoUrl: m.businesses!.logo_url,
       billing: billing.get(m.businesses!.id),
       entitlements: entitlements.get(m.businesses!.id) ?? FREE_ENTITLEMENTS,
+      founder: m.businesses!.founder_number
+        ? { number: m.businesses!.founder_number, until: m.businesses!.founder_until, public: m.businesses!.founder_public }
+        : null,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
   return { userId: user.id, email: user.email ?? null, businesses, demo: false };

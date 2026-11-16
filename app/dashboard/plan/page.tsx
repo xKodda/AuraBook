@@ -8,6 +8,9 @@ import { formatPrice } from "@/lib/dates";
 import { BILLING_CONTACT_EMAIL, BILLING_CONTACT_WHATSAPP } from "@/lib/env";
 import { requireManager } from "@/lib/dashboard";
 import { FEATURES, TIER_LABEL, launchPromo, planLimitLines } from "@/lib/plans";
+import { FounderSeal } from "@/components/founder-badge";
+import { FounderWallToggle } from "@/components/founder-wall-toggle";
+import { FOUNDER_PRICE_CLP, founderNumberLabel } from "@/lib/founders";
 
 export const metadata: Metadata = {
   title: "Mi plan | AuraBook",
@@ -27,19 +30,38 @@ export default async function MyPlanPage() {
   const overLimit = plan.maxStaff !== null && sub.staffCount > plan.maxStaff;
   const message = `Hola, soy de ${business.name} (aurabook /${business.slug}). Quiero pasarme a Premium.`;
 
-  const badge = sub.status === "trial" ? "Prueba de Premium" : sub.status === "active" ? "Activo" : "Free";
+  // Un fundador está «en prueba» en la base de datos, pero son sus meses de Premium gratis del programa.
+  const founderTrial = sub.status === "trial" && !!business.founder;
+  const badge = founderTrial ? "Premium de fundador" : sub.status === "trial" ? "Prueba de Premium" : sub.status === "active" ? "Activo" : "Free";
   const headline =
-    sub.status === "trial" ? (days !== null && days > 0 ? `Estás probando Premium: te quedan ${days} días` : "Tu prueba de Premium termina hoy")
+    founderTrial ? (days !== null && days > 0 ? `Tienes Premium gratis: te quedan ${days} días` : "Tu Premium de fundador termina hoy")
+    : sub.status === "trial" ? (days !== null && days > 0 ? `Estás probando Premium: te quedan ${days} días` : "Tu prueba de Premium termina hoy")
     : sub.status === "active" ? `Plan ${sub.plan?.name ?? TIER_LABEL[plan.tier]} activo`
     : "Estás en el plan Free";
 
+  const founder = business.founder;
+
   return (
     <main className="plan-main dash-page">
+        {founder && (
+          <section className="adm-card plan-founder" aria-labelledby="plan-founder-title">
+            <FounderSeal number={founder.number} size={88} />
+            <div>
+              <p className="plan-founder-kicker">Programa Fundadores</p>
+              <h2 id="plan-founder-title">Negocio Fundador {founderNumberLabel(founder.number)}</h2>
+              <p className="adm-muted">
+                {founder.until && `Premium gratis hasta el ${formatShortDate(founder.until)}. `}
+                Después, si sigues en Premium, pagas {formatPrice(FOUNDER_PRICE_CLP)} al mes para siempre, aunque el precio suba.
+              </p>
+              <FounderWallToggle initial={founder.public} />
+            </div>
+          </section>
+        )}
         <section className="adm-card plan-hero">
           <span className={`sub-badge sub-${sub.status === "trial" ? "trial" : sub.status === "active" ? "active" : "free"}`}>{badge}</span>
           <h1>{headline}</h1>
           <p className="adm-muted">
-            {sub.status === "trial" && `Tu prueba termina el ${formatShortDate(sub.trialEndsAt)}. Después pasas a Free automáticamente, sin cobros ni datos de tarjeta.`}
+            {sub.status === "trial" && `${founderTrial ? "Tu Premium gratis termina" : "Tu prueba termina"} el ${formatShortDate(sub.trialEndsAt)}. Después pasas a Free automáticamente, sin cobros ni datos de tarjeta.`}
             {sub.status === "active" && `Pagado hasta el ${formatShortDate(sub.paidUntil)}${days !== null ? ` (${days} días)` : ""}.`}
             {(sub.status === "past_due" || sub.status === "cancelled") &&
               "Tu página de reservas sigue funcionando y tus reservas se mantienen. Con Premium vuelves a tener todo tu equipo y estas funciones."}

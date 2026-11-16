@@ -3,7 +3,7 @@ import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import {
   ArrowRight, BellRing, Brush, Building2, CalendarCheck, CalendarX2, Camera, Check, Clock, CreditCard, Download, Dumbbell,
-  GraduationCap, LockKeyhole, Mail, MessageCircle, Palette, PawPrint, Scale, ShieldCheck, Smartphone, Stethoscope, UserPlus,
+  GraduationCap, LockKeyhole, Mail, MapPin, MessageCircle, Palette, PawPrint, Scale, ShieldCheck, Smartphone, Stethoscope, UserPlus,
   Users, Wrench,
 } from "lucide-react";
 import { JsonLd } from "@/components/json-ld";
@@ -11,7 +11,8 @@ import { LandingIntro } from "@/components/landing-intro";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { getPublicPlans } from "@/lib/billing-server";
 import { COMPANY } from "@/lib/company";
-import { FOUNDERS, foundersLeft } from "@/lib/founders";
+import { foundersLeft, foundersSpotsLabel } from "@/lib/founders";
+import { getFoundersSummary } from "@/lib/founders-server";
 import { formatPrice } from "@/lib/dates";
 import { faqLd, graph, organizationLd, softwareLd, websiteLd } from "@/lib/seo";
 import {
@@ -28,8 +29,8 @@ import fotoSpa from "@/public/photos/spa-velas.jpg";
 const DESCRIPTION =
   "Tu página de reservas con tu marca, lista en minutos. Tus clientes agendan desde el celular, sin descargar apps ni crear cuentas.";
 
-// Los precios vienen de la base de datos (se editan en /admin); la portada se regenera cada hora.
-export const revalidate = 3600;
+// Precios y cupos de fundadores vienen de la base de datos; la portada se regenera cada 5 minutos.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "AuraBook · Agenda y reservas online para tu negocio",
@@ -138,17 +139,17 @@ function BrowserPreview() {
     <div className="lp-browser" aria-hidden="true">
       <div className="lp-browser-bar">
         <i /><i /><i />
-        <span>aurabook.cl/reservar/taller-don-jose</span>
+        <span>aurabook.cl/reservar/taller-ruta-norte</span>
       </div>
       <div className="lp-browser-page">
         <div className="lp-browser-biz">
-          <span className="lp-mini-logo">DJ</span>
+          <span className="lp-mini-logo">TN</span>
           <small>TALLER MECÁNICO</small>
-          <b>Taller Don José</b>
+          <b>Taller Ruta Norte</b>
           <p>Tu auto en buenas manos.</p>
           <hr />
-          <p>Av. Providencia 1234</p>
-          <p>+56 9 1234 5678</p>
+          <p className="lp-browser-meta"><MapPin size={13} /> Providencia, Santiago</p>
+          <p className="lp-browser-meta"><Clock size={13} /> Lun a sáb · 9:00 a 19:00</p>
         </div>
         <div className="lp-browser-main">
           <p className="lp-mini-label"><span>1</span> ¿Qué necesita tu vehículo?</p>
@@ -197,7 +198,7 @@ function AgendaPreview() {
 }
 
 export default async function Home() {
-  const plans = await getPublicPlans();
+  const [plans, founders] = await Promise.all([getPublicPlans(), getFoundersSummary()]);
   const free = plans.plans.find((p) => p.code === "free");
   const premium = plans.plans.find((p) => p.code === "premium");
   return (
@@ -205,12 +206,12 @@ export default async function Home() {
     <div className="lp">
       <JsonLd data={graph(organizationLd, websiteLd, softwareLd(plans.plans, DESCRIPTION), faqLd(FAQ))} />
       <LandingIntro />
-      {foundersLeft > 0 && (
+      {foundersLeft(founders) > 0 && (
         <aside className="lp-founders-bar" aria-label="Programa Fundadores">
           <p>
             <i aria-hidden="true" />
-            <b>Programa Fundadores:</b> los primeros {FOUNDERS.total} negocios tienen Premium gratis por {FOUNDERS.freeMonths} meses.
-            {" "}{foundersLeft === 1 ? "Queda 1 cupo." : `Quedan ${foundersLeft} cupos.`}
+            <b>Programa Fundadores:</b> los primeros {founders.total} negocios tienen Premium gratis por {founders.months} meses.
+            {" "}{foundersSpotsLabel(founders)}.
             {" "}<Link href="/fundadores">Quiero mi cupo <ArrowRight size={14} /></Link>
           </p>
         </aside>
